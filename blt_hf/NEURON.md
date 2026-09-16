@@ -22,14 +22,15 @@ cd /scratch/r984a02/phdq3
 conda activate phdq_blt_hf
 showque
 showappl
-export FIELD='showappl에서 확인한 실제 field'
+export FIELD=nlp
 # batch shell에서 conda를 못 찾는 환경만 실제 conda.sh 경로를 지정한다.
 # export CONDA_SH=/apps/applications/Miniconda/23.3.1/etc/profile.d/conda.sh
 ```
 
-`FIELD`에는 실제 허용값을 넣는다. 제출 helper도 매번 `showque`와 `showappl`을
-실행하고 `--comment="field=$FIELD;appl=pytorch"`를 지정한다. 잘못된 field는 scheduler가
-거부한다. 임의 partition 접근·정책 우회·자동 연쇄 제출은 하지 않는다.
+이 프로젝트에서 확인한 field는 `nlp`이며 제출 helper의 기본값도 `nlp`다. helper는
+매번 `showque`와 `showappl`을 출력하고 `--comment="field=nlp;appl=pytorch"`를 지정한다.
+두 정보 명령이 출력 후 nonzero를 반환해도 경고만 남기고 실제 scheduler 검사를 계속한다.
+잘못된 field는 scheduler가 거부한다. 임의 partition 접근·정책 우회·자동 연쇄 제출은 하지 않는다.
 
 지원 GPU partition은 `amd_a100nv_8`(GPU당 CPU ≤8, active ≤4)와 `amd_a100_4`
 (GPU당 CPU ≤16, active ≤2)다. GPU job에는 `--gres=gpu:N`을 지정한다. 기본은

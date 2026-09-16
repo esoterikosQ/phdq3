@@ -1,5 +1,14 @@
 # 일자별 작업 내역
 
+## 2026-09-16 — Neuron 제출 helper 수정
+
+- 프로젝트 field를 `nlp` 기본값으로 고정하고 실제 comment 인자를
+  `field=nlp;appl=pytorch` 한 개의 shell argument로 전달하도록 수정.
+- `showque`/`showappl`이 정보를 출력한 뒤 nonzero를 반환해도 `set -e`로 제출이
+  조기 종료되지 않도록 경고 처리. 제출 직전 mode/partition/CPU/GPU를 출력한다.
+- 두 정보 명령이 각각 nonzero인 모의 Neuron 환경에서도 `sbatch` 도달 및 전체 인자를
+  검사하는 회귀 테스트 추가. 로컬 전체 77개 중 57 통과/torch 관련 20 skip.
+
 ## 2026-09-16 — GitHub 공개 범위 정리
 
 - `data/` 전체, artifacts/outputs/환경 캐시·가중치·인증정보·ssh.md를 Git에서 제외.

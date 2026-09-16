@@ -118,9 +118,9 @@ outputs/blt_hf_eval/<dataset>/<split>/<ckpt>/<cond>/   # 평가 (생성 조건�
 학습/생성/CPU 채점/제출 shell 스크립트가 구현되어 있다.
 
 ```bash
-# neuron login shell에서 사용자만 실행. FIELD는 showappl의 실제 허용값.
+# neuron login shell에서 사용자만 실행. 확인된 기본 field는 nlp.
 cd /scratch/r984a02/phdq3
-export FIELD=<허용값>
+export FIELD=nlp
 RUN_ID=native-smoke-01 NUM_GPUS=1 bash scripts/submit_blt_hf.sh smoke
 # smoke/overfit/DDP 확인 후 본 학습. 기존 run은 RESUME=<latest.json>을 명시.
 RUN_ID=native-main-01 NUM_GPUS=8 bash scripts/submit_blt_hf.sh train

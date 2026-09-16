@@ -5,9 +5,12 @@ cd /scratch/r984a02/phdq3
 [[ -z "${SLURM_JOB_ID:-}" ]] || { echo 'Submit from a Neuron login shell, not from inside another job' >&2; exit 2; }
 case "$(hostname -s)" in glogin01|glogin02|glogin03|login01|login02|login03) ;; *) echo 'Neuron login host required' >&2; exit 2;; esac
 mode=${1:-}
-showque
-showappl
-: "${FIELD:?Set FIELD to a value allowed by showappl}"
+# These commands are informational on Neuron and may return a nonzero status
+# after printing valid queue/quota information. Do not let `set -e` abort the
+# submission before sbatch. The reviewed field for this project is `nlp`.
+showque || echo 'Warning: showque returned nonzero; continuing with scheduler checks.' >&2
+showappl || echo 'Warning: showappl returned nonzero; continuing with field=nlp.' >&2
+FIELD=${FIELD:-nlp}
 [[ "$FIELD" =~ ^[A-Za-z0-9_.-]+$ ]] || { echo 'Invalid FIELD syntax' >&2; exit 2; }
 mkdir -p artifacts/logs
 case "$mode" in
@@ -18,9 +21,9 @@ case "$mode" in
     ;;
   eval) script=scripts/eval_blt_hf.sh; export NUM_GPUS=1;;
   score) script=scripts/score_blt_hf.sh;;
-  *) echo 'Usage: FIELD=... RUN_ID=... bash scripts/submit_blt_hf.sh train|smoke|overfit|eval|score' >&2; exit 2;;
+  *) echo 'Usage: RUN_ID=... bash scripts/submit_blt_hf.sh train|smoke|overfit|eval|score' >&2; exit 2;;
 esac
-opts=(--nodes=1 --ntasks=1 --comment="field=$FIELD;appl=pytorch")
+opts=(--nodes=1 --ntasks=1 "--comment=field=${FIELD};appl=pytorch" --export=ALL)
 if [[ "$mode" == score ]]; then
   partition=cpu
   cpus=${CPUS:-8}
@@ -40,4 +43,7 @@ else
   (( active < max_active )) || { echo 'Partition active-job limit reached; wait before submitting another shard' >&2; exit 2; }
   opts+=(--partition="$partition" --gres="gpu:$NUM_GPUS" --cpus-per-task="$cpus")
 fi
+printf 'Submitting %s with field=%s partition=%s cpus=%s' "$mode" "$FIELD" "$partition" "$cpus"
+if [[ "$mode" != score ]]; then printf ' gpus=%s' "$NUM_GPUS"; fi
+printf '\n'
 sbatch "${opts[@]}" "$script"

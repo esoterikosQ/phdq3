@@ -1,6 +1,7 @@
 import subprocess
 import unittest
 import os
+import tempfile
 from unittest.mock import patch
 from pathlib import Path
 from blt_hf.runtime import require_neuron_job, local_path
@@ -27,7 +28,37 @@ class NeuronContracts(unittest.TestCase):
             self.assertIn('#SBATCH --signal=B:USR1@600',text)
         text=(ROOT/'scripts/submit_blt_hf.sh').read_text()
         self.assertIn('showque',text);self.assertIn('showappl',text)
-        self.assertIn('--comment="field=$FIELD;appl=pytorch"',text)
+        self.assertIn('FIELD=${FIELD:-nlp}',text)
+        self.assertIn('"--comment=field=${FIELD};appl=pytorch"',text)
+        self.assertNotIn('--comment=\\"',text)
+
+    def test_submit_reaches_sbatch_when_status_commands_return_nonzero(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder)
+            bindir=root/'bin';bindir.mkdir()
+            capture=root/'sbatch.args'
+            commands={
+                'hostname': '#!/bin/sh\nprintf "glogin01\\n"\n',
+                'showque': '#!/bin/sh\nprintf "quota status\\n"\nexit 17\n',
+                'showappl': '#!/bin/sh\nprintf "nlp\\n"\nexit 18\n',
+                'squeue': '#!/bin/sh\nexit 0\n',
+                'sbatch': '#!/bin/sh\nprintf "%s\\n" "$@" > "$SBATCH_CAPTURE"\n',
+            }
+            for name,body in commands.items():
+                path=bindir/name;path.write_text(body);path.chmod(0o755)
+            script=root/'submit.sh'
+            source=(ROOT/'scripts/submit_blt_hf.sh').read_text()
+            script.write_text(source.replace('cd /scratch/r984a02/phdq3',f'cd {root}'))
+            env={**os.environ,'PATH':f'{bindir}:/usr/bin:/bin','USER':'r984a02',
+                 'RUN_ID':'native-smoke-test','NUM_GPUS':'1','SBATCH_CAPTURE':str(capture)}
+            result=subprocess.run(['bash',str(script),'smoke'],env=env,text=True,capture_output=True)
+            self.assertEqual(result.returncode,0,result.stderr)
+            args=capture.read_text().splitlines()
+            self.assertIn('--comment=field=nlp;appl=pytorch',args)
+            self.assertNotIn('--comment="field=nlp;appl=pytorch"',args)
+            self.assertIn('--partition=amd_a100nv_8',args)
+            self.assertIn('--gres=gpu:1',args)
+            self.assertEqual(args[-1],'scripts/train_blt_hf.sh')
 
     def test_config_fingerprint_ignores_only_loader_metadata(self):
         from blt_hf.runtime import model_config_identity
