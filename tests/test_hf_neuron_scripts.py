@@ -27,12 +27,13 @@ class NeuronContracts(unittest.TestCase):
             self.assertIn('#SBATCH --gres=gpu:1',text)
             self.assertIn('#SBATCH --signal=B:USR1@600',text)
         text=(ROOT/'scripts/submit_blt_hf.sh').read_text()
-        self.assertIn('showque',text);self.assertIn('showappl',text)
+        self.assertNotIn('\nshowque\n',text);self.assertNotIn('\nshowappl\n',text)
+        self.assertIn('BLT submit helper v2',text)
         self.assertIn('FIELD=${FIELD:-nlp}',text)
         self.assertIn('"--comment=field=${FIELD};appl=pytorch"',text)
         self.assertNotIn('--comment=\\"',text)
 
-    def test_submit_reaches_sbatch_when_status_commands_return_nonzero(self):
+    def test_submit_reaches_sbatch_without_invoking_site_status_helpers(self):
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder)
             bindir=root/'bin';bindir.mkdir()
@@ -53,6 +54,8 @@ class NeuronContracts(unittest.TestCase):
                  'RUN_ID':'native-smoke-test','NUM_GPUS':'1','SBATCH_CAPTURE':str(capture)}
             result=subprocess.run(['bash',str(script),'smoke'],env=env,text=True,capture_output=True)
             self.assertEqual(result.returncode,0,result.stderr)
+            self.assertIn('BLT submit helper v2: mode=smoke field=nlp',result.stdout)
+            self.assertNotIn('quota status',result.stdout)
             args=capture.read_text().splitlines()
             self.assertIn('--comment=field=nlp;appl=pytorch',args)
             self.assertNotIn('--comment="field=nlp;appl=pytorch"',args)

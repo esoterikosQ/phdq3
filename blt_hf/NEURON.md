@@ -59,10 +59,11 @@ export FIELD=nlp
 # export CONDA_SH=/apps/applications/Miniconda/23.3.1/etc/profile.d/conda.sh
 ```
 
-이 프로젝트에서 확인한 field는 `nlp`이며 제출 helper의 기본값도 `nlp`다. helper는
-매번 `showque`와 `showappl`을 출력하고 `--comment="field=nlp;appl=pytorch"`를 지정한다.
-두 정보 명령이 출력 후 nonzero를 반환해도 경고만 남기고 실제 scheduler 검사를 계속한다.
-잘못된 field는 scheduler가 거부한다. 임의 partition 접근·정책 우회·자동 연쇄 제출은 하지 않는다.
+이 프로젝트에서 확인한 field는 `nlp`이며 제출 helper의 기본값도 `nlp`다. `showque`와
+`showappl`은 로그인 shell에서 위와 같이 직접 확인한다. 사이트 helper는 비대화형
+스크립트에서 비정상 종료 상태를 반환할 수 있어 제출 helper 내부에서는 다시 호출하지 않는다.
+제출에는 `--comment="field=nlp;appl=pytorch"`를 지정한다. 잘못된 field는 scheduler가
+거부한다. 임의 partition 접근·정책 우회·자동 연쇄 제출은 하지 않는다.
 
 지원 GPU partition은 `amd_a100nv_8`(GPU당 CPU ≤8, active ≤4)와 `amd_a100_4`
 (GPU당 CPU ≤16, active ≤2)다. GPU job에는 `--gres=gpu:N`을 지정한다. 기본은
