@@ -54,16 +54,14 @@ cd /scratch/r984a02/phdq3
 conda activate phdq_blt_hf
 showque
 showappl
-export FIELD=nlp
 # batch shell에서 conda를 못 찾는 환경만 실제 conda.sh 경로를 지정한다.
 # export CONDA_SH=/apps/applications/Miniconda/23.3.1/etc/profile.d/conda.sh
 ```
 
-이 프로젝트에서 확인한 field는 `nlp`이며 제출 helper의 기본값도 `nlp`다. `showque`와
-`showappl`은 로그인 shell에서 위와 같이 직접 확인한다. 사이트 helper는 비대화형
-스크립트에서 비정상 종료 상태를 반환할 수 있어 제출 helper 내부에서는 다시 호출하지 않는다.
-제출에는 `--comment="field=nlp;appl=pytorch"`를 지정한다. 잘못된 field는 scheduler가
-거부한다. 임의 partition 접근·정책 우회·자동 연쇄 제출은 하지 않는다.
+이 프로젝트에서 확인한 field는 `nlp`다. 각 job script 맨 앞의 SBATCH header에
+`--comment="field=nlp;appl=pytorch"`를 고정했다. `showque`와 `showappl`은 로그인
+shell에서 직접 확인한다. job script를 `bash`로 실행하면 SBATCH 줄은 주석으로 처리되어
+자원이 할당되지 않는다. 아래와 같이 반드시 `sbatch`로 직접 제출한다.
 
 지원 GPU partition은 `amd_a100nv_8`(GPU당 CPU ≤8, active ≤4)와 `amd_a100_4`
 (GPU당 CPU ≤16, active ≤2)다. GPU job에는 `--gres=gpu:N`을 지정한다. 기본은
@@ -72,23 +70,24 @@ V100/H100/H200/GH200 경로는 현재 구현·검증 범위에 넣지 않았다.
 job array는 사용하지 않으며 running limit은 scheduler가 적용한다.
 
 CPU 채점은 `cpu` partition을 사용한다. GPU를 할당해 CPU 채점을 기다리지 않는다.
-기본 제한 시간은 1:55, 10분 전 USR1 신호와 Python 실행 시간 제한으로 저장·중단한다.
+기본 제한 시간은 1:55, 5분 전 TERM 신호와 Python 실행 시간 제한으로 저장·중단한다.
 반환 코드 75는 **재개 가능한 미완료**이며 완료로 해석하지 않는다. 자동 재제출하지 않는다.
 
 ## 1. 사용자 실행 학습 검사
 
 ```bash
 # 1 GPU: 작은 모델의 실제 backward/optimizer 재개 검사 후, 실제 B의 긴 train 입력 2 update.
-RUN_ID=native-smoke-01 DATASET_TYPE=native NUM_GPUS=1 \
-  bash scripts/submit_blt_hf.sh smoke
+sbatch --export=ALL,RUN_ID=native-smoke-01,DATASET_TYPE=native,NUM_GPUS=1,TRAIN_MODE=smoke \
+  scripts/train_blt_hf.sh
 
 # 위 작업 완료 및 메모리 확인 후 2 GPU DDP 검사. 같은 RUN_ID를 재사용하지 않는다.
-RUN_ID=native-ddp-smoke-01 DATASET_TYPE=native NUM_GPUS=2 \
-  bash scripts/submit_blt_hf.sh smoke
+sbatch --gres=gpu:2 --cpus-per-task=8 \
+  --export=ALL,RUN_ID=native-ddp-smoke-01,DATASET_TYPE=native,NUM_GPUS=2,TRAIN_MODE=smoke \
+  scripts/train_blt_hf.sh
 
 # tiny overfit: train 앞 4개에만 수행하는 별도 진단. 평가용 checkpoint로 사용하지 않는다.
-RUN_ID=native-overfit-01 DATASET_TYPE=native NUM_GPUS=1 \
-  LR=0.0001 OVERFIT_STEPS=200 bash scripts/submit_blt_hf.sh overfit
+sbatch --export=ALL,RUN_ID=native-overfit-01,DATASET_TYPE=native,NUM_GPUS=1,TRAIN_MODE=overfit,LR=0.0001,OVERFIT_STEPS=200 \
+  scripts/train_blt_hf.sh
 ```
 
 `smoke`는 `check_train_forward.py`에서 label shift, encoder/global/decoder gradient,
@@ -98,26 +97,29 @@ RUN_ID=native-overfit-01 DATASET_TYPE=native NUM_GPUS=1 \
 `overfit`의 최종 loss<0.05 여부는 `completed.json`에 기록한다.
 `smoke/overfit` checkpoint는 본 평가 CLI가 거부한다.
 
-검사 로그: `artifacts/logs/blt-hf-train-<jobid>.out`.
+검사 로그: 프로젝트 루트의 `slurm-blt-hf-train-<jobid>.out` 및 `.err`.
 작업별 환경·9개 split 길이 보고서와 작은 모델의 training report는
 `blt_hf_checks/results/neuron_<jobid>_<restart>_*.json`에 남는다.
 
 ## 2. 본 학습 및 재개
 
 ```bash
-RUN_ID=native-main-01 DATASET_TYPE=native NUM_GPUS=8 EFFECTIVE_BATCH=32 \
-  bash scripts/submit_blt_hf.sh train
+sbatch --gres=gpu:8 --cpus-per-task=32 \
+  --export=ALL,RUN_ID=native-main-01,DATASET_TYPE=native,NUM_GPUS=8,TRAIN_MODE=train,EFFECTIVE_BATCH=32 \
+  scripts/train_blt_hf.sh
 
 # 시간 제한/중단 후, 동일 코드·설정·GPU 수·RUN_ID로 이어서 수행한다.
-RUN_ID=native-main-01 DATASET_TYPE=native NUM_GPUS=8 EFFECTIVE_BATCH=32 \
-  RESUME=outputs/blt_hf/native/native-main-01/latest.json \
-  bash scripts/submit_blt_hf.sh train
+sbatch --gres=gpu:8 --cpus-per-task=32 \
+  --export=ALL,RUN_ID=native-main-01,DATASET_TYPE=native,NUM_GPUS=8,TRAIN_MODE=train,EFFECTIVE_BATCH=32,RESUME=outputs/blt_hf/native/native-main-01/latest.json \
+  scripts/train_blt_hf.sh
 
 # 별도 실험 ID, 각 원본 split 유지. native 결과 확인 후 순차 제출한다.
-RUN_ID=learner-main-01 DATASET_TYPE=korean_learner NUM_GPUS=8 \
-  bash scripts/submit_blt_hf.sh train
-RUN_ID=union-main-01 DATASET_TYPE=union NUM_GPUS=8 \
-  bash scripts/submit_blt_hf.sh train
+sbatch --gres=gpu:8 --cpus-per-task=32 \
+  --export=ALL,RUN_ID=learner-main-01,DATASET_TYPE=korean_learner,NUM_GPUS=8,TRAIN_MODE=train \
+  scripts/train_blt_hf.sh
+sbatch --gres=gpu:8 --cpus-per-task=32 \
+  --export=ALL,RUN_ID=union-main-01,DATASET_TYPE=union,NUM_GPUS=8,TRAIN_MODE=train \
+  scripts/train_blt_hf.sh
 ```
 
 학습 기본값은 3 epoch, LR 1e-5, warmup 2000 update(총 step 안으로 제한), cosine decay,
@@ -159,8 +161,8 @@ beam 1과 4, batch 설정별로 **서로 다른 EVAL_DIR**를 사용한다.
 # 아래 STEP_DIRECTORY를 best.json의 실제 checkpoint 이름으로 바꾼다.
 export CKPT_PATH=outputs/blt_hf/native/native-main-01/STEP_DIRECTORY
 export EVAL_DIR=outputs/blt_hf_eval/native/test/native-main-01-beam1
-DATASET_TYPE=native BLT_NUM_BEAMS=1 BATCH_SIZE=1 SHARD_COUNT=1 SHARD_ID=0 \
-  bash scripts/submit_blt_hf.sh eval
+sbatch --export=ALL,CKPT_PATH="$CKPT_PATH",EVAL_DIR="$EVAL_DIR",DATASET_TYPE=native,BLT_NUM_BEAMS=1,BATCH_SIZE=1,SHARD_COUNT=1,SHARD_ID=0 \
+  scripts/eval_blt_hf.sh
 
 # interrupted generation: 같은 인자와 EVAL_DIR로 다시 제출하면 완료 batch부터 재개한다.
 # 여러 shard가 필요할 때만 SHARD_COUNT를 먼저 고정하고 SHARD_ID=0..N-1 각각 제출.
@@ -184,8 +186,8 @@ code·config·scorer·생성 설정 fingerprint가 다르면 재개·합산을 �
 
 ```bash
 # 모든 shard 완료 후 CPU job에서 GLEU + M2 P/R/F0.5를 계산한다.
-DATASET_TYPE=native CPUS=8 M2_WORKERS=8 \
-  bash scripts/submit_blt_hf.sh score
+sbatch --export=ALL,EVAL_DIR="$EVAL_DIR",DATASET_TYPE=native,M2_WORKERS=8 \
+  scripts/score_blt_hf.sh
 ```
 
 scorer는 `/Users/esoterikos/Nextcloud/QLab/phdq`에서 확인한 **기존 실험 구현**을 독립

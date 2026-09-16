@@ -1,7 +1,6 @@
 import subprocess
 import unittest
 import os
-import tempfile
 from unittest.mock import patch
 from pathlib import Path
 from blt_hf.runtime import require_neuron_job, local_path
@@ -19,49 +18,20 @@ class NeuronContracts(unittest.TestCase):
         self.assertTrue(eval_parser().parse_args(['--output-dir','outputs/example','--aggregate']).aggregate)
 
     def test_shell_syntax_and_scheduler_contract(self):
-        for name in ('train_blt_hf.sh','eval_blt_hf.sh','score_blt_hf.sh','submit_blt_hf.sh','neuron_blt_hf_common.sh'):
+        for name in ('train_blt_hf.sh','eval_blt_hf.sh','score_blt_hf.sh','neuron_blt_hf_common.sh'):
             path=ROOT/'scripts'/name
             subprocess.run(['bash','-n',str(path)],check=True)
-        for name in ('train_blt_hf.sh','eval_blt_hf.sh'):
+        for name in ('train_blt_hf.sh','eval_blt_hf.sh','score_blt_hf.sh'):
             text=(ROOT/'scripts'/name).read_text()
-            self.assertIn('#SBATCH --gres=gpu:1',text)
-            self.assertIn('#SBATCH --signal=B:USR1@600',text)
-        text=(ROOT/'scripts/submit_blt_hf.sh').read_text()
-        self.assertNotIn('\nshowque\n',text);self.assertNotIn('\nshowappl\n',text)
-        self.assertIn('BLT submit helper v2',text)
-        self.assertIn('FIELD=${FIELD:-nlp}',text)
-        self.assertIn('"--comment=field=${FIELD};appl=pytorch"',text)
-        self.assertNotIn('--comment=\\"',text)
-
-    def test_submit_reaches_sbatch_without_invoking_site_status_helpers(self):
-        with tempfile.TemporaryDirectory() as folder:
-            root=Path(folder)
-            bindir=root/'bin';bindir.mkdir()
-            capture=root/'sbatch.args'
-            commands={
-                'hostname': '#!/bin/sh\nprintf "glogin01\\n"\n',
-                'showque': '#!/bin/sh\nprintf "quota status\\n"\nexit 17\n',
-                'showappl': '#!/bin/sh\nprintf "nlp\\n"\nexit 18\n',
-                'squeue': '#!/bin/sh\nexit 0\n',
-                'sbatch': '#!/bin/sh\nprintf "%s\\n" "$@" > "$SBATCH_CAPTURE"\n',
-            }
-            for name,body in commands.items():
-                path=bindir/name;path.write_text(body);path.chmod(0o755)
-            script=root/'submit.sh'
-            source=(ROOT/'scripts/submit_blt_hf.sh').read_text()
-            script.write_text(source.replace('cd /scratch/r984a02/phdq3',f'cd {root}'))
-            env={**os.environ,'PATH':f'{bindir}:/usr/bin:/bin','USER':'r984a02',
-                 'RUN_ID':'native-smoke-test','NUM_GPUS':'1','SBATCH_CAPTURE':str(capture)}
-            result=subprocess.run(['bash',str(script),'smoke'],env=env,text=True,capture_output=True)
-            self.assertEqual(result.returncode,0,result.stderr)
-            self.assertIn('BLT submit helper v2: mode=smoke field=nlp',result.stdout)
-            self.assertNotIn('quota status',result.stdout)
-            args=capture.read_text().splitlines()
-            self.assertIn('--comment=field=nlp;appl=pytorch',args)
-            self.assertNotIn('--comment="field=nlp;appl=pytorch"',args)
-            self.assertIn('--partition=amd_a100nv_8',args)
-            self.assertIn('--gres=gpu:1',args)
-            self.assertEqual(args[-1],'scripts/train_blt_hf.sh')
+            self.assertTrue(text.startswith('#!/bin/bash\n#SBATCH --job-name='))
+            self.assertIn('#SBATCH --comment="field=nlp;appl=pytorch"',text)
+            self.assertIn('#SBATCH --output=slurm-%x-%j.out',text)
+            self.assertIn('#SBATCH --error=slurm-%x-%j.err',text)
+            self.assertIn('#SBATCH --ntasks-per-node=1',text)
+            self.assertIn('#SBATCH --signal=B:TERM@300',text)
+            self.assertIn('run_job srun --ntasks=1',text)
+        for name in ('train_blt_hf.sh','eval_blt_hf.sh'):
+            self.assertIn('#SBATCH --gres=gpu:1',(ROOT/'scripts'/name).read_text())
 
     def test_config_fingerprint_ignores_only_loader_metadata(self):
         from blt_hf.runtime import model_config_identity

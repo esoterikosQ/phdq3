@@ -1,5 +1,17 @@
 # 일자별 작업 내역
 
+## 2026-09-16 — Neuron 제출 구조를 직접 sbatch 방식으로 교정
+
+- 실제 사용 이력이 있는 BART job script를 기준으로 train/eval/score 맨 앞에
+  `#!/bin/bash`, field/appl comment, stdout/stderr, partition, node/task, 자원, wall time,
+  `B:TERM@300` SBATCH header를 완성했다.
+- 로그인 shell에서 Bash wrapper를 실행하는 `submit_blt_hf.sh`를 삭제했다. 사용자는
+  프로젝트 root에서 각 batch script를 `sbatch --export=...`로 직접 제출한다.
+- 할당된 job 안에서는 Python 및 torchrun을 `srun --ntasks=1`로 실행한다.
+  `SLURM_SUBMIT_DIR`, comment, partition, CPU/GPU 조건을 compute job에서 재검사하고
+  job/node/CUDA/자원 정보를 로그에 출력한다.
+- shell syntax 및 SBATCH/srun 구조 회귀 테스트 5개 통과. 실제 Neuron 제출은 사용자 실행.
+
 ## 2026-09-16 — Neuron 제출 helper 수정
 
 - 프로젝트 field를 `nlp` 기본값으로 고정하고 실제 comment 인자를

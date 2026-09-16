@@ -1,13 +1,15 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #SBATCH --job-name=blt-hf-eval
-#SBATCH --partition=amd_a100nv_8
+#SBATCH --comment="field=nlp;appl=pytorch"
+#SBATCH --output=slurm-%x-%j.out
+#SBATCH --error=slurm-%x-%j.err
+#SBATCH -p amd_a100nv_8
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
+#SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=4
 #SBATCH --time=01:55:00
-#SBATCH --signal=B:USR1@600
-#SBATCH --output=artifacts/logs/%x-%j.out
+#SBATCH --signal=B:TERM@300
 set -euo pipefail
 export NUM_GPUS=1
 source /scratch/r984a02/phdq3/scripts/neuron_blt_hf_common.sh
@@ -15,7 +17,7 @@ source /scratch/r984a02/phdq3/scripts/neuron_blt_hf_common.sh
 : "${EVAL_DIR:?Set EVAL_DIR to a separate directory for each checkpoint/beam/batch condition}"
 DATASET_TYPE=${DATASET_TYPE:-native}
 [[ "$DATASET_TYPE" != learner ]] || DATASET_TYPE=korean_learner
-run_job python -m blt_hf.eval --dataset "$DATASET_TYPE" --split "${SPLIT:-test}" \
+run_job srun --ntasks=1 python -m blt_hf.eval --dataset "$DATASET_TYPE" --split "${SPLIT:-test}" \
   --checkpoint "$CKPT_PATH" --output-dir "$EVAL_DIR" \
   --shard-id "${SHARD_ID:-0}" --shard-count "${SHARD_COUNT:-1}" \
   --num-beams "${BLT_NUM_BEAMS:-1}" --batch-size "${BATCH_SIZE:-1}" \

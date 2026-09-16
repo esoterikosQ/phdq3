@@ -1,13 +1,15 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #SBATCH --job-name=blt-hf-train
-#SBATCH --partition=amd_a100nv_8
+#SBATCH --comment="field=nlp;appl=pytorch"
+#SBATCH --output=slurm-%x-%j.out
+#SBATCH --error=slurm-%x-%j.err
+#SBATCH -p amd_a100nv_8
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
+#SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=4
 #SBATCH --time=01:55:00
-#SBATCH --signal=B:USR1@600
-#SBATCH --output=artifacts/logs/%x-%j.out
+#SBATCH --signal=B:TERM@300
 set -euo pipefail
 export NUM_GPUS=${NUM_GPUS:-1}
 source /scratch/r984a02/phdq3/scripts/neuron_blt_hf_common.sh
@@ -22,7 +24,7 @@ args=(--dataset "$DATASET_TYPE" --run-dir "outputs/blt_hf/$DATASET_TYPE/$RUN_ID"
       --max-steps "${MAX_STEPS:-0}" --overfit-steps "${OVERFIT_STEPS:-200}")
 [[ -z "${RESUME:-}" ]] || args+=(--resume "$RESUME")
 if [[ "${TRAIN_MODE:-train}" == smoke ]]; then
-  run_job python blt_hf_checks/check_train_forward.py --output "${report}_tiny_training.json"
+  run_job srun --ntasks=1 python blt_hf_checks/check_train_forward.py --output "${report}_tiny_training.json"
 fi
 export LAUNCHER_IS_TORCHRUN=1
-run_job torchrun --standalone --nnodes=1 --nproc-per-node="$NUM_GPUS" -m blt_hf.train "${args[@]}"
+run_job srun --ntasks=1 torchrun --standalone --nnodes=1 --nproc-per-node="$NUM_GPUS" -m blt_hf.train "${args[@]}"

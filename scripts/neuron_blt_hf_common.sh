@@ -3,6 +3,9 @@
 set -euo pipefail
 PROJECT_ROOT=/scratch/r984a02/phdq3
 [[ -n "${SLURM_JOB_ID:-}" ]] || { echo 'SLURM allocation required; do not run on login nodes' >&2; exit 2; }
+[[ "${SLURM_SUBMIT_DIR:-}" == "$PROJECT_ROOT" ]] || {
+  echo "Submit this job from $PROJECT_ROOT (SLURM_SUBMIT_DIR=${SLURM_SUBMIT_DIR:-unset})" >&2; exit 2;
+}
 cd "$PROJECT_ROOT"
 [[ "$(pwd -P)" == "$(cd "$PROJECT_ROOT" && pwd -P)" ]] || exit 2
 [[ "${SLURM_NNODES:-1}" == 1 && "${SLURM_NTASKS:-1}" == 1 ]] || { echo 'One node/task required' >&2; exit 2; }
@@ -10,6 +13,10 @@ job_details=$(scontrol show job -o "$SLURM_JOB_ID")
 [[ "$job_details" =~ Comment=field=[^\;\ ]+\;appl=pytorch([\ ]|$) ]] || {
   echo 'Required --comment="field=<showappl value>;appl=pytorch" not found' >&2; exit 2;
 }
+printf 'Job ID: %s\nNode: %s\nStart Time: %s\nSubmit Dir: %s\nPartition: %s\n' \
+  "$SLURM_JOB_ID" "${SLURMD_NODENAME:-unknown}" "$(date -Iseconds)" "$SLURM_SUBMIT_DIR" "${SLURM_JOB_PARTITION:-unknown}"
+printf 'CUDA_VISIBLE_DEVICES: %s\nCPUs per task: %s\n' \
+  "${CUDA_VISIBLE_DEVICES:-none}" "${SLURM_CPUS_PER_TASK:-unknown}"
 if [[ "${JOB_KIND:-gpu}" == cpu ]]; then
   [[ "${SLURM_JOB_PARTITION:-}" == cpu ]] || { echo 'CPU scoring requires cpu partition' >&2; exit 2; }
 else
