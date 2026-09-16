@@ -6,9 +6,41 @@
 
 ## 준비
 
-전달용 `artifacts/releases/p1-neuron-code-20260916.tar.gz`에는 코드·검사·실행 문서가
-들어 있다. 사용자가 뉴론 프로젝트로 이관한 뒤 프로젝트 루트에서 압축을 푼다.
-가중치·전체 데이터·인증 파일은 포함하지 않으며 아래 경로에 별도로 준비한다.
+**코드 정본은 GitHub `main`이다.** 전달용
+`artifacts/releases/p1-neuron-code-20260916.tar.gz`는 현재 `main`보다 오래됐으므로
+최종 실행 코드로 사용하지 않는다. 이미 프로젝트 루트에 압축을 풀었다면 아래 명령으로
+Git 추적 파일을 `main`으로 복구한다. `git reset --hard`는 추적 파일의 로컬 변경을
+폐기하지만 Git에서 제외된 `data/`, `artifacts/`, `outputs/`, `ssh.md`는 지우지 않는다.
+`git clean`은 실행하지 않는다.
+
+기존 Git checkout인 경우:
+
+```bash
+cd /scratch/r984a02/phdq3
+git fetch origin main
+git reset --hard origin/main
+git branch --set-upstream-to=origin/main main
+git status --short
+git log -1 --oneline
+```
+
+압축만 풀어서 `.git`이 없는 경우:
+
+```bash
+cd /scratch/r984a02/phdq3
+git init
+git remote add origin https://github.com/esoterikosQ/phdq3.git
+git fetch origin main
+git reset --hard FETCH_HEAD
+git branch -M main
+git branch --set-upstream-to=origin/main main
+git status --short
+git log -1 --oneline
+```
+
+압축에는 가중치·전체 데이터·인증 파일이 포함되지 않는다. 로컬 전용 M2 scorer 사본은
+공개 Git에서도 제외되므로 기존 실험용 압축에서 남은 `blt_hf/vendor/m2/`는 보존한다.
+그 존재 여부와 hash는 `THIRD_PARTY_NOTICES.md` 절차로 확인한다.
 
 코드·`data/Preprocessed`의 제공된 9개 TSV/6개 val·test M2 및 직접 변환본 B가
 프로젝트 아래에 있어야 한다. 기존 데이터는 수정하거나 재분할하지 않는다.
