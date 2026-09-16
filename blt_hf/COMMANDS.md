@@ -1,0 +1,136 @@
+# P1 명령 및 현재 실행 범위
+
+## Neuron 학습·성능 평가 — 코드 준비 완료
+
+실제 사용자 실행 명령·SLURM 정책·재개·생성 shard·CPU 채점 절차는 `NEURON.md`를 따른다.
+`submit_blt_hf.sh smoke → overfit/2GPU smoke → train → eval → score` 순서다.
+Neuron에는 에이전트가 접속하지 않았으며 A100 backward/메모리 실측은 사용자 실행 대기다.
+현재 HF 단위 테스트와 itcerdo의 forward-only 확인은 NOTES.md 최신 절에 기록했다.
+
+## 2026-09-16 가중치·마스크 검사 — 완료
+
+itcerdo tmux `phdq3-p1:masks-0916`에서 `p1_masks_20260916` 실행, exit_code=0.
+현재 실행 중인 검사가 아니라 완료 후 shell 대기 상태다. 아래 2026-09-15 기록의
+전체 동질성 대기 정책은 폐기했고, 가중치·mask와 학습/평가 상태를 분리한다.
+
+```bash
+ssh itcerdo
+cd /home/itcmaster/projects/phdq3
+cat artifacts/logs/p1_masks_20260916.status
+tail -n 40 artifacts/logs/p1_masks_20260916.log
+# 재실행할 필요가 있을 때만 새 RUN_NAME 지정; 기존 로그/JSON 재사용 금지
+RUN_NAME=p1_masks_repeat_001 bash scripts/run_p1_masks.sh
+```
+
+이 스크립트는 환경 검사→54개 단위 테스트→B 파일 hash/strict load 확인→실제 B의
+전 계층 attention mask 검사를 수행한다. 원본 텐서 비교는 변경되지 않은 기존
+`weights_p1_validation_20260915.json` 증거와 연결한다. B/변환 입력/가중치 checker가
+바뀌면 `check_weight_conversion.py`를 새 output/mapping 경로로 다시 실행해야 한다.
+검사 CLI: `python blt_hf_checks/check_attention_mask.py --output <새 JSON 경로>`.
+
+지원 범위는 eager/bf16/no-cache/무패딩이며 학습·optimizer 작업은 포함하지 않는다.
+이 검사 당시 후속 단계였던 neuron용 학습·평가 코드는 현재 구현됐으며 `NEURON.md`를 따른다.
+
+## 2026-09-15 정적·GPU·OSC 검사 — 과거 실행
+
+itcerdo 프로젝트에서 tmux `phdq3-p1`의 별도 window로 실행했다.
+`p1_osc_v5_20260915`는 exit_code=0으로 종료했다. 각 window는 종료 뒤 shell 대기다.
+
+```bash
+ssh itcerdo
+cd /home/itcmaster/projects/phdq3
+cat artifacts/logs/p1_osc_v5_20260915.status
+tail -n 30 artifacts/logs/p1_osc_v5_20260915.log
+```
+
+재현 파일: `scripts/run_p1_validation.sh`(정적+무수정 HF),
+`scripts/run_p1_load.sh`(HF loading info 집합 JSON 변환 수정 후 재검사),
+`scripts/run_p1_osc.sh`(환경·단위 테스트·실제 후보 forward·20개 patch fixture).
+완료 보고서는 덮어쓰지 않는다. **OSC 재검사는 새 RUN_NAME**으로 실행한다.
+
+```bash
+# itcerdo에서만 실행. 실제로 아직 사용하지 않은 RUN_NAME을 지정한다.
+RUN_NAME=p1_osc_repeat_001 bash scripts/run_p1_osc.sh
+```
+
+패치 재현은 `tests/test_hf_model.py`, `tests/test_hf_attention.py`,
+`tests/test_hf_patcher.py` 및 `blt_hf_checks/check_patch_parity.py`에 있다.
+당시 검사는 optimizer/backward 없이 실행했다. 당시 없었던 neuron 제출 스크립트는 현재 구현됐다.
+
+## 이동 전 인계 — 2026-09-15 당시 상태
+
+itcerdo의 다운로드·CPU 변환은 정상 종료했다. tmux는 shell 대기 상태로 유지된다.
+현재 실행 중인 학습·검증 job은 없다. 재접속과 로그 확인:
+
+```bash
+ssh itcerdo
+cd /home/itcmaster/projects/phdq3
+tmux attach -t phdq3-p1
+# 세션 밖에서 결과 확인
+cat artifacts/logs/p1_artifacts_20260915.status
+tail -n 40 artifacts/logs/p1_artifacts_20260915.log
+```
+
+`scripts/run_p1_artifacts.sh`가 실행한 명령을 보존한다. 이미 B와 변환 보고서가
+있으므로 이 스크립트를 그대로 재실행하면 덮어쓰기를 거부한다. 변환 재시도가
+필요하면 기존 산출물을 보존하고 새 output/report 경로를 사용한다.
+
+변환본: `artifacts/converted/blt-1b-hf-own` (itcerdo에만 존재).
+정적 parity/strict load/OSC 구동을 다음 단계로 진행한다. neuron 제출은 사용자가
+`showque`, `showappl` 확인 후 `--comment="field=<허용 field>;appl=pytorch"` 형식으로 한다.
+
+아래는 초기 준비 명령 기록이다. itcerdo 정보·실제 환경 lock은 현재 확보 완료했으며
+현재 상태는 맨 위 2026-09-16 절과 NOTES.md의 같은 날짜 기록을 따른다.
+
+명령의 작업 디렉터리는 해당 노드의 PHDQ3 저장소 루트다.
+에이전트는 neuron에 접속·전송·제출하지 않는다. itcerdo 경로는 사용자 제공 파일로 확정한다.
+
+## mac — 지금 실행 가능한 검사
+
+추가 패키지 설치 없이 Python 3.11에서 실행한다.
+
+```bash
+python3 -m unittest discover -s tests -p 'test_hf_*.py' -v
+python3 blt_hf_checks/analyze_data_lengths.py
+python3 blt_hf_checks/check_env.py --cpu-only
+```
+
+`analyze_data_lengths.py`는 9개 canonical TSV와 val/test M2만 읽는다.
+데이터를 변경하지 않으며, 모델을 실행하지 않는다.
+
+JSON을 보존하려면 `--output <새로운_결과경로>.json`을 지정한다.
+기존 결과 파일이 있으면 덮어쓰지 않고 실패한다. 재검사는 새 이름을 사용한다.
+
+## itcerdo — 접속정보 파일 확인 후
+
+이미 설치한 `phdq_blt_hf` 환경에서 실행한다. 아래 명령에는 SLURM 작업이나 학습이 없다.
+
+```bash
+conda activate phdq_blt_hf
+python blt_hf_checks/check_env.py
+python blt_hf_checks/analyze_data_lengths.py
+```
+
+환경 보고서가 통과한 뒤 실제 패키지 목록을 기록한다. 기존 lock이 있다면 먼저
+비교하고 보존하며, 재생성된 내용을 확인하지 않고 덮어쓰지 않는다.
+
+```bash
+python -m pip freeze
+```
+
+`requirements.in`은 계획의 의존성 입력 명세다. 아직 노드에서 수집한
+`requirements.lock.txt`는 없으며, 환경 설치 완료라는 사용자 설명을 근거로
+임의의 lock 내용을 만들지 않는다.
+
+## neuron — 사용자 실행
+
+사용자가 적절한 A100 SLURM allocation과 `phdq_blt_hf` 환경에서 실행할 준비 명령:
+
+```bash
+python blt_hf_checks/check_env.py
+python blt_hf_checks/analyze_data_lengths.py
+```
+
+로그인 노드에서 GPU 검사·학습을 실행하지 않는다. SLURM 정책과 프로젝트 경로는
+실제 사용자 환경에 맞춰야 한다. 학습 스크립트·변환본 B·OSC 로더는 아직 준비 중이며,
+실행되지 않는 학습 제출 명령을 완료된 단계처럼 제공하지 않는다.

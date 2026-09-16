@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#SBATCH --job-name=blt-hf-train
+#SBATCH --partition=amd_a100nv_8
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=8
+#SBATCH --time=01:55:00
+#SBATCH --signal=B:USR1@600
+#SBATCH --output=artifacts/logs/%x-%j.out
+set -euo pipefail
+export NUM_GPUS=${NUM_GPUS:-1}
+source /scratch/r984a02/phdq3/scripts/neuron_blt_hf_common.sh
+: "${RUN_ID:?Set a fresh RUN_ID (or the original run when resuming)}"
+DATASET_TYPE=${DATASET_TYPE:-native}
+[[ "$DATASET_TYPE" != learner ]] || DATASET_TYPE=korean_learner
+[[ "$RUN_ID" =~ ^[A-Za-z0-9_-]+$ ]] || { echo 'Invalid RUN_ID' >&2; exit 2; }
+args=(--dataset "$DATASET_TYPE" --run-dir "outputs/blt_hf/$DATASET_TYPE/$RUN_ID"
+      --mode "${TRAIN_MODE:-train}" --epochs "${EPOCHS:-3}" --effective-batch "${EFFECTIVE_BATCH:-32}"
+      --lr "${LR:-0.00001}" --warmup-steps "${WARMUP_STEPS:-2000}"
+      --save-every "${SAVE_EVERY:-500}" --seed "${SEED:-0}" --max-seconds "${MAX_SECONDS:-6300}"
+      --max-steps "${MAX_STEPS:-0}" --overfit-steps "${OVERFIT_STEPS:-200}")
+[[ -z "${RESUME:-}" ]] || args+=(--resume "$RESUME")
+if [[ "${TRAIN_MODE:-train}" == smoke ]]; then
+  run_job python blt_hf_checks/check_train_forward.py --output "${report}_tiny_training.json"
+fi
+export LAUNCHER_IS_TORCHRUN=1
+run_job torchrun --standalone --nnodes=1 --nproc-per-node="$NUM_GPUS" -m blt_hf.train "${args[@]}"

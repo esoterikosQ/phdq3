@@ -1,3 +1,44 @@
-/blg_gec/
 /blt_gec/
 .DS_Store
+/data
+/artifacts/
+/reference_code/
+/outputs/
+/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local access details and credentials (never publish).
+/ssh.md
+.env
+.env.*
+!.env.example
+.hf_access
+.netrc
+*.pem
+*.key
+
+# Model checkpoints, dataset exports, caches, and packaged releases.
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.tar.gz
+*.zip
+.cache/
+
+# Reference-only upstream snapshots and gated source configuration copies.
+/blt_hf_checks/vendor/model_sources/
+/blt_hf_checks/manifests/authenticated_source_configs_2026-09-15.json
+
+# M2 distribution withheld pending resolution of conflicting GPL notices.
+# Keep local runtime copies; see THIRD_PARTY_NOTICES.md for restoration.
+/blt_hf/vendor/m2/
+/blt_hf/vendor/m2__*.diff
+/tests/fixtures/m2/
+
+# Dataset excerpts outside data/ must also remain local.
+/tests/fixtures/gleu_legacy.json
+/blt_hf_checks/results/patches_p1_osc_v4_20260915.json
+/blt_hf_checks/results/patches_p1_osc_v5_20260915.json

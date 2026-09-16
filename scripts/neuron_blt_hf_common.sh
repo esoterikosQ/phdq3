@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# Sourced by batch scripts. No remote connections or package installation.
+set -euo pipefail
+PROJECT_ROOT=/scratch/r984a02/phdq3
+[[ -n "${SLURM_JOB_ID:-}" ]] || { echo 'SLURM allocation required; do not run on login nodes' >&2; exit 2; }
+cd "$PROJECT_ROOT"
+[[ "$(pwd -P)" == "$(cd "$PROJECT_ROOT" && pwd -P)" ]] || exit 2
+[[ "${SLURM_NNODES:-1}" == 1 && "${SLURM_NTASKS:-1}" == 1 ]] || { echo 'One node/task required' >&2; exit 2; }
+job_details=$(scontrol show job -o "$SLURM_JOB_ID")
+[[ "$job_details" =~ Comment=field=[^\;\ ]+\;appl=pytorch([\ ]|$) ]] || {
+  echo 'Required --comment="field=<showappl value>;appl=pytorch" not found' >&2; exit 2;
+}
+if [[ "${JOB_KIND:-gpu}" == cpu ]]; then
+  [[ "${SLURM_JOB_PARTITION:-}" == cpu ]] || { echo 'CPU scoring requires cpu partition' >&2; exit 2; }
+else
+  case "${SLURM_JOB_PARTITION:-}" in
+    amd_a100nv_8) cpu_per_gpu=8; max_gpus=8;;
+    amd_a100_4) cpu_per_gpu=16; max_gpus=4;;
+    *) echo 'Only reviewed A100 partitions are supported' >&2; exit 2;;
+  esac
+  NUM_GPUS=${NUM_GPUS:-1}
+  [[ "$NUM_GPUS" =~ ^[1-9][0-9]*$ && "$NUM_GPUS" -le "$max_gpus" ]] || exit 2
+  cpus=${SLURM_CPUS_PER_TASK:-1}
+  (( cpus <= cpu_per_gpu * NUM_GPUS )) || { echo 'CPU/GPU policy exceeded' >&2; exit 2; }
+fi
+# Activate an existing environment. Do not load a system CUDA module.
+if [[ -n "${CONDA_SH:-}" ]]; then
+  source "$CONDA_SH"
+elif [[ -n "${CONDA_EXE:-}" ]]; then
+  conda_base=$("$CONDA_EXE" info --base)
+  source "$conda_base/etc/profile.d/conda.sh"
+elif command -v conda >/dev/null 2>&1; then
+  conda_base=$(conda info --base)
+  source "$conda_base/etc/profile.d/conda.sh"
+elif [[ -f /apps/applications/Miniconda/23.3.1/etc/profile.d/conda.sh ]]; then
+  source /apps/applications/Miniconda/23.3.1/etc/profile.d/conda.sh
+else
+  echo 'Set CONDA_SH to the existing conda.sh path' >&2; exit 2
+fi
+conda activate "${CONDA_ENV:-phdq_blt_hf}"
+export HF_HOME="$PROJECT_ROOT/artifacts/hf_home" HF_HUB_CACHE="$PROJECT_ROOT/artifacts/hub"
+export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 TOKENIZERS_PARALLELISM=false
+export TMPDIR="$PROJECT_ROOT/artifacts/tmp" PYTHONUNBUFFERED=1
+export OMP_NUM_THREADS=$(( ${SLURM_CPUS_PER_TASK:-1} / ${NUM_GPUS:-1} ))
+(( OMP_NUM_THREADS > 0 )) || export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS="$OMP_NUM_THREADS"
+mkdir -p "$TMPDIR" artifacts/logs
+report="blt_hf_checks/results/neuron_${SLURM_JOB_ID}_${SLURM_RESTART_COUNT:-0}"
+if [[ "${JOB_KIND:-gpu}" == cpu ]]; then
+  python blt_hf_checks/check_env.py --cpu-only --output "${report}_env.json"
+else
+  python blt_hf_checks/check_env.py --output "${report}_env.json"
+  python -c 'import os, torch; assert torch.cuda.device_count()==int(os.environ["NUM_GPUS"]), "Allocated GPU count differs from NUM_GPUS"; assert all(torch.cuda.get_device_capability(i)==(8,0) for i in range(torch.cuda.device_count())), "A100 required"'
+fi
+python blt_hf_checks/analyze_data_lengths.py --output "${report}_data.json"
+
+# Forward warning/termination to Python workers, not the torchrun supervisor.
+launcher=''
+forward_stop() {
+  [[ -n "$launcher" ]] || return 0
+  if [[ "${LAUNCHER_IS_TORCHRUN:-0}" == 1 ]]; then
+    pkill -USR1 -P "$launcher" || true
+  else
+    kill -USR1 "$launcher" 2>/dev/null || true
+  fi
+}
+trap forward_stop USR1 TERM
+run_job() {
+  "$@" & launcher=$!
+  local rc=0
+  while true; do
+    wait "$launcher" && rc=0 || rc=$?
+    kill -0 "$launcher" 2>/dev/null || break
+  done
+  launcher=''
+  if [[ "$rc" == 75 ]]; then
+    echo 'Paused with persisted progress. Resume explicitly with the same run configuration.' >&2
+  fi
+  return "$rc"
+}
