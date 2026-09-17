@@ -112,6 +112,7 @@ sbatch --export=ALL,RUN_ID=native-overfit-01,DATASET_TYPE=native,NUM_GPUS=1,TRAI
 `smoke/overfit` checkpoint는 본 평가 CLI가 거부한다.
 
 검사 로그: 프로젝트 루트의 `slurm-blt-hf-train-<jobid>.out` 및 `.err`.
+공통 batch trap이 로그 끝에 종료 시각, 총 경과 초, exit code를 성공·실패 모두 기록한다.
 작업별 환경·9개 split 길이 보고서와 작은 모델의 training report는
 `blt_hf_checks/results/neuron_<jobid>_<restart>_*.json`에 남는다.
 

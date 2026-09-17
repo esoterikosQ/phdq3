@@ -3,6 +3,15 @@
 set -euo pipefail
 PROJECT_ROOT=/scratch/r984a02/phdq3
 [[ -n "${SLURM_JOB_ID:-}" ]] || { echo 'SLURM allocation required; do not run on login nodes' >&2; exit 2; }
+JOB_STARTED_AT_EPOCH=$(date +%s)
+log_job_end() {
+  local rc=$?
+  local ended_at_epoch
+  ended_at_epoch=$(date +%s)
+  printf 'End Time: %s\nElapsed Seconds: %s\nExit Code: %s\n' \
+    "$(date -Iseconds)" "$(( ended_at_epoch - JOB_STARTED_AT_EPOCH ))" "$rc"
+}
+trap log_job_end EXIT
 [[ "${SLURM_SUBMIT_DIR:-}" == "$PROJECT_ROOT" ]] || {
   echo "Submit this job from $PROJECT_ROOT (SLURM_SUBMIT_DIR=${SLURM_SUBMIT_DIR:-unset})" >&2; exit 2;
 }

@@ -42,6 +42,8 @@ class NeuronContracts(unittest.TestCase):
         common=(ROOT/'scripts/neuron_blt_hf_common.sh').read_text()
         self.assertIn('amd_h200nv_8) cpu_per_gpu=8; max_gpus=8',common)
         self.assertIn('expected=(9,0)',common)
+        self.assertIn('trap log_job_end EXIT',common)
+        self.assertIn("'End Time: %s\\nElapsed Seconds: %s\\nExit Code: %s\\n'",common)
         for name in ('train_blt_hf.sh','eval_blt_hf.sh'):
             self.assertIn('#SBATCH --gres=gpu:1',(ROOT/'scripts'/name).read_text())
 
