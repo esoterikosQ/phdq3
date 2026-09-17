@@ -1,0 +1,54 @@
+Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights: 100%|██████████| 510/510 [00:00<00:00, 12001.14it/s]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/r984a02/phdq3/blt_hf/train.py", line 269, in <module>
+    if __name__ == '__main__': raise SystemExit(main())
+                                                ^^^^^^
+  File "/scratch/r984a02/phdq3/blt_hf/train.py", line 268, in main
+    def main(): return run(parser().parse_args())
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/r984a02/phdq3/blt_hf/train.py", line 210, in run
+    weighted.backward()
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/_tensor.py", line 631, in backward
+    torch.autograd.backward(
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/autograd/__init__.py", line 381, in backward
+    _engine_run_backward(
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/autograd/graph.py", line 869, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 11.45 GiB. GPU 0 has a total capacity of 79.25 GiB of which 9.43 GiB is free. Including non-PyTorch memory, this process has 69.81 GiB memory in use. Of the allocated memory 67.83 GiB is allocated by PyTorch, and 1.48 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+E0916 23:27:00.940000 2006823 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:986] failed (exitcode: 1) local_rank: 0 (pid: 2006836) of binary: /home01/r984a02/.conda/envs/phdq_blt_hf/bin/python3.11
+Traceback (most recent call last):
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/bin/torchrun", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 362, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/run.py", line 990, in main
+    run(args)
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/run.py", line 981, in run
+    elastic_launch(
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 170, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 317, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+blt_hf.train FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-09-16_23:27:00
+  host      : gpu41.eth
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 2006836)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: gpu41: task 0: Exited with exit code 1

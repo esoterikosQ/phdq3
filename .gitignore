@@ -8,6 +8,7 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+/blt-1b-hf-own/
 
 # Local access details and credentials (never publish).
 /ssh.md
