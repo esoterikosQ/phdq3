@@ -28,16 +28,22 @@ def require_neuron_job(*, gpu=True):
     if ROOT.resolve() != NEURON_ROOT.resolve() or not os.environ.get('SLURM_JOB_ID'):
         raise RuntimeError('Run through SLURM in /scratch/r984a02/phdq3; no login-node training')
     partition = os.environ.get('SLURM_JOB_PARTITION', '')
-    allowed = ('amd_a100nv_8', 'amd_a100_4') if gpu else ('cpu', 'amd_a100nv_8', 'amd_a100_4')
+    gpu_partitions = ('amd_a100nv_8', 'amd_a100_4', 'amd_h200nv_8')
+    allowed = gpu_partitions if gpu else ('cpu', *gpu_partitions)
     if partition not in allowed:
         raise RuntimeError(f'Unreviewed partition: {partition}')
     if int(os.environ.get('SLURM_NNODES', '1')) != 1 or int(os.environ.get('SLURM_NTASKS', '1')) != 1:
         raise RuntimeError('This launcher supports one node and one SLURM task')
     if gpu:
         import torch
-        if not torch.cuda.is_available() or any(torch.cuda.get_device_capability(i) != (8, 0)
+        expected_capability = (9, 0) if partition == 'amd_h200nv_8' else (8, 0)
+        if not torch.cuda.is_available() or any(torch.cuda.get_device_capability(i) != expected_capability
                                               for i in range(torch.cuda.device_count())):
-            raise RuntimeError('A100 GPUs are required for this training/evaluation path')
+            raise RuntimeError(f'GPU capability does not match partition {partition}: expected {expected_capability}')
+        for index in range(torch.cuda.device_count()):
+            with torch.cuda.device(index):
+                if not torch.cuda.is_bf16_supported():
+                    raise RuntimeError(f'Native BF16 is required on GPU {index}')
 
 
 def code_identity():

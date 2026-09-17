@@ -23,7 +23,8 @@ else
   case "${SLURM_JOB_PARTITION:-}" in
     amd_a100nv_8) cpu_per_gpu=8; max_gpus=8;;
     amd_a100_4) cpu_per_gpu=16; max_gpus=4;;
-    *) echo 'Only reviewed A100 partitions are supported' >&2; exit 2;;
+    amd_h200nv_8) cpu_per_gpu=8; max_gpus=8;;
+    *) echo 'Only reviewed A100/H200 partitions are supported' >&2; exit 2;;
   esac
   NUM_GPUS=${NUM_GPUS:-1}
   [[ "$NUM_GPUS" =~ ^[1-9][0-9]*$ && "$NUM_GPUS" -le "$max_gpus" ]] || exit 2
@@ -57,7 +58,7 @@ if [[ "${JOB_KIND:-gpu}" == cpu ]]; then
   python blt_hf_checks/check_env.py --cpu-only --output "${report}_env.json"
 else
   python blt_hf_checks/check_env.py --output "${report}_env.json"
-  python -c 'import os, torch; assert torch.cuda.device_count()==int(os.environ["NUM_GPUS"]), "Allocated GPU count differs from NUM_GPUS"; assert all(torch.cuda.get_device_capability(i)==(8,0) for i in range(torch.cuda.device_count())), "A100 required"'
+  python -c 'import os, torch; expected=(9,0) if os.environ["SLURM_JOB_PARTITION"]=="amd_h200nv_8" else (8,0); assert torch.cuda.device_count()==int(os.environ["NUM_GPUS"]), "Allocated GPU count differs from NUM_GPUS"; assert all(torch.cuda.get_device_capability(i)==expected for i in range(torch.cuda.device_count())), f"GPU capability must match partition: {expected}"; assert all((torch.cuda.set_device(i) is None and torch.cuda.is_bf16_supported()) for i in range(torch.cuda.device_count())), "Native BF16 required"'
 fi
 python blt_hf_checks/analyze_data_lengths.py --output "${report}_data.json"
 

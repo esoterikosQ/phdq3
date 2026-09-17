@@ -39,6 +39,9 @@ class NeuronContracts(unittest.TestCase):
             self.assertIn('#SBATCH --ntasks-per-node=1',text)
             self.assertIn('#SBATCH --signal=B:TERM@300',text)
             self.assertIn('run_job srun --ntasks=1',text)
+        common=(ROOT/'scripts/neuron_blt_hf_common.sh').read_text()
+        self.assertIn('amd_h200nv_8) cpu_per_gpu=8; max_gpus=8',common)
+        self.assertIn('expected=(9,0)',common)
         for name in ('train_blt_hf.sh','eval_blt_hf.sh'):
             self.assertIn('#SBATCH --gres=gpu:1',(ROOT/'scripts'/name).read_text())
 

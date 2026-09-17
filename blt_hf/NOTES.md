@@ -13,8 +13,8 @@
 - 환경 검사에 H200/H100의 compute capability sm_90을 추가했다. A100 sm_80과 itcerdo
   검증용 RTX 5090 sm_120도 유지하며 capability뿐 아니라 native BF16 지원과 실제 BF16
   matmul을 검사한다. BF16 미지원 V100 sm_70은 계속 거부한다.
-- Neuron의 실제 제출은 `ssh.md`에 확인된 A100 partition만 사용한다. 새 RUN_ID로 1 GPU와
-  2 GPU smoke를 다시 실행하기 전까지 BF16 학습 검사는 `not_run`이다.
+- Neuron의 실제 제출은 `ssh.md`에 확인된 A100/H200 partition만 사용한다. 새 RUN_ID로
+  1 GPU와 2 GPU smoke를 다시 실행하기 전까지 BF16 학습 검사는 `not_run`이다.
 
 ## 2026-09-16 — Neuron 학습·생성·평가 코드 구현
 

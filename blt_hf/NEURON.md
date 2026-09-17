@@ -63,13 +63,14 @@ showappl
 shell에서 직접 확인한다. job script를 `bash`로 실행하면 SBATCH 줄은 주석으로 처리되어
 자원이 할당되지 않는다. 아래와 같이 반드시 `sbatch`로 직접 제출한다.
 
-지원 GPU partition은 `amd_a100nv_8`(GPU당 CPU ≤8, active ≤4)와 `amd_a100_4`
-(GPU당 CPU ≤16, active ≤2)다. GPU job에는 `--gres=gpu:N`을 지정한다. 기본은
+지원 GPU partition은 `amd_a100nv_8`(GPU당 CPU ≤8, active ≤4), `amd_a100_4`
+(GPU당 CPU ≤16, active ≤2), `amd_h200nv_8`(GPU당 CPU ≤8, active ≤2)이다.
+GPU job에는 `--gres=gpu:N`을 지정한다. 기본은
 `amd_a100nv_8`, 1 node/1 SLURM task, GPU당 CPU 8개이며 torchrun이 GPU별 rank를 만든다.
 일반 환경 검사는 A100(sm_80), H100/H200(sm_90), itcerdo 검증용 RTX 5090(sm_120)을
 인식하고 각 GPU의 native BF16 지원 및 실제 BF16 matmul을 검사한다. BF16 미지원
-V100(sm_70)은 거부한다. 현재 Neuron 제출 경로는 `ssh.md`에 확인된
-A100 partition만 사용하며 H200 실제 구동은 해당 partition·환경을 확보한 뒤 별도로 검증한다.
+V100(sm_70)은 거부한다. 파티션과 실제 capability가 A100=sm_80, H200=sm_90으로
+일치해야 하며 H200 결과는 A100 결과와 별도 RUN_ID·로그로 보존한다.
 job array는 사용하지 않으며 running limit은 scheduler가 적용한다.
 
 CPU 채점은 `cpu` partition을 사용한다. GPU를 할당해 CPU 채점을 기다리지 않는다.
@@ -86,6 +87,16 @@ sbatch --export=ALL,RUN_ID=native-smoke-01,DATASET_TYPE=native,NUM_GPUS=1,TRAIN_
 # 위 작업 완료 및 메모리 확인 후 2 GPU DDP 검사. 같은 RUN_ID를 재사용하지 않는다.
 sbatch --gres=gpu:2 --cpus-per-task=8 \
   --export=ALL,RUN_ID=native-ddp-smoke-01,DATASET_TYPE=native,NUM_GPUS=2,TRAIN_MODE=smoke \
+  scripts/train_blt_hf.sh
+
+# H200 1 GPU BF16 smoke. 명령줄 -p가 스크립트의 기본 A100 partition을 덮어쓴다.
+sbatch -p amd_h200nv_8 --gres=gpu:1 --cpus-per-task=8 \
+  --export=ALL,RUN_ID=native-h200-bf16-smoke-01,DATASET_TYPE=native,NUM_GPUS=1,TRAIN_MODE=smoke \
+  scripts/train_blt_hf.sh
+
+# H200 1 GPU 결과 확인 후 2 GPU DDP smoke.
+sbatch -p amd_h200nv_8 --gres=gpu:2 --cpus-per-task=16 \
+  --export=ALL,RUN_ID=native-h200-bf16-ddp-smoke-01,DATASET_TYPE=native,NUM_GPUS=2,TRAIN_MODE=smoke \
   scripts/train_blt_hf.sh
 
 # tiny overfit: train 앞 4개에만 수행하는 별도 진단. 평가용 checkpoint로 사용하지 않는다.

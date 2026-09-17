@@ -128,7 +128,7 @@ sbatch --export=ALL,CKPT_PATH=<불변-step-directory>,EVAL_DIR=<조건별-output
 sbatch --export=ALL,EVAL_DIR=<동일-output-directory>,DATASET_TYPE=native scripts/score_blt_hf.sh
 ```
 
-- 스크립트는 `ssh.md`의 root·A100 partition·GPU/CPU 비율·comment 형식을 검사한다.
+- 스크립트는 `ssh.md`의 root·A100/H200 partition·GPU/CPU 비율·comment 형식을 검사한다.
 - 체크포인트는 불변 directory이며 `latest.json`/`best.json`만 포인터로 갱신한다.
 - 원본·변환 artifact와 동일하게 main parameter/gradient/Adam 상태와 연산은 BF16,
   entropy는 BF16 고정, gradient checkpointing. dtype 불일치는 즉시 실패한다.
@@ -172,4 +172,4 @@ sbatch --export=ALL,EVAL_DIR=<동일-output-directory>,DATASET_TYPE=native scrip
   원본 출력 문자열과의 완전 일치를 완료 조건으로 두지 않는다.
 - V100(cas_v100*)은 bf16 미지원 — fp16 경로 검증 없이 V100에 제출하지 않는다.
 - 환경 검사는 A100(sm_80), H100/H200(sm_90), itcerdo 검증용 RTX 5090(sm_120)을
-  허용한다. Neuron job은 `ssh.md`에 확인된 A100 partition만 사용한다.
+  허용한다. Neuron job은 `ssh.md`에 확인된 A100/H200 partition만 사용한다.
