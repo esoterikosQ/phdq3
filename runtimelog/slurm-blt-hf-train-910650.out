@@ -1,0 +1,14 @@
+==========================================
+SLURM_JOB_ID = 910650
+SLURM_NODELIST = gpu54
+==========================================
+Job ID: 910650
+Node: gpu54
+Start Time: 2026-09-18T07:53:19+09:00
+Submit Dir: /scratch/r984a02/phdq3
+Partition: amd_h200nv_8
+CUDA_VISIBLE_DEVICES: 0,1,2,3
+CPUs per task: 32
+End Time: 2026-09-18T07:54:47+09:00
+Elapsed Seconds: 88
+Exit Code: 1
