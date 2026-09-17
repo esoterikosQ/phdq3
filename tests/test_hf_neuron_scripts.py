@@ -17,6 +17,15 @@ class NeuronContracts(unittest.TestCase):
         self.assertEqual(train_parser().parse_args(['--run-dir','outputs/example']).epochs,3)
         self.assertTrue(eval_parser().parse_args(['--output-dir','outputs/example','--aggregate']).aggregate)
 
+    def test_training_preserves_bf16_model_and_optimizer_state(self):
+        text=(ROOT/'blt_hf/train.py').read_text()
+        self.assertNotIn('model.float()',text)
+        self.assertIn("'parameter_dtype': 'bfloat16'",text)
+        self.assertIn("'gradient_dtype': 'bfloat16'",text)
+        self.assertIn("'optimizer_state_dtype': 'bfloat16'",text)
+        self.assertIn("Adam {state_name} must remain BF16",text)
+        self.assertNotIn('model.float()',(ROOT/'blt_hf_checks/check_generation.py').read_text())
+
     def test_shell_syntax_and_scheduler_contract(self):
         for name in ('train_blt_hf.sh','eval_blt_hf.sh','score_blt_hf.sh','neuron_blt_hf_common.sh'):
             path=ROOT/'scripts'/name

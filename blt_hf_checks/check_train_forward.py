@@ -42,7 +42,7 @@ def main():
     try:
         torch.manual_seed(31);random.seed(31)
         def build():
-            m=BltForCausalLM(tiny_config()).float().cuda()
+            m=BltForCausalLM(tiny_config()).bfloat16().cuda()
             m.model.patcher.bfloat16().requires_grad_(False).eval()
             m.gradient_checkpointing_enable(gradient_checkpointing_kwargs={'use_reentrant':False})
             o=torch.optim.AdamW([p for p in m.parameters() if p.requires_grad],lr=1e-4,betas=(.9,.95),fused=True)
@@ -61,6 +61,10 @@ def main():
             if any(v<=0 for v in norms.values()):raise AssertionError(f'Missing gradients: {norms}')
             if any(p.grad is not None for p in m.model.patcher.parameters()):raise AssertionError('Entropy patcher must remain frozen')
             torch.nn.utils.clip_grad_norm_(m.parameters(),1.,error_if_nonfinite=True);o.step()
+            for parameter,state in o.state.items():
+                if parameter.dtype != torch.bfloat16:raise AssertionError(f'Non-BF16 parameter: {parameter.dtype}')
+                for name in ('exp_avg','exp_avg_sq'):
+                    if state[name].dtype != torch.bfloat16:raise AssertionError(f'{name} is {state[name].dtype}')
             return out.loss.item(),norms
         first,norms=step(model,opt)
         rng={'python':random.getstate(),'cpu':torch.get_rng_state(),'cuda':torch.cuda.get_rng_state()}
@@ -78,6 +82,7 @@ def main():
             for key,value in restored.state_dict().items():
                 torch.testing.assert_close(value.cpu(),expected[key],rtol=1e-6,atol=1e-7)
         report.update(status='passed',first_loss=first,second_loss=second,resumed_loss=resumed,
+                      parameter_dtype='bfloat16',gradient_dtype='bfloat16',optimizer_state_dtype='bfloat16',
                       gradient_norms=norms,resume_rtol=1e-6,resume_atol=1e-7)
     except Exception as exc:
         report.update(status='failed',error=f'{type(exc).__name__}: {exc}')

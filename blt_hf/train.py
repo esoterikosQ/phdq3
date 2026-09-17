@@ -1,4 +1,4 @@
-"""Neuron-only full-main-model fine-tuning; frozen entropy patcher, FP32 masters + BF16 compute."""
+"""Neuron-only BF16 full-main-model fine-tuning with a frozen entropy patcher."""
 import argparse
 import contextlib
 import json
@@ -88,15 +88,18 @@ def run(args):
             total_steps = steps_per_epoch * epochs
             warmup = min(args.warmup_steps, max(total_steps-1, 0)) if args.mode != 'overfit' else 0
             model = load_model(model_path, conversion, attention_mode='osc', device='cpu')
-            model.float()
             model.model.patcher.bfloat16().requires_grad_(False).eval()
+            wrong_dtypes = [(name, str(param.dtype)) for name, param in model.named_parameters()
+                            if param.dtype != torch.bfloat16]
+            if wrong_dtypes:
+                raise RuntimeError(f'BF16 checkpoint/runtime contract violated: {wrong_dtypes[:8]}')
             model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={'use_reentrant': False})
             trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
-            # FP32 parameters, gradients, two Adam moments; activations/workspaces need extra room.
-            minimum = trainable * 16 + sum(p.numel()*p.element_size() for p in model.parameters() if not p.requires_grad)
+            # BF16 parameters, gradients and two Adam moments; activations/workspaces need extra room.
+            minimum = trainable * 8 + sum(p.numel()*p.element_size() for p in model.parameters() if not p.requires_grad)
             free, _ = torch.cuda.mem_get_info(device)
             if minimum > free * .95:
-                raise RuntimeError(f'FP32 Adam/DDP minimum {minimum} exceeds available {free}; use an 80GB A100 or plan sharding')
+                raise RuntimeError(f'BF16 Adam/DDP minimum {minimum} exceeds available {free}; plan sharding')
             manifest = {'schema_version': 1, 'run_id': str(run_dir.relative_to(ROOT)), 'dataset': args.dataset, 'mode': args.mode,
                         'train_file_hash': sha256_file(paths[f'{args.dataset}/train']),
                         'val_file_hash': sha256_file(paths[f'{args.dataset}/val']),
@@ -105,13 +108,14 @@ def run(args):
                         'conversion_hash': sha256_file(conversion), 'model_config_hash': model_config_identity(model.config),
                         'tokenizer_hash': tokenizer_identity(model_path), 'environment_lock_hash': sha256_file(ROOT/'blt_hf/requirements.lock.txt'),
                         'torch_version': torch.__version__, 'attention_mode': 'osc', 'attn_implementation': 'eager',
-                        'parameter_dtype': 'float32', 'compute_dtype': 'bfloat16', 'entropy_dtype': 'bfloat16',
+                        'parameter_dtype': 'bfloat16', 'gradient_dtype': 'bfloat16',
+                        'optimizer_state_dtype': 'bfloat16', 'compute_dtype': 'bfloat16', 'entropy_dtype': 'bfloat16',
                         'entropy_trainable': False, 'gradient_checkpointing': True, 'use_cache': False,
                         'world_size': world, 'ddp_bucket_priming': world > 1, 'micro_batch_size': 1, 'effective_batch': batch_size,
                         'loss_normalization': 'global_supervised_token_mean', 'epochs': epochs,
                         'total_steps': total_steps, 'warmup_steps': warmup, 'seed': args.seed,
                         'lr': args.lr, 'weight_decay': args.weight_decay, 'clip_grad_norm': args.clip_grad_norm,
-                        'optimizer': 'AdamW-fused-fp32', 'betas': [.9, .95], 'eps': 1e-8,
+                        'optimizer': 'AdamW-fused-bfloat16-state', 'betas': [.9, .95], 'eps': 1e-8,
                         'conversion_checks': conversion_verification(conversion), **code_identity()}
             signature = sha256_json(manifest)
             if rank == 0:
@@ -209,6 +213,10 @@ def run(args):
                                 weighted = loss * tokens * normalize_gradient_scale(world, denominator)
                             weighted.backward()
                         losses += loss.item() * tokens
+                    wrong_grad_dtypes = [(name, str(param.grad.dtype)) for name, param in model.named_parameters()
+                                         if param.grad is not None and param.grad.dtype != torch.bfloat16]
+                    if wrong_grad_dtypes:
+                        raise RuntimeError(f'BF16 gradient contract violated: {wrong_grad_dtypes[:8]}')
                     if grad_report is None:
                         grad_report = {}
                         for name, component in [('encoder', model.model.local_encoder), ('global', model.model.global_transformer),
@@ -220,6 +228,14 @@ def run(args):
                             raise RuntimeError(f'Missing/nonfinite gradient flow: {grad_report}')
                     norm = torch.nn.utils.clip_grad_norm_(model.parameters(), args.clip_grad_norm, error_if_nonfinite=True)
                     optimizer.step()
+                    for parameter, optimizer_state in optimizer.state.items():
+                        if parameter.dtype != torch.bfloat16:
+                            raise RuntimeError(f'Optimizer received non-BF16 parameter: {parameter.dtype}')
+                        for state_name in ('exp_avg', 'exp_avg_sq'):
+                            value = optimizer_state.get(state_name)
+                            if value is None or value.dtype != torch.bfloat16:
+                                dtype = None if value is None else value.dtype
+                                raise RuntimeError(f'Adam {state_name} must remain BF16, got {dtype}')
                     optimizer.zero_grad(set_to_none=world == 1)
                     state.update(epoch=epoch, next_batch=batch_index+1, global_step=state['global_step']+1)
                     invocation_steps += 1

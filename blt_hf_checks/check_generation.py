@@ -34,14 +34,18 @@ def main():
             report['checks'].append({'beams':beams,'same_token_ids':all(a['token_ids']==b['token_ids'] for a,b in zip(singles,batch)),
                                      'outputs':batch})
             if singles!=batch:raise AssertionError('Batch grouping changed generation output')
-        # Validate FP32 master parameter + BF16 autocast forward path without creating gradients.
-        model.float();model.model.patcher.bfloat16().requires_grad_(False).eval()
+        # Validate the unchanged BF16 parameter/compute path without creating gradients.
+        model.model.patcher.bfloat16().requires_grad_(False).eval()
+        wrong_dtypes=[(name,str(parameter.dtype)) for name,parameter in model.named_parameters()
+                      if parameter.dtype != torch.bfloat16]
+        if wrong_dtypes:raise AssertionError(f'Non-BF16 model parameters: {wrong_dtypes[:8]}')
         from blt_hf.data_adapter import encode_pair,collate
         batch={k:v.cuda() for k,v in collate([encode_pair(tok,'가','나')]).items()}
         with torch.inference_mode(),torch.autocast('cuda',dtype=torch.bfloat16):
             loss=model(**batch,use_cache=False).loss
         if not torch.isfinite(loss):raise AssertionError('Nonfinite mixed precision forward')
-        report.update(status='passed',mixed_precision_forward_loss=loss.item(),backward_executed=False,
+        report.update(status='passed',parameter_dtype='bfloat16',compute_dtype='bfloat16',
+                      bf16_forward_loss=loss.item(),backward_executed=False,
                       peak_allocated_bytes=torch.cuda.max_memory_allocated())
     except Exception as exc:
         report.update(status='failed',error=f'{type(exc).__name__}: {exc}')

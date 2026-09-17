@@ -18,6 +18,11 @@ if __package__ in (None, ""):
 from blt_hf.manifest import write_json
 
 EXPECTED = {"torch": "2.11.0+cu128", "transformers": "5.16.1", "cuda_runtime": "12.8"}
+SUPPORTED_BF16_CAPABILITIES = {
+    (8, 0): "Ampere/A100",
+    (9, 0): "Hopper/H100/H200",
+    (12, 0): "Blackwell/RTX 5090",
+}
 
 
 def package_version(name):
@@ -43,7 +48,7 @@ def validate_gpu_report(report: dict) -> list[str]:
     if not devices:
         errors.append("No CUDA devices")
     for device in devices:
-        if tuple(device.get("capability", ())) not in ((8, 0), (12, 0)):
+        if tuple(device.get("capability", ())) not in SUPPORTED_BF16_CAPABILITIES:
             errors.append(f"Unverified GPU capability: {device}")
     return errors
 

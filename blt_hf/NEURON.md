@@ -66,7 +66,9 @@ shell에서 직접 확인한다. job script를 `bash`로 실행하면 SBATCH 줄
 지원 GPU partition은 `amd_a100nv_8`(GPU당 CPU ≤8, active ≤4)와 `amd_a100_4`
 (GPU당 CPU ≤16, active ≤2)다. GPU job에는 `--gres=gpu:N`을 지정한다. 기본은
 `amd_a100nv_8`, 1 node/1 SLURM task, GPU당 CPU 8개이며 torchrun이 GPU별 rank를 만든다.
-V100/H100/H200/GH200 경로는 현재 구현·검증 범위에 넣지 않았다.
+일반 환경 검사는 A100(sm_80), H100/H200(sm_90), itcerdo 검증용 RTX 5090(sm_120)을
+인식하고 BF16 미지원 V100(sm_70)을 거부한다. 현재 Neuron 제출 경로는 `ssh.md`에 확인된
+A100 partition만 사용하며 H200 실제 구동은 해당 partition·환경을 확보한 뒤 별도로 검증한다.
 job array는 사용하지 않으며 running limit은 scheduler가 적용한다.
 
 CPU 채점은 `cpu` partition을 사용한다. GPU를 할당해 CPU 채점을 기다리지 않는다.
@@ -125,8 +127,10 @@ sbatch --gres=gpu:8 --cpus-per-task=32 \
 학습 기본값은 3 epoch, LR 1e-5, warmup 2000 update(총 step 안으로 제한), cosine decay,
 AdamW `(0.9,0.95)`, eps 1e-8, weight decay 0.1, grad clip 1.0이다.
 main 모델 전체(해시 임베딩 포함)를 학습하며 entropy patcher는 고정한다.
-파라미터·gradient·Adam 상태는 FP32, 연산은 bf16 autocast, gradient checkpointing을 쓴다.
-이 선택은 작은 BF16 weight update를 손실하지 않기 위한 것이며 manifest에 명시한다.
+원본·변환 artifact와 동일하게 파라미터·gradient·Adam 상태·연산은 BF16을 유지하고
+gradient checkpointing을 쓴다. 코드가 각 dtype을 검사하며 불일치는 즉시 실패한다.
+2026-09-17 이전 job 909747·910019는 잘못된 FP32 학습 정책으로 실행됐으므로 BF16
+학습 검증으로 인정하지 않으며 새로운 RUN_ID로 smoke를 다시 실행한다.
 
 microbatch는 rank당 **무패딩 1개**이며 `EFFECTIVE_BATCH`를 GPU 수에 맞춰 나누고
 `no_sync`로 누적한다. 마지막 step도 원본 샘플을 버리거나 중복 가중하지 않는다.
@@ -135,10 +139,10 @@ DDP는 optimizer 상태 할당 전에 gradient bucket view를 준비하는 2회�
 이때 파라미터는 업데이트하지 않고 RNG를 복구한다.
 
 **메모리·저장공간**: 파라미터 수에는 큰 hash embedding이 포함되므로 “1B이니 작다”는
-가정을 하지 않는다. FP32 Adam/DDP는 GPU당 큰 상태를 복제한다. 코드는 최소 메모리
+가정을 하지 않는다. BF16 Adam/DDP도 GPU당 전체 상태를 복제한다. 코드는 최소 메모리
 추정치를 검사하지만 activation·통신·allocator까지 보장하지는 않으므로 긴 입력 smoke가
 필요하다. OOM이면 full training을 강행하지 않고 sharding 계획을 추가한다. 현재 FSDP/ZeRO
-자동 전환은 없다. checkpoint 하나는 모델 FP32와 Adam 상태를 함께 저장해 수십 GB다.
+자동 전환은 없다. checkpoint 하나는 BF16 모델과 Adam 상태를 함께 저장해 수십 GB다.
 저장 전에 scratch 여유 공간/쿼터를 확인한다. 체크포인트는 자동 삭제하지 않는다.
 
 - 경로: `outputs/blt_hf/<dataset>/<RUN_ID>/step-<update>-<id>/`

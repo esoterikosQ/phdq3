@@ -14,6 +14,10 @@ class EnvironmentTests(unittest.TestCase):
     def test_supported_gpu_environment(self):
         self.assertEqual(validate_gpu_report(self.report()), [])
 
+    def test_h200_environment_is_supported(self):
+        report = dict(self.report(), devices=[{"name": "NVIDIA H200", "capability": [9, 0]}])
+        self.assertEqual(validate_gpu_report(report), [])
+
     def test_wrong_versions_fail(self):
         for field, value in (("torch", "2.14.0"), ("transformers", "5.15.0"), ("cuda_runtime", "13.0")):
             with self.subTest(field=field):

@@ -130,7 +130,8 @@ sbatch --export=ALL,EVAL_DIR=<동일-output-directory>,DATASET_TYPE=native scrip
 
 - 스크립트는 `ssh.md`의 root·A100 partition·GPU/CPU 비율·comment 형식을 검사한다.
 - 체크포인트는 불변 directory이며 `latest.json`/`best.json`만 포인터로 갱신한다.
-- main parameter/Adam 상태 FP32 + bf16 autocast, entropy 고정, gradient checkpointing.
+- 원본·변환 artifact와 동일하게 main parameter/gradient/Adam 상태와 연산은 BF16,
+  entropy는 BF16 고정, gradient checkpointing. dtype 불일치는 즉시 실패한다.
   rank당 무패딩 1개와 전역 supervised-token loss, DDP accumulation을 사용한다.
 - smoke는 작은 모델의 backward/재개 검사 및 실제 B의 긴 train 입력 optimizer 검사다.
   neuron 외 환경에서 이를 실행하지 않는다. 아직 실제 A100 학습을 통과했다고 주장하지 않는다.
@@ -170,3 +171,5 @@ sbatch --export=ALL,EVAL_DIR=<동일-output-directory>,DATASET_TYPE=native scrip
   고정한다. 생성 batch 변경 시 실제 지원 경로의 동작을 검사하고 차이를 기록한다.
   원본 출력 문자열과의 완전 일치를 완료 조건으로 두지 않는다.
 - V100(cas_v100*)은 bf16 미지원 — fp16 경로 검증 없이 V100에 제출하지 않는다.
+- 환경 검사는 A100(sm_80), H100/H200(sm_90), itcerdo 검증용 RTX 5090(sm_120)을
+  허용한다. Neuron job은 `ssh.md`에 확인된 A100 partition만 사용한다.

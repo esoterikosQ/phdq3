@@ -1,10 +1,26 @@
 # P1 구현·판정 기록
 
+## 2026-09-17 — FP32 학습 정책 폐기, BF16 레거시 조건 복구
+
+변환 artifact B는 원본과 동일한 BF16이지만 초기 학습 코드가 근거 없이 main을 FP32로
+승격했다. 이는 레거시 BF16 학습 조건과 다르고 hash embedding을 포함한 학습 상태를 거의
+두 배로 늘렸다. `model.float()`를 제거하고 parameter·gradient·Adam `exp_avg`/
+`exp_avg_sq`·연산을 BF16으로 고정했으며 실행 중 dtype을 검사한다.
+
+- job 909747과 910019의 OOM은 폐기된 FP32 정책에서 발생했다. 로그는 실패 원인 기록으로만
+  보존하며 BF16 backward/optimizer/DDP 검증으로 인정하지 않는다.
+- 변환 가중치·마스크 증거는 BF16 artifact를 대상으로 했으므로 그대로 유효하다.
+- 환경 검사에 H200/H100의 compute capability sm_90을 추가했다. A100 sm_80과 itcerdo
+  검증용 RTX 5090 sm_120도 유지하고, BF16 미지원 V100 sm_70은 계속 거부한다.
+- Neuron의 실제 제출은 `ssh.md`에 확인된 A100 partition만 사용한다. 새 RUN_ID로 1 GPU와
+  2 GPU smoke를 다시 실행하기 전까지 BF16 학습 검사는 `not_run`이다.
+
 ## 2026-09-16 — Neuron 학습·생성·평가 코드 구현
 
 실행 정본은 `NEURON.md`다. 에이전트는 neuron에 접속·전송·제출하지 않았다.
 
-- `train.py`: FP32 main/Adam + bf16 autocast, 고정 entropy, gradient checkpointing,
+- 당시 `train.py`: FP32 main/Adam + bf16 autocast를 사용했으나 위 2026-09-17 결정으로 폐기.
+  현재는 BF16 main/gradient/Adam/연산, 고정 entropy, gradient checkpointing,
   무패딩 microbatch1, 전역 token 평균 loss, DDP/no_sync, 마지막 배치 누락·중복 방지.
   rank별 RNG/optimizer/epoch 배치 위치를 불변 checkpoint directory에 저장한다.
   전체 validation loss로 best를 선택하며 중단된 validation의 부분 점수는 채택하지 않는다.
