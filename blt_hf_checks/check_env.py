@@ -50,6 +50,10 @@ def validate_gpu_report(report: dict) -> list[str]:
     for device in devices:
         if tuple(device.get("capability", ())) not in SUPPORTED_BF16_CAPABILITIES:
             errors.append(f"Unverified GPU capability: {device}")
+        if device.get("bf16_supported") is not True:
+            errors.append(f"Native BF16 support check failed: {device}")
+        if device.get("bf16_smoke") is not True:
+            errors.append(f"BF16 CUDA matmul check failed: {device}")
     return errors
 
 
@@ -76,15 +80,18 @@ def inspect_environment(cpu_only=False):
                       blt_import=True, cuda_available=torch.cuda.is_available(), cuda_smoke=False)
         for index in range(torch.cuda.device_count()):
             props = torch.cuda.get_device_properties(index)
-            report["devices"].append({"index": index, "name": props.name,
-                                      "capability": list(torch.cuda.get_device_capability(index)),
-                                      "total_memory": props.total_memory})
             with torch.no_grad(), torch.cuda.device(index):
-                value = torch.ones((16, 16), device=f"cuda:{index}")
+                bf16_supported = bool(torch.cuda.is_bf16_supported())
+                value = torch.ones((16, 16), device=f"cuda:{index}", dtype=torch.bfloat16)
                 product = value @ value
                 torch.cuda.synchronize(index)
-                if not torch.all(product == 16).item():
-                    raise RuntimeError(f"CUDA matmul failed on device {index}")
+                bf16_smoke = product.dtype == torch.bfloat16 and torch.all(product == 16).item()
+                if not bf16_smoke:
+                    raise RuntimeError(f"BF16 CUDA matmul failed on device {index}")
+            report["devices"].append({"index": index, "name": props.name,
+                                      "capability": list(torch.cuda.get_device_capability(index)),
+                                      "total_memory": props.total_memory,
+                                      "bf16_supported": bf16_supported, "bf16_smoke": bf16_smoke})
         report["cuda_smoke"] = bool(report["devices"])
         maps = Path("/proc/self/maps")
         if maps.exists():

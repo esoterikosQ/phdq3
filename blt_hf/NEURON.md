@@ -67,7 +67,8 @@ shell에서 직접 확인한다. job script를 `bash`로 실행하면 SBATCH 줄
 (GPU당 CPU ≤16, active ≤2)다. GPU job에는 `--gres=gpu:N`을 지정한다. 기본은
 `amd_a100nv_8`, 1 node/1 SLURM task, GPU당 CPU 8개이며 torchrun이 GPU별 rank를 만든다.
 일반 환경 검사는 A100(sm_80), H100/H200(sm_90), itcerdo 검증용 RTX 5090(sm_120)을
-인식하고 BF16 미지원 V100(sm_70)을 거부한다. 현재 Neuron 제출 경로는 `ssh.md`에 확인된
+인식하고 각 GPU의 native BF16 지원 및 실제 BF16 matmul을 검사한다. BF16 미지원
+V100(sm_70)은 거부한다. 현재 Neuron 제출 경로는 `ssh.md`에 확인된
 A100 partition만 사용하며 H200 실제 구동은 해당 partition·환경을 확보한 뒤 별도로 검증한다.
 job array는 사용하지 않으며 running limit은 scheduler가 적용한다.
 
