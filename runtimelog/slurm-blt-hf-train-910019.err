@@ -1,0 +1,90 @@
+Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights: 100%|██████████| 510/510 [00:00<00:00, 10549.73it/s]
+Loading weights: 100%|██████████| 510/510 [00:00<00:00, 9689.16it/s]
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "<frozen runpy>", line 198, in _run_module_as_main
+[rank1]:   File "<frozen runpy>", line 88, in _run_code
+[rank1]:   File "/scratch/r984a02/phdq3/blt_hf/train.py", line 269, in <module>
+[rank1]:     if __name__ == '__main__': raise SystemExit(main())
+[rank1]:                                                 ^^^^^^
+[rank1]:   File "/scratch/r984a02/phdq3/blt_hf/train.py", line 268, in main
+[rank1]:     def main(): return run(parser().parse_args())
+[rank1]:                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank1]:   File "/scratch/r984a02/phdq3/blt_hf/train.py", line 222, in run
+[rank1]:     optimizer.step()
+[rank1]:   File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/optim/optimizer.py", line 533, in wrapper
+[rank1]:     out = func(*args, **kwargs)
+[rank1]:           ^^^^^^^^^^^^^^^^^^^^^
+[rank1]:   File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/optim/optimizer.py", line 81, in _use_grad
+[rank1]:     ret = func(*args, **kwargs)
+[rank1]:           ^^^^^^^^^^^^^^^^^^^^^
+[rank1]:   File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/optim/adam.py", line 238, in step
+[rank1]:     has_complex = self._init_group(
+[rank1]:                   ^^^^^^^^^^^^^^^^^
+[rank1]:   File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/optim/adam.py", line 182, in _init_group
+[rank1]:     state["exp_avg_sq"] = torch.zeros_like(
+[rank1]:                           ^^^^^^^^^^^^^^^^^
+[rank1]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 11.45 GiB. GPU 1 has a total capacity of 79.25 GiB of which 8.56 GiB is free. Including non-PyTorch memory, this process has 70.68 GiB memory in use. Of the allocated memory 56.35 GiB is allocated by PyTorch, and 13.23 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "<frozen runpy>", line 198, in _run_module_as_main
+[rank0]:   File "<frozen runpy>", line 88, in _run_code
+[rank0]:   File "/scratch/r984a02/phdq3/blt_hf/train.py", line 269, in <module>
+[rank0]:     if __name__ == '__main__': raise SystemExit(main())
+[rank0]:                                                 ^^^^^^
+[rank0]:   File "/scratch/r984a02/phdq3/blt_hf/train.py", line 268, in main
+[rank0]:     def main(): return run(parser().parse_args())
+[rank0]:                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/scratch/r984a02/phdq3/blt_hf/train.py", line 222, in run
+[rank0]:     optimizer.step()
+[rank0]:   File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/optim/optimizer.py", line 533, in wrapper
+[rank0]:     out = func(*args, **kwargs)
+[rank0]:           ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/optim/optimizer.py", line 81, in _use_grad
+[rank0]:     ret = func(*args, **kwargs)
+[rank0]:           ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/optim/adam.py", line 238, in step
+[rank0]:     has_complex = self._init_group(
+[rank0]:                   ^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/optim/adam.py", line 182, in _init_group
+[rank0]:     state["exp_avg_sq"] = torch.zeros_like(
+[rank0]:                           ^^^^^^^^^^^^^^^^^
+[rank0]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 11.45 GiB. GPU 0 has a total capacity of 79.25 GiB of which 8.56 GiB is free. Including non-PyTorch memory, this process has 70.68 GiB memory in use. Of the allocated memory 56.35 GiB is allocated by PyTorch, and 13.23 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+E0917 09:38:58.509000 2559266 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:986] failed (exitcode: 1) local_rank: 0 (pid: 2559284) of binary: /home01/r984a02/.conda/envs/phdq_blt_hf/bin/python3.11
+Traceback (most recent call last):
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/bin/torchrun", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 362, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/run.py", line 990, in main
+    run(args)
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/run.py", line 981, in run
+    elastic_launch(
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 170, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 317, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+blt_hf.train FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2026-09-17_09:38:58
+  host      : gpu40.eth
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 2559285)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-09-17_09:38:58
+  host      : gpu40.eth
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 2559284)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: gpu40: task 0: Exited with exit code 1
