@@ -1,0 +1,68 @@
+Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights:   0%|          | 1/510 [00:00<02:21,  3.59it/s]Loading weights:   0%|          | 1/510 [00:00<02:21,  3.59it/s]Loading weights:   0%|          | 1/510 [00:00<02:21,  3.59it/s]Loading weights:   0%|          | 1/510 [00:00<02:22,  3.58it/s]Loading weights: 100%|██████████| 510/510 [00:00<00:00, 1616.98it/s]
+Loading weights: 100%|██████████| 510/510 [00:00<00:00, 1590.03it/s]Loading weights: 100%|██████████| 510/510 [00:00<00:00, 1585.46it/s]
+Loading weights: 100%|██████████| 510/510 [00:00<00:00, 1606.76it/s]
+
+slurmstepd: error: *** JOB 910690 ON gpu55 CANCELLED AT 2026-09-20T05:52:32 ***
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** STEP 910690.0 ON gpu55 CANCELLED AT 2026-09-20T05:58:03 DUE TO TIME LIMIT ***
+--- Logging error ---
+Traceback (most recent call last):
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/agent/server/api.py", line 731, in run
+    result = self._invoke_run(role)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/agent/server/api.py", line 908, in _invoke_run
+    time.sleep(monitor_interval)
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 86, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 3421340 got signal: 15
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/logging/__init__.py", line 1110, in emit
+    msg = self.format(record)
+          ^^^^^^^^^^^^^^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/logging/__init__.py", line 953, in format
+    return fmt.format(record)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/_logging/_internal.py", line 1011, in format
+    filepath = make_module_path_relative(record.pathname)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/_logging/_internal.py", line 941, in make_module_path_relative
+    return _make_module_path_relative(abs_path, tuple(sys.path))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/_logging/_internal.py", line 922, in _make_module_path_relative
+    abs_path_resolved = pathlib.Path(abs_path).resolve()
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/pathlib.py", line 993, in resolve
+    s = os.path.realpath(self, strict=strict)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 413, in realpath
+  File "<frozen posixpath>", line 480, in _joinrealpath
+  File "<frozen posixpath>", line 457, in _joinrealpath
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 86, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 3421340 got signal: 15
+Call stack:
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/bin/torchrun", line 6, in <module>
+    sys.exit(main())
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 362, in wrapper
+    return f(*args, **kwargs)
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/run.py", line 990, in main
+    run(args)
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/run.py", line 981, in run
+    elastic_launch(
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 170, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 308, in launch_agent
+    result = agent.run()
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/metrics/api.py", line 134, in wrapper
+    result = f(*args, **kwargs)
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/agent/server/api.py", line 739, in run
+    logger.warning("Received %s death signal, shutting down workers", e.sigval)
+Message: 'Received %s death signal, shutting down workers'
+Arguments: (<Signals.SIGTERM: 15>,)
+W0920 05:58:03.298000 3421340 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:1012] Sending process 3421371 closing signal SIGTERM
+W0920 05:58:03.298000 3421340 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:1012] Sending process 3421372 closing signal SIGTERM
+W0920 05:58:03.298000 3421340 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:1012] Sending process 3421373 closing signal SIGTERM
+W0920 05:58:03.298000 3421340 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:1012] Sending process 3421374 closing signal SIGTERM

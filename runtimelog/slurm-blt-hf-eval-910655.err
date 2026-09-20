@@ -1,0 +1,3 @@
+Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights: 100%|██████████| 510/510 [00:00<00:00, 10925.01it/s]
+srun: error: gpu43: task 0: Exited with exit code 75
+Paused with persisted progress. Resume explicitly with the same run configuration.
