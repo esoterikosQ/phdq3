@@ -114,6 +114,7 @@ def generate(args):
 
 def aggregate(args):
     # Pure CPU path. Scheduler launcher enforces Neuron CPU resources; also usable locally for fixtures.
+    prepared_at=time.monotonic()
     if ROOT.resolve() == NEURON_ROOT.resolve():
         require_neuron_job(gpu=False)
     root=local_path(args.output_dir)
@@ -127,20 +128,45 @@ def aggregate(args):
         tsv=dataset_split_path(ROOT/'data/Preprocessed',args.dataset,args.split);m2=tsv.with_suffix('.m2')
         actual=split_identity(tsv,m2,dataset=args.dataset,split=args.split)
         if any(manifest[k]!=v for k,v in actual.items()): raise ValueError('Evaluation data changed')
-        records=collect_records(root,manifest);rows=read_tsv(tsv)
-        if any(r['source']!=row.source for r,row in zip(records,rows)): raise ValueError('Prediction source/order mismatch')
+        rows=read_tsv(tsv)
         scored=root/'scored'
-        publish_lines(scored/'source.txt',[r.source for r in rows])
-        publish_lines(scored/'reference.txt',[r.target for r in rows])
-        publish_lines(scored/'hypothesis.txt',[r['text'] for r in records])
-        gleu=compute_gleu(scored/'reference.txt',scored/'source.txt',scored/'hypothesis.txt')
-        common={'fingerprint':manifest['fingerprint'],'samples':len(rows),'gleu':gleu,
-                'eos_rate':sum(r['eos_reached'] for r in records)/len(records),
-                'copy_rate':sum(r['text'].split()==row.source.split() for r,row in zip(records,rows))/len(records),
-                'invalid_utf8':sum(not r['valid_utf8'] for r in records),
-                'invalid_token_ids':sum(not r['valid_token_ids'] for r in records),
-                'budget_exhausted':sum(r['budget_exhausted'] for r in records)}
-        ensure_json(scored/'gleu.json',common)
+        common_file=scored/'gleu.json'
+        m2_manifest_file=scored/'m2/run_config.json'
+        cached=common_file.exists() and m2_manifest_file.exists()
+        if cached:
+            # A prior invocation already verified every generation batch and published
+            # these immutable scorer inputs. M2's own manifest binds its journal to
+            # the exact hypothesis and gold files. Avoid re-reading thousands of
+            # Lustre batch files and recomputing GLEU on every timed continuation.
+            common=json.loads(common_file.read_text())
+            m2_manifest=json.loads(m2_manifest_file.read_text())
+            if common.get('fingerprint')!=manifest['fingerprint'] or common.get('samples')!=len(rows):
+                raise ValueError('Cached GLEU identity mismatch')
+            publish_lines(scored/'source.txt',[row.source for row in rows])
+            publish_lines(scored/'reference.txt',[row.target for row in rows])
+            hypothesis=scored/'hypothesis.txt'
+            if (m2_manifest.get('hypothesis_path')!=str(hypothesis.resolve())
+                    or m2_manifest.get('hypothesis_sha256')!=sha256_file(hypothesis)
+                    or m2_manifest.get('source_gold_path')!=str(m2.resolve())
+                    or m2_manifest.get('source_gold_sha256')!=sha256_file(m2)
+                    or m2_manifest.get('examples')!=len(rows)):
+                raise ValueError('Cached M2 input identity mismatch')
+        else:
+            records=collect_records(root,manifest)
+            if any(r['source']!=row.source for r,row in zip(records,rows)): raise ValueError('Prediction source/order mismatch')
+            publish_lines(scored/'source.txt',[r.source for r in rows])
+            publish_lines(scored/'reference.txt',[r.target for r in rows])
+            publish_lines(scored/'hypothesis.txt',[r['text'] for r in records])
+            gleu=compute_gleu(scored/'reference.txt',scored/'source.txt',scored/'hypothesis.txt')
+            common={'fingerprint':manifest['fingerprint'],'samples':len(rows),'gleu':gleu,
+                    'eos_rate':sum(r['eos_reached'] for r in records)/len(records),
+                    'copy_rate':sum(r['text'].split()==row.source.split() for r,row in zip(records,rows))/len(records),
+                    'invalid_utf8':sum(not r['valid_utf8'] for r in records),
+                    'invalid_token_ids':sum(not r['valid_token_ids'] for r in records),
+                    'budget_exhausted':sum(r['budget_exhausted'] for r in records)}
+            ensure_json(common_file,common)
+        print(json.dumps({'stage':'score_inputs_ready','cached':cached,
+                          'elapsed_seconds':round(time.monotonic()-prepared_at,2)}),flush=True)
         if (scored/'metrics.json').exists():
             print((scored/'metrics.json').read_text(),flush=True);return 0
         stop=StopRequest(args.max_seconds)
