@@ -66,15 +66,20 @@ def _write_ids_atomic(path: Path, sentence_ids: list[int]) -> None:
 
 
 def _iter_m2_paragraphs(path: Path) -> Iterator[list[str]]:
+    """Yield one logical sentence per record, even when blank separators are missing."""
     paragraph: list[str] = []
     with path.open("r", encoding="utf-8") as file_obj:
         for raw_line in file_obj:
-            if raw_line == "\n":
+            line = raw_line.rstrip("\r\n")
+            if not line:
                 if paragraph:
                     yield paragraph
                     paragraph = []
                 continue
-            paragraph.append(raw_line.rstrip("\r\n"))
+            if line.startswith("S ") and paragraph:
+                yield paragraph
+                paragraph = []
+            paragraph.append(line)
     if paragraph:
         yield paragraph
 
@@ -89,8 +94,8 @@ def load_m2_annotations(
 
     for item in _iter_m2_paragraphs(Path(gold_path)):
         sentences = [line[2:].strip() for line in item if line.startswith("S ")]
-        if not sentences:
-            raise ValueError("M2 paragraph does not contain an S line")
+        if len(sentences) != 1:
+            raise ValueError("Each logical M2 record must contain exactly one S line")
 
         annotations: dict[int, list[tuple[int, int, str, list[str]]]] = {}
         for line in item[1:]:

@@ -122,14 +122,21 @@ outputs/blt_hf_eval/<dataset>/<split>/<ckpt>/<cond>/   # 평가 (생성 조건�
 cd /scratch/r984a02/phdq3
 sbatch --export=ALL,RUN_ID=native-smoke-01,DATASET_TYPE=native,NUM_GPUS=1,TRAIN_MODE=smoke scripts/train_blt_hf.sh
 # smoke/overfit/DDP 확인 후 본 학습. 기존 run은 RESUME=<latest.json>을 명시.
-sbatch --gres=gpu:8 --cpus-per-task=32 --export=ALL,RUN_ID=native-main-01,DATASET_TYPE=native,NUM_GPUS=8,TRAIN_MODE=train scripts/train_blt_hf.sh
+sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 --export=ALL,RUN_ID=native-v2-s0,DATASET_TYPE=native,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,WARMUP_RATIO=0.05,SEED=0 scripts/train_blt_hf.sh
 # 학습 완료 후 CKPT_PATH와 조건별 EVAL_DIR을 지정.
 sbatch --export=ALL,CKPT_PATH=<불변-step-directory>,EVAL_DIR=<조건별-output-directory>,DATASET_TYPE=native scripts/eval_blt_hf.sh
 sbatch --export=ALL,EVAL_DIR=<동일-output-directory>,DATASET_TYPE=native scripts/score_blt_hf.sh
 ```
 
 - 스크립트는 `ssh.md`의 root·A100/H200 partition·GPU/CPU 비율·comment 형식을 검사한다.
+- 본 학습은 A100 4GPU, 생성은 A100 1GPU가 기본이다. H200은 한 작업당 최대 2GPU만
+  사용하며 1GPU 검사·생성을 우선한다. H200 4GPU 이상 작업은 제출하지 않는다.
 - 체크포인트는 불변 directory이며 `latest.json`/`best.json`만 포인터로 갱신한다.
+- 새 본 학습은 10 epoch와 5% warmup을 사용한다. epoch별 checkpoint를 전체 validation
+  GLEU로 비교해 `best_gleu.json`을 만들고 그 checkpoint만 test 비교에 사용한다.
+- 실행 identity는 단계별 실행 파일 hash로 고정하고 Git commit/job/node는
+  `provenance.jsonl`에 감사 정보로 기록한다. 로그만 추가한 commit은 resume을 막지 않는다.
+- Lang-8은 union prefix를 검증해 `artifacts/derived/lang8`에 만들며 제공 data는 변경하지 않는다.
 - 원본·변환 artifact와 동일하게 main parameter/gradient/Adam 상태와 연산은 BF16,
   entropy는 BF16 고정, gradient checkpointing. dtype 불일치는 즉시 실패한다.
   rank당 무패딩 1개와 전역 supervised-token loss, DDP accumulation을 사용한다.

@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/scratch/r984a02/phdq3/blt_hf/eval.py", line 157, in <module>
+    if __name__=='__main__': raise SystemExit(main())
+                                              ^^^^^^
+  File "/scratch/r984a02/phdq3/blt_hf/eval.py", line 156, in main
+    return aggregate(args) if args.aggregate else generate(args)
+                                                  ^^^^^^^^^^^^^^
+  File "/scratch/r984a02/phdq3/blt_hf/eval.py", line 75, in generate
+    with exclusive_lock(root): ensure_json(root/'run.json',manifest)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/scratch/r984a02/phdq3/blt_hf/runtime.py", line 83, in ensure_json
+    raise ValueError(f'Existing output has different identity: {path}')
+ValueError: Existing output has different identity: /scratch/r984a02/phdq3/outputs/blt_hf_eval/native/test/native-main-01-beam1/run.json
+srun: error: gpu38: task 0: Exited with exit code 1

@@ -1,0 +1,8 @@
+==========================================
+SLURM_JOB_ID = 912080
+SLURM_NODELIST = cpu04
+==========================================
+python = /home01/r984a02/.conda/envs/phdq_blt_hf/bin/python3.11
+model_load_sec = 1.32
+training_load_sec = 3.88
+training_keys = ['optimizer', 'rng_states']

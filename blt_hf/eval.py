@@ -4,10 +4,12 @@ import json
 import os
 import time
 from pathlib import Path
-from .runtime import (ROOT, NEURON_ROOT, MODEL, CONVERSION, local_path, require_neuron_job, code_identity,
-                      tokenizer_identity, model_config_identity, ensure_json, exclusive_lock, atomic_json, StopRequest)
+from .runtime import (ROOT, NEURON_ROOT, MODEL, CONVERSION, EVAL_RUNTIME_FILES,
+                      local_path, require_neuron_job, code_identity, record_invocation,
+                      tokenizer_identity, model_config_identity, ensure_json,
+                      exclusive_lock, atomic_json, StopRequest)
 from .manifest import sha256_file, sha256_json, split_identity, fingerprint, write_json
-from .data_adapter import canonical_split_paths, read_tsv, encode_prompt
+from .data_adapter import dataset_split_path, read_tsv, encode_prompt
 from .generation import GenerationConfig, generate_batch
 from .evaluation import shard_bounds, collect_records, publish_lines
 from .metrics import compute_gleu, compute_m2_with_checkpoints, scorer_identity
@@ -15,7 +17,7 @@ from .metrics import compute_gleu, compute_m2_with_checkpoints, scorer_identity
 
 def parser():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--dataset',choices=['native','korean_learner','union'],default='native')
+    p.add_argument('--dataset',choices=['native','korean_learner','union','lang8'],default='native')
     p.add_argument('--split',choices=['val','test'],default='test')
     p.add_argument('--checkpoint',help='Immutable checkpoint directory or best/latest.json pointer')
     p.add_argument('--model-path',default=str(MODEL));p.add_argument('--conversion-report',default=str(CONVERSION))
@@ -46,7 +48,7 @@ def generate(args):
     trained=meta['run_manifest']
     if trained['mode']!='train': raise ValueError('Smoke/overfit checkpoint cannot be used for main evaluation')
     if trained['dataset']!=args.dataset: raise ValueError('Cross-dataset evaluation requires a separate experimental plan')
-    identity=code_identity()
+    identity=code_identity(EVAL_RUNTIME_FILES)
     for name in ('blt_hf/model.py','blt_hf/patched/modeling_blt.py','blt_hf/attention.py','blt_hf/patching.py'):
         if trained['code_files'][name]!=identity['code_files'][name]: raise ValueError(f'Training/model implementation mismatch: {name}')
     model_path,conversion=local_path(args.model_path),local_path(args.conversion_report)
@@ -55,7 +57,7 @@ def generate(args):
     if trained['model_config_hash']!=model_config_identity(config,loader_dtype="bfloat16"): raise ValueError('Checkpoint runtime config mismatch')
     tok=AutoTokenizer.from_pretrained(model_path,local_files_only=True)
     cfg=GenerationConfig(num_beams=args.num_beams,batch_size=args.batch_size,max_new_bytes=args.max_new_bytes,length_penalty=args.length_penalty)
-    tsv=canonical_split_paths(ROOT/'data/Preprocessed')[f'{args.dataset}/{args.split}'];m2=tsv.with_suffix('.m2')
+    tsv=dataset_split_path(ROOT/'data/Preprocessed',args.dataset,args.split);m2=tsv.with_suffix('.m2')
     rows=read_tsv(tsv)
     for row in rows: encode_prompt(tok,row.source,max_new_bytes=cfg.max_new_bytes,sample_id=row.sample_id)
     if trained['tokenizer_hash']!=tokenizer_identity(model_path): raise ValueError('Checkpoint tokenizer mismatch')
@@ -72,7 +74,10 @@ def generate(args):
     # Include every extra execution/scorer field alongside the required standard fields.
     manifest['fingerprint']=sha256_json({'required':fingerprint(manifest),'complete':manifest})
     root=local_path(args.output_dir)
-    with exclusive_lock(root): ensure_json(root/'run.json',manifest)
+    with exclusive_lock(root):
+        ensure_json(root/'run.json',manifest)
+        record_invocation(root,stage='generate',identity=identity,
+                          details={'checkpoint_step':meta['global_step'],'shard_id':args.shard_id})
     start,end=shard_bounds(len(rows),args.shard_count,args.shard_id)
     directory=root/'shards'/f'{args.shard_id:04d}'
     stop=StopRequest(args.max_seconds)
@@ -91,7 +96,9 @@ def generate(args):
                 if prior['fingerprint']!=manifest['fingerprint'] or [r['index'] for r in prior['records']]!=ids:
                     raise ValueError('Partial generation identity/range mismatch')
                 continue
-            if stop: return 75
+            if stop:
+                atomic_json(directory/'progress.json',{'next_index':offset,'end':end,'status':'paused'})
+                return 75
             began=time.monotonic()
             predictions=generate_batch(model,tok,[rows[i].source for i in ids],cfg)
             records=[{'index':i,'source':rows[i].source,**prediction} for i,prediction in zip(ids,predictions)]
@@ -117,7 +124,7 @@ def aggregate(args):
             raise ValueError('Run manifest fingerprint corrupted')
         if manifest['dataset']!=args.dataset or manifest['split']!=args.split: raise ValueError('Dataset/split mismatch')
         if manifest['scorer_hash']!=scorer_identity(): raise ValueError('Scoring implementation changed')
-        tsv=canonical_split_paths(ROOT/'data/Preprocessed')[f'{args.dataset}/{args.split}'];m2=tsv.with_suffix('.m2')
+        tsv=dataset_split_path(ROOT/'data/Preprocessed',args.dataset,args.split);m2=tsv.with_suffix('.m2')
         actual=split_identity(tsv,m2,dataset=args.dataset,split=args.split)
         if any(manifest[k]!=v for k,v in actual.items()): raise ValueError('Evaluation data changed')
         records=collect_records(root,manifest);rows=read_tsv(tsv)

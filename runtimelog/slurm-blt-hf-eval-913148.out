@@ -1,0 +1,1343 @@
+==========================================
+SLURM_JOB_ID = 913148
+SLURM_NODELIST = gpu43
+==========================================
+Job ID: 913148
+Node: gpu43
+Start Time: 2026-09-21T22:35:03+09:00
+Submit Dir: /scratch/r984a02/phdq3
+Partition: amd_a100nv_8
+CUDA_VISIBLE_DEVICES: 0
+CPUs per task: 4
+{
+  "schema_version": 1,
+  "created_at": "2026-09-21T13:35:11.950571+00:00",
+  "hostname": "gpu43",
+  "platform": "Linux-5.14.0-427.13.1.el9_4.x86_64-x86_64-with-glibc2.34",
+  "python": "3.11.16",
+  "python_executable": "/home01/r984a02/.conda/envs/phdq_blt_hf/bin/python",
+  "scope": "gpu_runtime",
+  "torch": "2.11.0+cu128",
+  "transformers": "5.16.1",
+  "xformers": null,
+  "safetensors": "0.8.0",
+  "huggingface_hub": "1.31.0",
+  "devices": [
+    {
+      "index": 0,
+      "name": "NVIDIA A100-SXM4-80GB",
+      "capability": [
+        8,
+        0
+      ],
+      "total_memory": 85094825984,
+      "bf16_supported": true,
+      "bf16_smoke": true
+    }
+  ],
+  "errors": [],
+  "nvidia_smi": [
+    "NVIDIA A100-SXM4-80GB, 580.105.08, 81920 MiB"
+  ],
+  "cuda_runtime": "12.8",
+  "blt_import": true,
+  "cuda_available": true,
+  "cuda_smoke": true,
+  "loaded_libcudart": [
+    "/scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/nvidia/cuda_runtime/lib/libcudart.so.12"
+  ],
+  "status": "pass"
+}
+{
+  "schema_version": 1,
+  "created_at": "2026-09-21T13:39:43.208823+00:00",
+  "check": "raw_utf8_lengths_and_m2_source_alignment",
+  "model_executed": false,
+  "tokenizer_executed": false,
+  "status": "pass",
+  "max_allowed": 2048,
+  "splits": {
+    "native/train": {
+      "rows": 12292,
+      "blank_lines": 0,
+      "tsv_sha256": "a1080e12f528212f25858b1c0093f497d9ffa62f5717848088c4010bad2ea871",
+      "max_sequence_bytes": 398,
+      "max_prompt_bytes": 207,
+      "max_target_bytes": 190,
+      "over_1024": 0,
+      "over_limit": 0
+    },
+    "native/val": {
+      "rows": 2634,
+      "blank_lines": 0,
+      "tsv_sha256": "002645a47593a88735fe7b13fdc7c9fe2e4c1a92191f90ec7fb95449758ecd98",
+      "max_sequence_bytes": 401,
+      "max_prompt_bytes": 209,
+      "max_target_bytes": 191,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "native",
+        "split": "val",
+        "sample_count": 2634,
+        "source_hash": "e63fe872699d99b0ccec7dc04e98fb9bfde1f6b6c7119d90a9070daec279a4c3",
+        "target_hash": "4c13345e12a1b4cd8097edd3b3cbb05fb0e71cef3d3e9f21c237ef9536461feb",
+        "m2_hash": "17558a819658a14031ed8d36032b2f33f2f0094f50da695e818c488037fabb8a",
+        "tsv_hash": "002645a47593a88735fe7b13fdc7c9fe2e4c1a92191f90ec7fb95449758ecd98",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "native/test": {
+      "rows": 2634,
+      "blank_lines": 0,
+      "tsv_sha256": "6c2d6e1551fdd12dd51b764b0daa3de57befedca47c21ed07fb5538d7c33ccc8",
+      "max_sequence_bytes": 399,
+      "max_prompt_bytes": 208,
+      "max_target_bytes": 190,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "native",
+        "split": "test",
+        "sample_count": 2634,
+        "source_hash": "37ec4cb176690066bd411d4dee23001ee77a3cf7825f28b2555390db349ba1c7",
+        "target_hash": "c1b96b70deb626920be67f05d1b371bd16b38ccc9abd941a3f98bd11776d3563",
+        "m2_hash": "a4579825f6fc5e9ee7fbb1ae722cf260518b9305a07f5191ba423bc0f8b0a04c",
+        "tsv_hash": "6c2d6e1551fdd12dd51b764b0daa3de57befedca47c21ed07fb5538d7c33ccc8",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "korean_learner/train": {
+      "rows": 19898,
+      "blank_lines": 0,
+      "tsv_sha256": "163ab6419d259f477b5ab3c913dca6068dd1beaace2f4858d5416ac41bbe1888",
+      "max_sequence_bytes": 1380,
+      "max_prompt_bytes": 694,
+      "max_target_bytes": 685,
+      "over_1024": 4,
+      "over_limit": 0
+    },
+    "korean_learner/val": {
+      "rows": 4264,
+      "blank_lines": 0,
+      "tsv_sha256": "c5b62d189af42807a6dd0679f2a43b5d07dfaae282aeef812724f90a19fc1e1b",
+      "max_sequence_bytes": 845,
+      "max_prompt_bytes": 430,
+      "max_target_bytes": 414,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "korean_learner",
+        "split": "val",
+        "sample_count": 4264,
+        "source_hash": "46384ab2684f369e36aa0fc787b0447796d3760ff7ebfcca2d8e973e93222a08",
+        "target_hash": "25cbe312b4d391f7a32b75100f6c8c2daa0eb6cd9de241775062eef69b17ea14",
+        "m2_hash": "26aa7b334b71ae3d6e0b06acd45cc81cc219d75ad1ff2b573f496b30284b839c",
+        "tsv_hash": "c5b62d189af42807a6dd0679f2a43b5d07dfaae282aeef812724f90a19fc1e1b",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "korean_learner/test": {
+      "rows": 4265,
+      "blank_lines": 0,
+      "tsv_sha256": "cb49c2806cedd8b71d1b5dbbc31ef5c74f0aca3a6ab6dc92a94c9e5ffe52044d",
+      "max_sequence_bytes": 633,
+      "max_prompt_bytes": 324,
+      "max_target_bytes": 320,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "korean_learner",
+        "split": "test",
+        "sample_count": 4265,
+        "source_hash": "4438468750166634cce0e4b03e72f7b82f45e352e7de230e9492c5a9cc4bb1c5",
+        "target_hash": "93878d24629be44430507a067a2ab645e2bf4fc65dc0cd0ba1177c2ff9640933",
+        "m2_hash": "4be33bbc4adf618da33074b9a97525c4d24c08162b9df44db60e69424f51ec01",
+        "tsv_hash": "cb49c2806cedd8b71d1b5dbbc31ef5c74f0aca3a6ab6dc92a94c9e5ffe52044d",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "union/train": {
+      "rows": 108882,
+      "blank_lines": 1,
+      "tsv_sha256": "90a55cac5d37cd3557f6f958b973b6f6a037872c87edade462ac05324843a54a",
+      "max_sequence_bytes": 1380,
+      "max_prompt_bytes": 694,
+      "max_target_bytes": 685,
+      "over_1024": 5,
+      "over_limit": 0
+    },
+    "union/val": {
+      "rows": 23332,
+      "blank_lines": 1,
+      "tsv_sha256": "22b90eee85aa2edd5557cd3009893dd1b1dcff22584b7f96e713878fcbeb5f8b",
+      "max_sequence_bytes": 931,
+      "max_prompt_bytes": 470,
+      "max_target_bytes": 460,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "union",
+        "split": "val",
+        "sample_count": 23332,
+        "source_hash": "a0063540f10386703cf635a5c77922af237d45357202cc5da5420f2c4ebb5a7b",
+        "target_hash": "864380fdab4b860b906a6836f9bb6a61230c40f071332fc1abcae2c4fb990d45",
+        "m2_hash": "22e1cdeed3702fe905b429c872f188b19b70c52e949c3eed1a8b4df5a90def20",
+        "tsv_hash": "22b90eee85aa2edd5557cd3009893dd1b1dcff22584b7f96e713878fcbeb5f8b",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "union/test": {
+      "rows": 23333,
+      "blank_lines": 1,
+      "tsv_sha256": "65b1bd0039ae58c136ee44ebbb6876ee69a5353bb8c00046ec235e7e79592f28",
+      "max_sequence_bytes": 886,
+      "max_prompt_bytes": 451,
+      "max_target_bytes": 434,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "union",
+        "split": "test",
+        "sample_count": 23333,
+        "source_hash": "eb476f3f20ea1abdd1fbb42e0ca006672a744e353bcd836d470569d7ea9e2ea7",
+        "target_hash": "fb2c7f1b332c75a69a4677a09a3f48134469cf40d9cf7f7cb4906696dbd0a176",
+        "m2_hash": "e79ae3c01c211bb58c2a0213f6b9e39bed8d9e4eb2011d7e7ae22a33c1042db7",
+        "tsv_hash": "65b1bd0039ae58c136ee44ebbb6876ee69a5353bb8c00046ec235e7e79592f28",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    }
+  },
+  "total": {
+    "rows": 201534,
+    "max_sequence_bytes": 1380,
+    "max_prompt_bytes": 694,
+    "max_target_bytes": 685,
+    "over_1024": 9,
+    "over_limit": 0
+  }
+}
+{"shard": 0, "completed": 3145, "total": 4265}
+{"shard": 0, "completed": 3146, "total": 4265}
+{"shard": 0, "completed": 3147, "total": 4265}
+{"shard": 0, "completed": 3148, "total": 4265}
+{"shard": 0, "completed": 3149, "total": 4265}
+{"shard": 0, "completed": 3150, "total": 4265}
+{"shard": 0, "completed": 3151, "total": 4265}
+{"shard": 0, "completed": 3152, "total": 4265}
+{"shard": 0, "completed": 3153, "total": 4265}
+{"shard": 0, "completed": 3154, "total": 4265}
+{"shard": 0, "completed": 3155, "total": 4265}
+{"shard": 0, "completed": 3156, "total": 4265}
+{"shard": 0, "completed": 3157, "total": 4265}
+{"shard": 0, "completed": 3158, "total": 4265}
+{"shard": 0, "completed": 3159, "total": 4265}
+{"shard": 0, "completed": 3160, "total": 4265}
+{"shard": 0, "completed": 3161, "total": 4265}
+{"shard": 0, "completed": 3162, "total": 4265}
+{"shard": 0, "completed": 3163, "total": 4265}
+{"shard": 0, "completed": 3164, "total": 4265}
+{"shard": 0, "completed": 3165, "total": 4265}
+{"shard": 0, "completed": 3166, "total": 4265}
+{"shard": 0, "completed": 3167, "total": 4265}
+{"shard": 0, "completed": 3168, "total": 4265}
+{"shard": 0, "completed": 3169, "total": 4265}
+{"shard": 0, "completed": 3170, "total": 4265}
+{"shard": 0, "completed": 3171, "total": 4265}
+{"shard": 0, "completed": 3172, "total": 4265}
+{"shard": 0, "completed": 3173, "total": 4265}
+{"shard": 0, "completed": 3174, "total": 4265}
+{"shard": 0, "completed": 3175, "total": 4265}
+{"shard": 0, "completed": 3176, "total": 4265}
+{"shard": 0, "completed": 3177, "total": 4265}
+{"shard": 0, "completed": 3178, "total": 4265}
+{"shard": 0, "completed": 3179, "total": 4265}
+{"shard": 0, "completed": 3180, "total": 4265}
+{"shard": 0, "completed": 3181, "total": 4265}
+{"shard": 0, "completed": 3182, "total": 4265}
+{"shard": 0, "completed": 3183, "total": 4265}
+{"shard": 0, "completed": 3184, "total": 4265}
+{"shard": 0, "completed": 3185, "total": 4265}
+{"shard": 0, "completed": 3186, "total": 4265}
+{"shard": 0, "completed": 3187, "total": 4265}
+{"shard": 0, "completed": 3188, "total": 4265}
+{"shard": 0, "completed": 3189, "total": 4265}
+{"shard": 0, "completed": 3190, "total": 4265}
+{"shard": 0, "completed": 3191, "total": 4265}
+{"shard": 0, "completed": 3192, "total": 4265}
+{"shard": 0, "completed": 3193, "total": 4265}
+{"shard": 0, "completed": 3194, "total": 4265}
+{"shard": 0, "completed": 3195, "total": 4265}
+{"shard": 0, "completed": 3196, "total": 4265}
+{"shard": 0, "completed": 3197, "total": 4265}
+{"shard": 0, "completed": 3198, "total": 4265}
+{"shard": 0, "completed": 3199, "total": 4265}
+{"shard": 0, "completed": 3200, "total": 4265}
+{"shard": 0, "completed": 3201, "total": 4265}
+{"shard": 0, "completed": 3202, "total": 4265}
+{"shard": 0, "completed": 3203, "total": 4265}
+{"shard": 0, "completed": 3204, "total": 4265}
+{"shard": 0, "completed": 3205, "total": 4265}
+{"shard": 0, "completed": 3206, "total": 4265}
+{"shard": 0, "completed": 3207, "total": 4265}
+{"shard": 0, "completed": 3208, "total": 4265}
+{"shard": 0, "completed": 3209, "total": 4265}
+{"shard": 0, "completed": 3210, "total": 4265}
+{"shard": 0, "completed": 3211, "total": 4265}
+{"shard": 0, "completed": 3212, "total": 4265}
+{"shard": 0, "completed": 3213, "total": 4265}
+{"shard": 0, "completed": 3214, "total": 4265}
+{"shard": 0, "completed": 3215, "total": 4265}
+{"shard": 0, "completed": 3216, "total": 4265}
+{"shard": 0, "completed": 3217, "total": 4265}
+{"shard": 0, "completed": 3218, "total": 4265}
+{"shard": 0, "completed": 3219, "total": 4265}
+{"shard": 0, "completed": 3220, "total": 4265}
+{"shard": 0, "completed": 3221, "total": 4265}
+{"shard": 0, "completed": 3222, "total": 4265}
+{"shard": 0, "completed": 3223, "total": 4265}
+{"shard": 0, "completed": 3224, "total": 4265}
+{"shard": 0, "completed": 3225, "total": 4265}
+{"shard": 0, "completed": 3226, "total": 4265}
+{"shard": 0, "completed": 3227, "total": 4265}
+{"shard": 0, "completed": 3228, "total": 4265}
+{"shard": 0, "completed": 3229, "total": 4265}
+{"shard": 0, "completed": 3230, "total": 4265}
+{"shard": 0, "completed": 3231, "total": 4265}
+{"shard": 0, "completed": 3232, "total": 4265}
+{"shard": 0, "completed": 3233, "total": 4265}
+{"shard": 0, "completed": 3234, "total": 4265}
+{"shard": 0, "completed": 3235, "total": 4265}
+{"shard": 0, "completed": 3236, "total": 4265}
+{"shard": 0, "completed": 3237, "total": 4265}
+{"shard": 0, "completed": 3238, "total": 4265}
+{"shard": 0, "completed": 3239, "total": 4265}
+{"shard": 0, "completed": 3240, "total": 4265}
+{"shard": 0, "completed": 3241, "total": 4265}
+{"shard": 0, "completed": 3242, "total": 4265}
+{"shard": 0, "completed": 3243, "total": 4265}
+{"shard": 0, "completed": 3244, "total": 4265}
+{"shard": 0, "completed": 3245, "total": 4265}
+{"shard": 0, "completed": 3246, "total": 4265}
+{"shard": 0, "completed": 3247, "total": 4265}
+{"shard": 0, "completed": 3248, "total": 4265}
+{"shard": 0, "completed": 3249, "total": 4265}
+{"shard": 0, "completed": 3250, "total": 4265}
+{"shard": 0, "completed": 3251, "total": 4265}
+{"shard": 0, "completed": 3252, "total": 4265}
+{"shard": 0, "completed": 3253, "total": 4265}
+{"shard": 0, "completed": 3254, "total": 4265}
+{"shard": 0, "completed": 3255, "total": 4265}
+{"shard": 0, "completed": 3256, "total": 4265}
+{"shard": 0, "completed": 3257, "total": 4265}
+{"shard": 0, "completed": 3258, "total": 4265}
+{"shard": 0, "completed": 3259, "total": 4265}
+{"shard": 0, "completed": 3260, "total": 4265}
+{"shard": 0, "completed": 3261, "total": 4265}
+{"shard": 0, "completed": 3262, "total": 4265}
+{"shard": 0, "completed": 3263, "total": 4265}
+{"shard": 0, "completed": 3264, "total": 4265}
+{"shard": 0, "completed": 3265, "total": 4265}
+{"shard": 0, "completed": 3266, "total": 4265}
+{"shard": 0, "completed": 3267, "total": 4265}
+{"shard": 0, "completed": 3268, "total": 4265}
+{"shard": 0, "completed": 3269, "total": 4265}
+{"shard": 0, "completed": 3270, "total": 4265}
+{"shard": 0, "completed": 3271, "total": 4265}
+{"shard": 0, "completed": 3272, "total": 4265}
+{"shard": 0, "completed": 3273, "total": 4265}
+{"shard": 0, "completed": 3274, "total": 4265}
+{"shard": 0, "completed": 3275, "total": 4265}
+{"shard": 0, "completed": 3276, "total": 4265}
+{"shard": 0, "completed": 3277, "total": 4265}
+{"shard": 0, "completed": 3278, "total": 4265}
+{"shard": 0, "completed": 3279, "total": 4265}
+{"shard": 0, "completed": 3280, "total": 4265}
+{"shard": 0, "completed": 3281, "total": 4265}
+{"shard": 0, "completed": 3282, "total": 4265}
+{"shard": 0, "completed": 3283, "total": 4265}
+{"shard": 0, "completed": 3284, "total": 4265}
+{"shard": 0, "completed": 3285, "total": 4265}
+{"shard": 0, "completed": 3286, "total": 4265}
+{"shard": 0, "completed": 3287, "total": 4265}
+{"shard": 0, "completed": 3288, "total": 4265}
+{"shard": 0, "completed": 3289, "total": 4265}
+{"shard": 0, "completed": 3290, "total": 4265}
+{"shard": 0, "completed": 3291, "total": 4265}
+{"shard": 0, "completed": 3292, "total": 4265}
+{"shard": 0, "completed": 3293, "total": 4265}
+{"shard": 0, "completed": 3294, "total": 4265}
+{"shard": 0, "completed": 3295, "total": 4265}
+{"shard": 0, "completed": 3296, "total": 4265}
+{"shard": 0, "completed": 3297, "total": 4265}
+{"shard": 0, "completed": 3298, "total": 4265}
+{"shard": 0, "completed": 3299, "total": 4265}
+{"shard": 0, "completed": 3300, "total": 4265}
+{"shard": 0, "completed": 3301, "total": 4265}
+{"shard": 0, "completed": 3302, "total": 4265}
+{"shard": 0, "completed": 3303, "total": 4265}
+{"shard": 0, "completed": 3304, "total": 4265}
+{"shard": 0, "completed": 3305, "total": 4265}
+{"shard": 0, "completed": 3306, "total": 4265}
+{"shard": 0, "completed": 3307, "total": 4265}
+{"shard": 0, "completed": 3308, "total": 4265}
+{"shard": 0, "completed": 3309, "total": 4265}
+{"shard": 0, "completed": 3310, "total": 4265}
+{"shard": 0, "completed": 3311, "total": 4265}
+{"shard": 0, "completed": 3312, "total": 4265}
+{"shard": 0, "completed": 3313, "total": 4265}
+{"shard": 0, "completed": 3314, "total": 4265}
+{"shard": 0, "completed": 3315, "total": 4265}
+{"shard": 0, "completed": 3316, "total": 4265}
+{"shard": 0, "completed": 3317, "total": 4265}
+{"shard": 0, "completed": 3318, "total": 4265}
+{"shard": 0, "completed": 3319, "total": 4265}
+{"shard": 0, "completed": 3320, "total": 4265}
+{"shard": 0, "completed": 3321, "total": 4265}
+{"shard": 0, "completed": 3322, "total": 4265}
+{"shard": 0, "completed": 3323, "total": 4265}
+{"shard": 0, "completed": 3324, "total": 4265}
+{"shard": 0, "completed": 3325, "total": 4265}
+{"shard": 0, "completed": 3326, "total": 4265}
+{"shard": 0, "completed": 3327, "total": 4265}
+{"shard": 0, "completed": 3328, "total": 4265}
+{"shard": 0, "completed": 3329, "total": 4265}
+{"shard": 0, "completed": 3330, "total": 4265}
+{"shard": 0, "completed": 3331, "total": 4265}
+{"shard": 0, "completed": 3332, "total": 4265}
+{"shard": 0, "completed": 3333, "total": 4265}
+{"shard": 0, "completed": 3334, "total": 4265}
+{"shard": 0, "completed": 3335, "total": 4265}
+{"shard": 0, "completed": 3336, "total": 4265}
+{"shard": 0, "completed": 3337, "total": 4265}
+{"shard": 0, "completed": 3338, "total": 4265}
+{"shard": 0, "completed": 3339, "total": 4265}
+{"shard": 0, "completed": 3340, "total": 4265}
+{"shard": 0, "completed": 3341, "total": 4265}
+{"shard": 0, "completed": 3342, "total": 4265}
+{"shard": 0, "completed": 3343, "total": 4265}
+{"shard": 0, "completed": 3344, "total": 4265}
+{"shard": 0, "completed": 3345, "total": 4265}
+{"shard": 0, "completed": 3346, "total": 4265}
+{"shard": 0, "completed": 3347, "total": 4265}
+{"shard": 0, "completed": 3348, "total": 4265}
+{"shard": 0, "completed": 3349, "total": 4265}
+{"shard": 0, "completed": 3350, "total": 4265}
+{"shard": 0, "completed": 3351, "total": 4265}
+{"shard": 0, "completed": 3352, "total": 4265}
+{"shard": 0, "completed": 3353, "total": 4265}
+{"shard": 0, "completed": 3354, "total": 4265}
+{"shard": 0, "completed": 3355, "total": 4265}
+{"shard": 0, "completed": 3356, "total": 4265}
+{"shard": 0, "completed": 3357, "total": 4265}
+{"shard": 0, "completed": 3358, "total": 4265}
+{"shard": 0, "completed": 3359, "total": 4265}
+{"shard": 0, "completed": 3360, "total": 4265}
+{"shard": 0, "completed": 3361, "total": 4265}
+{"shard": 0, "completed": 3362, "total": 4265}
+{"shard": 0, "completed": 3363, "total": 4265}
+{"shard": 0, "completed": 3364, "total": 4265}
+{"shard": 0, "completed": 3365, "total": 4265}
+{"shard": 0, "completed": 3366, "total": 4265}
+{"shard": 0, "completed": 3367, "total": 4265}
+{"shard": 0, "completed": 3368, "total": 4265}
+{"shard": 0, "completed": 3369, "total": 4265}
+{"shard": 0, "completed": 3370, "total": 4265}
+{"shard": 0, "completed": 3371, "total": 4265}
+{"shard": 0, "completed": 3372, "total": 4265}
+{"shard": 0, "completed": 3373, "total": 4265}
+{"shard": 0, "completed": 3374, "total": 4265}
+{"shard": 0, "completed": 3375, "total": 4265}
+{"shard": 0, "completed": 3376, "total": 4265}
+{"shard": 0, "completed": 3377, "total": 4265}
+{"shard": 0, "completed": 3378, "total": 4265}
+{"shard": 0, "completed": 3379, "total": 4265}
+{"shard": 0, "completed": 3380, "total": 4265}
+{"shard": 0, "completed": 3381, "total": 4265}
+{"shard": 0, "completed": 3382, "total": 4265}
+{"shard": 0, "completed": 3383, "total": 4265}
+{"shard": 0, "completed": 3384, "total": 4265}
+{"shard": 0, "completed": 3385, "total": 4265}
+{"shard": 0, "completed": 3386, "total": 4265}
+{"shard": 0, "completed": 3387, "total": 4265}
+{"shard": 0, "completed": 3388, "total": 4265}
+{"shard": 0, "completed": 3389, "total": 4265}
+{"shard": 0, "completed": 3390, "total": 4265}
+{"shard": 0, "completed": 3391, "total": 4265}
+{"shard": 0, "completed": 3392, "total": 4265}
+{"shard": 0, "completed": 3393, "total": 4265}
+{"shard": 0, "completed": 3394, "total": 4265}
+{"shard": 0, "completed": 3395, "total": 4265}
+{"shard": 0, "completed": 3396, "total": 4265}
+{"shard": 0, "completed": 3397, "total": 4265}
+{"shard": 0, "completed": 3398, "total": 4265}
+{"shard": 0, "completed": 3399, "total": 4265}
+{"shard": 0, "completed": 3400, "total": 4265}
+{"shard": 0, "completed": 3401, "total": 4265}
+{"shard": 0, "completed": 3402, "total": 4265}
+{"shard": 0, "completed": 3403, "total": 4265}
+{"shard": 0, "completed": 3404, "total": 4265}
+{"shard": 0, "completed": 3405, "total": 4265}
+{"shard": 0, "completed": 3406, "total": 4265}
+{"shard": 0, "completed": 3407, "total": 4265}
+{"shard": 0, "completed": 3408, "total": 4265}
+{"shard": 0, "completed": 3409, "total": 4265}
+{"shard": 0, "completed": 3410, "total": 4265}
+{"shard": 0, "completed": 3411, "total": 4265}
+{"shard": 0, "completed": 3412, "total": 4265}
+{"shard": 0, "completed": 3413, "total": 4265}
+{"shard": 0, "completed": 3414, "total": 4265}
+{"shard": 0, "completed": 3415, "total": 4265}
+{"shard": 0, "completed": 3416, "total": 4265}
+{"shard": 0, "completed": 3417, "total": 4265}
+{"shard": 0, "completed": 3418, "total": 4265}
+{"shard": 0, "completed": 3419, "total": 4265}
+{"shard": 0, "completed": 3420, "total": 4265}
+{"shard": 0, "completed": 3421, "total": 4265}
+{"shard": 0, "completed": 3422, "total": 4265}
+{"shard": 0, "completed": 3423, "total": 4265}
+{"shard": 0, "completed": 3424, "total": 4265}
+{"shard": 0, "completed": 3425, "total": 4265}
+{"shard": 0, "completed": 3426, "total": 4265}
+{"shard": 0, "completed": 3427, "total": 4265}
+{"shard": 0, "completed": 3428, "total": 4265}
+{"shard": 0, "completed": 3429, "total": 4265}
+{"shard": 0, "completed": 3430, "total": 4265}
+{"shard": 0, "completed": 3431, "total": 4265}
+{"shard": 0, "completed": 3432, "total": 4265}
+{"shard": 0, "completed": 3433, "total": 4265}
+{"shard": 0, "completed": 3434, "total": 4265}
+{"shard": 0, "completed": 3435, "total": 4265}
+{"shard": 0, "completed": 3436, "total": 4265}
+{"shard": 0, "completed": 3437, "total": 4265}
+{"shard": 0, "completed": 3438, "total": 4265}
+{"shard": 0, "completed": 3439, "total": 4265}
+{"shard": 0, "completed": 3440, "total": 4265}
+{"shard": 0, "completed": 3441, "total": 4265}
+{"shard": 0, "completed": 3442, "total": 4265}
+{"shard": 0, "completed": 3443, "total": 4265}
+{"shard": 0, "completed": 3444, "total": 4265}
+{"shard": 0, "completed": 3445, "total": 4265}
+{"shard": 0, "completed": 3446, "total": 4265}
+{"shard": 0, "completed": 3447, "total": 4265}
+{"shard": 0, "completed": 3448, "total": 4265}
+{"shard": 0, "completed": 3449, "total": 4265}
+{"shard": 0, "completed": 3450, "total": 4265}
+{"shard": 0, "completed": 3451, "total": 4265}
+{"shard": 0, "completed": 3452, "total": 4265}
+{"shard": 0, "completed": 3453, "total": 4265}
+{"shard": 0, "completed": 3454, "total": 4265}
+{"shard": 0, "completed": 3455, "total": 4265}
+{"shard": 0, "completed": 3456, "total": 4265}
+{"shard": 0, "completed": 3457, "total": 4265}
+{"shard": 0, "completed": 3458, "total": 4265}
+{"shard": 0, "completed": 3459, "total": 4265}
+{"shard": 0, "completed": 3460, "total": 4265}
+{"shard": 0, "completed": 3461, "total": 4265}
+{"shard": 0, "completed": 3462, "total": 4265}
+{"shard": 0, "completed": 3463, "total": 4265}
+{"shard": 0, "completed": 3464, "total": 4265}
+{"shard": 0, "completed": 3465, "total": 4265}
+{"shard": 0, "completed": 3466, "total": 4265}
+{"shard": 0, "completed": 3467, "total": 4265}
+{"shard": 0, "completed": 3468, "total": 4265}
+{"shard": 0, "completed": 3469, "total": 4265}
+{"shard": 0, "completed": 3470, "total": 4265}
+{"shard": 0, "completed": 3471, "total": 4265}
+{"shard": 0, "completed": 3472, "total": 4265}
+{"shard": 0, "completed": 3473, "total": 4265}
+{"shard": 0, "completed": 3474, "total": 4265}
+{"shard": 0, "completed": 3475, "total": 4265}
+{"shard": 0, "completed": 3476, "total": 4265}
+{"shard": 0, "completed": 3477, "total": 4265}
+{"shard": 0, "completed": 3478, "total": 4265}
+{"shard": 0, "completed": 3479, "total": 4265}
+{"shard": 0, "completed": 3480, "total": 4265}
+{"shard": 0, "completed": 3481, "total": 4265}
+{"shard": 0, "completed": 3482, "total": 4265}
+{"shard": 0, "completed": 3483, "total": 4265}
+{"shard": 0, "completed": 3484, "total": 4265}
+{"shard": 0, "completed": 3485, "total": 4265}
+{"shard": 0, "completed": 3486, "total": 4265}
+{"shard": 0, "completed": 3487, "total": 4265}
+{"shard": 0, "completed": 3488, "total": 4265}
+{"shard": 0, "completed": 3489, "total": 4265}
+{"shard": 0, "completed": 3490, "total": 4265}
+{"shard": 0, "completed": 3491, "total": 4265}
+{"shard": 0, "completed": 3492, "total": 4265}
+{"shard": 0, "completed": 3493, "total": 4265}
+{"shard": 0, "completed": 3494, "total": 4265}
+{"shard": 0, "completed": 3495, "total": 4265}
+{"shard": 0, "completed": 3496, "total": 4265}
+{"shard": 0, "completed": 3497, "total": 4265}
+{"shard": 0, "completed": 3498, "total": 4265}
+{"shard": 0, "completed": 3499, "total": 4265}
+{"shard": 0, "completed": 3500, "total": 4265}
+{"shard": 0, "completed": 3501, "total": 4265}
+{"shard": 0, "completed": 3502, "total": 4265}
+{"shard": 0, "completed": 3503, "total": 4265}
+{"shard": 0, "completed": 3504, "total": 4265}
+{"shard": 0, "completed": 3505, "total": 4265}
+{"shard": 0, "completed": 3506, "total": 4265}
+{"shard": 0, "completed": 3507, "total": 4265}
+{"shard": 0, "completed": 3508, "total": 4265}
+{"shard": 0, "completed": 3509, "total": 4265}
+{"shard": 0, "completed": 3510, "total": 4265}
+{"shard": 0, "completed": 3511, "total": 4265}
+{"shard": 0, "completed": 3512, "total": 4265}
+{"shard": 0, "completed": 3513, "total": 4265}
+{"shard": 0, "completed": 3514, "total": 4265}
+{"shard": 0, "completed": 3515, "total": 4265}
+{"shard": 0, "completed": 3516, "total": 4265}
+{"shard": 0, "completed": 3517, "total": 4265}
+{"shard": 0, "completed": 3518, "total": 4265}
+{"shard": 0, "completed": 3519, "total": 4265}
+{"shard": 0, "completed": 3520, "total": 4265}
+{"shard": 0, "completed": 3521, "total": 4265}
+{"shard": 0, "completed": 3522, "total": 4265}
+{"shard": 0, "completed": 3523, "total": 4265}
+{"shard": 0, "completed": 3524, "total": 4265}
+{"shard": 0, "completed": 3525, "total": 4265}
+{"shard": 0, "completed": 3526, "total": 4265}
+{"shard": 0, "completed": 3527, "total": 4265}
+{"shard": 0, "completed": 3528, "total": 4265}
+{"shard": 0, "completed": 3529, "total": 4265}
+{"shard": 0, "completed": 3530, "total": 4265}
+{"shard": 0, "completed": 3531, "total": 4265}
+{"shard": 0, "completed": 3532, "total": 4265}
+{"shard": 0, "completed": 3533, "total": 4265}
+{"shard": 0, "completed": 3534, "total": 4265}
+{"shard": 0, "completed": 3535, "total": 4265}
+{"shard": 0, "completed": 3536, "total": 4265}
+{"shard": 0, "completed": 3537, "total": 4265}
+{"shard": 0, "completed": 3538, "total": 4265}
+{"shard": 0, "completed": 3539, "total": 4265}
+{"shard": 0, "completed": 3540, "total": 4265}
+{"shard": 0, "completed": 3541, "total": 4265}
+{"shard": 0, "completed": 3542, "total": 4265}
+{"shard": 0, "completed": 3543, "total": 4265}
+{"shard": 0, "completed": 3544, "total": 4265}
+{"shard": 0, "completed": 3545, "total": 4265}
+{"shard": 0, "completed": 3546, "total": 4265}
+{"shard": 0, "completed": 3547, "total": 4265}
+{"shard": 0, "completed": 3548, "total": 4265}
+{"shard": 0, "completed": 3549, "total": 4265}
+{"shard": 0, "completed": 3550, "total": 4265}
+{"shard": 0, "completed": 3551, "total": 4265}
+{"shard": 0, "completed": 3552, "total": 4265}
+{"shard": 0, "completed": 3553, "total": 4265}
+{"shard": 0, "completed": 3554, "total": 4265}
+{"shard": 0, "completed": 3555, "total": 4265}
+{"shard": 0, "completed": 3556, "total": 4265}
+{"shard": 0, "completed": 3557, "total": 4265}
+{"shard": 0, "completed": 3558, "total": 4265}
+{"shard": 0, "completed": 3559, "total": 4265}
+{"shard": 0, "completed": 3560, "total": 4265}
+{"shard": 0, "completed": 3561, "total": 4265}
+{"shard": 0, "completed": 3562, "total": 4265}
+{"shard": 0, "completed": 3563, "total": 4265}
+{"shard": 0, "completed": 3564, "total": 4265}
+{"shard": 0, "completed": 3565, "total": 4265}
+{"shard": 0, "completed": 3566, "total": 4265}
+{"shard": 0, "completed": 3567, "total": 4265}
+{"shard": 0, "completed": 3568, "total": 4265}
+{"shard": 0, "completed": 3569, "total": 4265}
+{"shard": 0, "completed": 3570, "total": 4265}
+{"shard": 0, "completed": 3571, "total": 4265}
+{"shard": 0, "completed": 3572, "total": 4265}
+{"shard": 0, "completed": 3573, "total": 4265}
+{"shard": 0, "completed": 3574, "total": 4265}
+{"shard": 0, "completed": 3575, "total": 4265}
+{"shard": 0, "completed": 3576, "total": 4265}
+{"shard": 0, "completed": 3577, "total": 4265}
+{"shard": 0, "completed": 3578, "total": 4265}
+{"shard": 0, "completed": 3579, "total": 4265}
+{"shard": 0, "completed": 3580, "total": 4265}
+{"shard": 0, "completed": 3581, "total": 4265}
+{"shard": 0, "completed": 3582, "total": 4265}
+{"shard": 0, "completed": 3583, "total": 4265}
+{"shard": 0, "completed": 3584, "total": 4265}
+{"shard": 0, "completed": 3585, "total": 4265}
+{"shard": 0, "completed": 3586, "total": 4265}
+{"shard": 0, "completed": 3587, "total": 4265}
+{"shard": 0, "completed": 3588, "total": 4265}
+{"shard": 0, "completed": 3589, "total": 4265}
+{"shard": 0, "completed": 3590, "total": 4265}
+{"shard": 0, "completed": 3591, "total": 4265}
+{"shard": 0, "completed": 3592, "total": 4265}
+{"shard": 0, "completed": 3593, "total": 4265}
+{"shard": 0, "completed": 3594, "total": 4265}
+{"shard": 0, "completed": 3595, "total": 4265}
+{"shard": 0, "completed": 3596, "total": 4265}
+{"shard": 0, "completed": 3597, "total": 4265}
+{"shard": 0, "completed": 3598, "total": 4265}
+{"shard": 0, "completed": 3599, "total": 4265}
+{"shard": 0, "completed": 3600, "total": 4265}
+{"shard": 0, "completed": 3601, "total": 4265}
+{"shard": 0, "completed": 3602, "total": 4265}
+{"shard": 0, "completed": 3603, "total": 4265}
+{"shard": 0, "completed": 3604, "total": 4265}
+{"shard": 0, "completed": 3605, "total": 4265}
+{"shard": 0, "completed": 3606, "total": 4265}
+{"shard": 0, "completed": 3607, "total": 4265}
+{"shard": 0, "completed": 3608, "total": 4265}
+{"shard": 0, "completed": 3609, "total": 4265}
+{"shard": 0, "completed": 3610, "total": 4265}
+{"shard": 0, "completed": 3611, "total": 4265}
+{"shard": 0, "completed": 3612, "total": 4265}
+{"shard": 0, "completed": 3613, "total": 4265}
+{"shard": 0, "completed": 3614, "total": 4265}
+{"shard": 0, "completed": 3615, "total": 4265}
+{"shard": 0, "completed": 3616, "total": 4265}
+{"shard": 0, "completed": 3617, "total": 4265}
+{"shard": 0, "completed": 3618, "total": 4265}
+{"shard": 0, "completed": 3619, "total": 4265}
+{"shard": 0, "completed": 3620, "total": 4265}
+{"shard": 0, "completed": 3621, "total": 4265}
+{"shard": 0, "completed": 3622, "total": 4265}
+{"shard": 0, "completed": 3623, "total": 4265}
+{"shard": 0, "completed": 3624, "total": 4265}
+{"shard": 0, "completed": 3625, "total": 4265}
+{"shard": 0, "completed": 3626, "total": 4265}
+{"shard": 0, "completed": 3627, "total": 4265}
+{"shard": 0, "completed": 3628, "total": 4265}
+{"shard": 0, "completed": 3629, "total": 4265}
+{"shard": 0, "completed": 3630, "total": 4265}
+{"shard": 0, "completed": 3631, "total": 4265}
+{"shard": 0, "completed": 3632, "total": 4265}
+{"shard": 0, "completed": 3633, "total": 4265}
+{"shard": 0, "completed": 3634, "total": 4265}
+{"shard": 0, "completed": 3635, "total": 4265}
+{"shard": 0, "completed": 3636, "total": 4265}
+{"shard": 0, "completed": 3637, "total": 4265}
+{"shard": 0, "completed": 3638, "total": 4265}
+{"shard": 0, "completed": 3639, "total": 4265}
+{"shard": 0, "completed": 3640, "total": 4265}
+{"shard": 0, "completed": 3641, "total": 4265}
+{"shard": 0, "completed": 3642, "total": 4265}
+{"shard": 0, "completed": 3643, "total": 4265}
+{"shard": 0, "completed": 3644, "total": 4265}
+{"shard": 0, "completed": 3645, "total": 4265}
+{"shard": 0, "completed": 3646, "total": 4265}
+{"shard": 0, "completed": 3647, "total": 4265}
+{"shard": 0, "completed": 3648, "total": 4265}
+{"shard": 0, "completed": 3649, "total": 4265}
+{"shard": 0, "completed": 3650, "total": 4265}
+{"shard": 0, "completed": 3651, "total": 4265}
+{"shard": 0, "completed": 3652, "total": 4265}
+{"shard": 0, "completed": 3653, "total": 4265}
+{"shard": 0, "completed": 3654, "total": 4265}
+{"shard": 0, "completed": 3655, "total": 4265}
+{"shard": 0, "completed": 3656, "total": 4265}
+{"shard": 0, "completed": 3657, "total": 4265}
+{"shard": 0, "completed": 3658, "total": 4265}
+{"shard": 0, "completed": 3659, "total": 4265}
+{"shard": 0, "completed": 3660, "total": 4265}
+{"shard": 0, "completed": 3661, "total": 4265}
+{"shard": 0, "completed": 3662, "total": 4265}
+{"shard": 0, "completed": 3663, "total": 4265}
+{"shard": 0, "completed": 3664, "total": 4265}
+{"shard": 0, "completed": 3665, "total": 4265}
+{"shard": 0, "completed": 3666, "total": 4265}
+{"shard": 0, "completed": 3667, "total": 4265}
+{"shard": 0, "completed": 3668, "total": 4265}
+{"shard": 0, "completed": 3669, "total": 4265}
+{"shard": 0, "completed": 3670, "total": 4265}
+{"shard": 0, "completed": 3671, "total": 4265}
+{"shard": 0, "completed": 3672, "total": 4265}
+{"shard": 0, "completed": 3673, "total": 4265}
+{"shard": 0, "completed": 3674, "total": 4265}
+{"shard": 0, "completed": 3675, "total": 4265}
+{"shard": 0, "completed": 3676, "total": 4265}
+{"shard": 0, "completed": 3677, "total": 4265}
+{"shard": 0, "completed": 3678, "total": 4265}
+{"shard": 0, "completed": 3679, "total": 4265}
+{"shard": 0, "completed": 3680, "total": 4265}
+{"shard": 0, "completed": 3681, "total": 4265}
+{"shard": 0, "completed": 3682, "total": 4265}
+{"shard": 0, "completed": 3683, "total": 4265}
+{"shard": 0, "completed": 3684, "total": 4265}
+{"shard": 0, "completed": 3685, "total": 4265}
+{"shard": 0, "completed": 3686, "total": 4265}
+{"shard": 0, "completed": 3687, "total": 4265}
+{"shard": 0, "completed": 3688, "total": 4265}
+{"shard": 0, "completed": 3689, "total": 4265}
+{"shard": 0, "completed": 3690, "total": 4265}
+{"shard": 0, "completed": 3691, "total": 4265}
+{"shard": 0, "completed": 3692, "total": 4265}
+{"shard": 0, "completed": 3693, "total": 4265}
+{"shard": 0, "completed": 3694, "total": 4265}
+{"shard": 0, "completed": 3695, "total": 4265}
+{"shard": 0, "completed": 3696, "total": 4265}
+{"shard": 0, "completed": 3697, "total": 4265}
+{"shard": 0, "completed": 3698, "total": 4265}
+{"shard": 0, "completed": 3699, "total": 4265}
+{"shard": 0, "completed": 3700, "total": 4265}
+{"shard": 0, "completed": 3701, "total": 4265}
+{"shard": 0, "completed": 3702, "total": 4265}
+{"shard": 0, "completed": 3703, "total": 4265}
+{"shard": 0, "completed": 3704, "total": 4265}
+{"shard": 0, "completed": 3705, "total": 4265}
+{"shard": 0, "completed": 3706, "total": 4265}
+{"shard": 0, "completed": 3707, "total": 4265}
+{"shard": 0, "completed": 3708, "total": 4265}
+{"shard": 0, "completed": 3709, "total": 4265}
+{"shard": 0, "completed": 3710, "total": 4265}
+{"shard": 0, "completed": 3711, "total": 4265}
+{"shard": 0, "completed": 3712, "total": 4265}
+{"shard": 0, "completed": 3713, "total": 4265}
+{"shard": 0, "completed": 3714, "total": 4265}
+{"shard": 0, "completed": 3715, "total": 4265}
+{"shard": 0, "completed": 3716, "total": 4265}
+{"shard": 0, "completed": 3717, "total": 4265}
+{"shard": 0, "completed": 3718, "total": 4265}
+{"shard": 0, "completed": 3719, "total": 4265}
+{"shard": 0, "completed": 3720, "total": 4265}
+{"shard": 0, "completed": 3721, "total": 4265}
+{"shard": 0, "completed": 3722, "total": 4265}
+{"shard": 0, "completed": 3723, "total": 4265}
+{"shard": 0, "completed": 3724, "total": 4265}
+{"shard": 0, "completed": 3725, "total": 4265}
+{"shard": 0, "completed": 3726, "total": 4265}
+{"shard": 0, "completed": 3727, "total": 4265}
+{"shard": 0, "completed": 3728, "total": 4265}
+{"shard": 0, "completed": 3729, "total": 4265}
+{"shard": 0, "completed": 3730, "total": 4265}
+{"shard": 0, "completed": 3731, "total": 4265}
+{"shard": 0, "completed": 3732, "total": 4265}
+{"shard": 0, "completed": 3733, "total": 4265}
+{"shard": 0, "completed": 3734, "total": 4265}
+{"shard": 0, "completed": 3735, "total": 4265}
+{"shard": 0, "completed": 3736, "total": 4265}
+{"shard": 0, "completed": 3737, "total": 4265}
+{"shard": 0, "completed": 3738, "total": 4265}
+{"shard": 0, "completed": 3739, "total": 4265}
+{"shard": 0, "completed": 3740, "total": 4265}
+{"shard": 0, "completed": 3741, "total": 4265}
+{"shard": 0, "completed": 3742, "total": 4265}
+{"shard": 0, "completed": 3743, "total": 4265}
+{"shard": 0, "completed": 3744, "total": 4265}
+{"shard": 0, "completed": 3745, "total": 4265}
+{"shard": 0, "completed": 3746, "total": 4265}
+{"shard": 0, "completed": 3747, "total": 4265}
+{"shard": 0, "completed": 3748, "total": 4265}
+{"shard": 0, "completed": 3749, "total": 4265}
+{"shard": 0, "completed": 3750, "total": 4265}
+{"shard": 0, "completed": 3751, "total": 4265}
+{"shard": 0, "completed": 3752, "total": 4265}
+{"shard": 0, "completed": 3753, "total": 4265}
+{"shard": 0, "completed": 3754, "total": 4265}
+{"shard": 0, "completed": 3755, "total": 4265}
+{"shard": 0, "completed": 3756, "total": 4265}
+{"shard": 0, "completed": 3757, "total": 4265}
+{"shard": 0, "completed": 3758, "total": 4265}
+{"shard": 0, "completed": 3759, "total": 4265}
+{"shard": 0, "completed": 3760, "total": 4265}
+{"shard": 0, "completed": 3761, "total": 4265}
+{"shard": 0, "completed": 3762, "total": 4265}
+{"shard": 0, "completed": 3763, "total": 4265}
+{"shard": 0, "completed": 3764, "total": 4265}
+{"shard": 0, "completed": 3765, "total": 4265}
+{"shard": 0, "completed": 3766, "total": 4265}
+{"shard": 0, "completed": 3767, "total": 4265}
+{"shard": 0, "completed": 3768, "total": 4265}
+{"shard": 0, "completed": 3769, "total": 4265}
+{"shard": 0, "completed": 3770, "total": 4265}
+{"shard": 0, "completed": 3771, "total": 4265}
+{"shard": 0, "completed": 3772, "total": 4265}
+{"shard": 0, "completed": 3773, "total": 4265}
+{"shard": 0, "completed": 3774, "total": 4265}
+{"shard": 0, "completed": 3775, "total": 4265}
+{"shard": 0, "completed": 3776, "total": 4265}
+{"shard": 0, "completed": 3777, "total": 4265}
+{"shard": 0, "completed": 3778, "total": 4265}
+{"shard": 0, "completed": 3779, "total": 4265}
+{"shard": 0, "completed": 3780, "total": 4265}
+{"shard": 0, "completed": 3781, "total": 4265}
+{"shard": 0, "completed": 3782, "total": 4265}
+{"shard": 0, "completed": 3783, "total": 4265}
+{"shard": 0, "completed": 3784, "total": 4265}
+{"shard": 0, "completed": 3785, "total": 4265}
+{"shard": 0, "completed": 3786, "total": 4265}
+{"shard": 0, "completed": 3787, "total": 4265}
+{"shard": 0, "completed": 3788, "total": 4265}
+{"shard": 0, "completed": 3789, "total": 4265}
+{"shard": 0, "completed": 3790, "total": 4265}
+{"shard": 0, "completed": 3791, "total": 4265}
+{"shard": 0, "completed": 3792, "total": 4265}
+{"shard": 0, "completed": 3793, "total": 4265}
+{"shard": 0, "completed": 3794, "total": 4265}
+{"shard": 0, "completed": 3795, "total": 4265}
+{"shard": 0, "completed": 3796, "total": 4265}
+{"shard": 0, "completed": 3797, "total": 4265}
+{"shard": 0, "completed": 3798, "total": 4265}
+{"shard": 0, "completed": 3799, "total": 4265}
+{"shard": 0, "completed": 3800, "total": 4265}
+{"shard": 0, "completed": 3801, "total": 4265}
+{"shard": 0, "completed": 3802, "total": 4265}
+{"shard": 0, "completed": 3803, "total": 4265}
+{"shard": 0, "completed": 3804, "total": 4265}
+{"shard": 0, "completed": 3805, "total": 4265}
+{"shard": 0, "completed": 3806, "total": 4265}
+{"shard": 0, "completed": 3807, "total": 4265}
+{"shard": 0, "completed": 3808, "total": 4265}
+{"shard": 0, "completed": 3809, "total": 4265}
+{"shard": 0, "completed": 3810, "total": 4265}
+{"shard": 0, "completed": 3811, "total": 4265}
+{"shard": 0, "completed": 3812, "total": 4265}
+{"shard": 0, "completed": 3813, "total": 4265}
+{"shard": 0, "completed": 3814, "total": 4265}
+{"shard": 0, "completed": 3815, "total": 4265}
+{"shard": 0, "completed": 3816, "total": 4265}
+{"shard": 0, "completed": 3817, "total": 4265}
+{"shard": 0, "completed": 3818, "total": 4265}
+{"shard": 0, "completed": 3819, "total": 4265}
+{"shard": 0, "completed": 3820, "total": 4265}
+{"shard": 0, "completed": 3821, "total": 4265}
+{"shard": 0, "completed": 3822, "total": 4265}
+{"shard": 0, "completed": 3823, "total": 4265}
+{"shard": 0, "completed": 3824, "total": 4265}
+{"shard": 0, "completed": 3825, "total": 4265}
+{"shard": 0, "completed": 3826, "total": 4265}
+{"shard": 0, "completed": 3827, "total": 4265}
+{"shard": 0, "completed": 3828, "total": 4265}
+{"shard": 0, "completed": 3829, "total": 4265}
+{"shard": 0, "completed": 3830, "total": 4265}
+{"shard": 0, "completed": 3831, "total": 4265}
+{"shard": 0, "completed": 3832, "total": 4265}
+{"shard": 0, "completed": 3833, "total": 4265}
+{"shard": 0, "completed": 3834, "total": 4265}
+{"shard": 0, "completed": 3835, "total": 4265}
+{"shard": 0, "completed": 3836, "total": 4265}
+{"shard": 0, "completed": 3837, "total": 4265}
+{"shard": 0, "completed": 3838, "total": 4265}
+{"shard": 0, "completed": 3839, "total": 4265}
+{"shard": 0, "completed": 3840, "total": 4265}
+{"shard": 0, "completed": 3841, "total": 4265}
+{"shard": 0, "completed": 3842, "total": 4265}
+{"shard": 0, "completed": 3843, "total": 4265}
+{"shard": 0, "completed": 3844, "total": 4265}
+{"shard": 0, "completed": 3845, "total": 4265}
+{"shard": 0, "completed": 3846, "total": 4265}
+{"shard": 0, "completed": 3847, "total": 4265}
+{"shard": 0, "completed": 3848, "total": 4265}
+{"shard": 0, "completed": 3849, "total": 4265}
+{"shard": 0, "completed": 3850, "total": 4265}
+{"shard": 0, "completed": 3851, "total": 4265}
+{"shard": 0, "completed": 3852, "total": 4265}
+{"shard": 0, "completed": 3853, "total": 4265}
+{"shard": 0, "completed": 3854, "total": 4265}
+{"shard": 0, "completed": 3855, "total": 4265}
+{"shard": 0, "completed": 3856, "total": 4265}
+{"shard": 0, "completed": 3857, "total": 4265}
+{"shard": 0, "completed": 3858, "total": 4265}
+{"shard": 0, "completed": 3859, "total": 4265}
+{"shard": 0, "completed": 3860, "total": 4265}
+{"shard": 0, "completed": 3861, "total": 4265}
+{"shard": 0, "completed": 3862, "total": 4265}
+{"shard": 0, "completed": 3863, "total": 4265}
+{"shard": 0, "completed": 3864, "total": 4265}
+{"shard": 0, "completed": 3865, "total": 4265}
+{"shard": 0, "completed": 3866, "total": 4265}
+{"shard": 0, "completed": 3867, "total": 4265}
+{"shard": 0, "completed": 3868, "total": 4265}
+{"shard": 0, "completed": 3869, "total": 4265}
+{"shard": 0, "completed": 3870, "total": 4265}
+{"shard": 0, "completed": 3871, "total": 4265}
+{"shard": 0, "completed": 3872, "total": 4265}
+{"shard": 0, "completed": 3873, "total": 4265}
+{"shard": 0, "completed": 3874, "total": 4265}
+{"shard": 0, "completed": 3875, "total": 4265}
+{"shard": 0, "completed": 3876, "total": 4265}
+{"shard": 0, "completed": 3877, "total": 4265}
+{"shard": 0, "completed": 3878, "total": 4265}
+{"shard": 0, "completed": 3879, "total": 4265}
+{"shard": 0, "completed": 3880, "total": 4265}
+{"shard": 0, "completed": 3881, "total": 4265}
+{"shard": 0, "completed": 3882, "total": 4265}
+{"shard": 0, "completed": 3883, "total": 4265}
+{"shard": 0, "completed": 3884, "total": 4265}
+{"shard": 0, "completed": 3885, "total": 4265}
+{"shard": 0, "completed": 3886, "total": 4265}
+{"shard": 0, "completed": 3887, "total": 4265}
+{"shard": 0, "completed": 3888, "total": 4265}
+{"shard": 0, "completed": 3889, "total": 4265}
+{"shard": 0, "completed": 3890, "total": 4265}
+{"shard": 0, "completed": 3891, "total": 4265}
+{"shard": 0, "completed": 3892, "total": 4265}
+{"shard": 0, "completed": 3893, "total": 4265}
+{"shard": 0, "completed": 3894, "total": 4265}
+{"shard": 0, "completed": 3895, "total": 4265}
+{"shard": 0, "completed": 3896, "total": 4265}
+{"shard": 0, "completed": 3897, "total": 4265}
+{"shard": 0, "completed": 3898, "total": 4265}
+{"shard": 0, "completed": 3899, "total": 4265}
+{"shard": 0, "completed": 3900, "total": 4265}
+{"shard": 0, "completed": 3901, "total": 4265}
+{"shard": 0, "completed": 3902, "total": 4265}
+{"shard": 0, "completed": 3903, "total": 4265}
+{"shard": 0, "completed": 3904, "total": 4265}
+{"shard": 0, "completed": 3905, "total": 4265}
+{"shard": 0, "completed": 3906, "total": 4265}
+{"shard": 0, "completed": 3907, "total": 4265}
+{"shard": 0, "completed": 3908, "total": 4265}
+{"shard": 0, "completed": 3909, "total": 4265}
+{"shard": 0, "completed": 3910, "total": 4265}
+{"shard": 0, "completed": 3911, "total": 4265}
+{"shard": 0, "completed": 3912, "total": 4265}
+{"shard": 0, "completed": 3913, "total": 4265}
+{"shard": 0, "completed": 3914, "total": 4265}
+{"shard": 0, "completed": 3915, "total": 4265}
+{"shard": 0, "completed": 3916, "total": 4265}
+{"shard": 0, "completed": 3917, "total": 4265}
+{"shard": 0, "completed": 3918, "total": 4265}
+{"shard": 0, "completed": 3919, "total": 4265}
+{"shard": 0, "completed": 3920, "total": 4265}
+{"shard": 0, "completed": 3921, "total": 4265}
+{"shard": 0, "completed": 3922, "total": 4265}
+{"shard": 0, "completed": 3923, "total": 4265}
+{"shard": 0, "completed": 3924, "total": 4265}
+{"shard": 0, "completed": 3925, "total": 4265}
+{"shard": 0, "completed": 3926, "total": 4265}
+{"shard": 0, "completed": 3927, "total": 4265}
+{"shard": 0, "completed": 3928, "total": 4265}
+{"shard": 0, "completed": 3929, "total": 4265}
+{"shard": 0, "completed": 3930, "total": 4265}
+{"shard": 0, "completed": 3931, "total": 4265}
+{"shard": 0, "completed": 3932, "total": 4265}
+{"shard": 0, "completed": 3933, "total": 4265}
+{"shard": 0, "completed": 3934, "total": 4265}
+{"shard": 0, "completed": 3935, "total": 4265}
+{"shard": 0, "completed": 3936, "total": 4265}
+{"shard": 0, "completed": 3937, "total": 4265}
+{"shard": 0, "completed": 3938, "total": 4265}
+{"shard": 0, "completed": 3939, "total": 4265}
+{"shard": 0, "completed": 3940, "total": 4265}
+{"shard": 0, "completed": 3941, "total": 4265}
+{"shard": 0, "completed": 3942, "total": 4265}
+{"shard": 0, "completed": 3943, "total": 4265}
+{"shard": 0, "completed": 3944, "total": 4265}
+{"shard": 0, "completed": 3945, "total": 4265}
+{"shard": 0, "completed": 3946, "total": 4265}
+{"shard": 0, "completed": 3947, "total": 4265}
+{"shard": 0, "completed": 3948, "total": 4265}
+{"shard": 0, "completed": 3949, "total": 4265}
+{"shard": 0, "completed": 3950, "total": 4265}
+{"shard": 0, "completed": 3951, "total": 4265}
+{"shard": 0, "completed": 3952, "total": 4265}
+{"shard": 0, "completed": 3953, "total": 4265}
+{"shard": 0, "completed": 3954, "total": 4265}
+{"shard": 0, "completed": 3955, "total": 4265}
+{"shard": 0, "completed": 3956, "total": 4265}
+{"shard": 0, "completed": 3957, "total": 4265}
+{"shard": 0, "completed": 3958, "total": 4265}
+{"shard": 0, "completed": 3959, "total": 4265}
+{"shard": 0, "completed": 3960, "total": 4265}
+{"shard": 0, "completed": 3961, "total": 4265}
+{"shard": 0, "completed": 3962, "total": 4265}
+{"shard": 0, "completed": 3963, "total": 4265}
+{"shard": 0, "completed": 3964, "total": 4265}
+{"shard": 0, "completed": 3965, "total": 4265}
+{"shard": 0, "completed": 3966, "total": 4265}
+{"shard": 0, "completed": 3967, "total": 4265}
+{"shard": 0, "completed": 3968, "total": 4265}
+{"shard": 0, "completed": 3969, "total": 4265}
+{"shard": 0, "completed": 3970, "total": 4265}
+{"shard": 0, "completed": 3971, "total": 4265}
+{"shard": 0, "completed": 3972, "total": 4265}
+{"shard": 0, "completed": 3973, "total": 4265}
+{"shard": 0, "completed": 3974, "total": 4265}
+{"shard": 0, "completed": 3975, "total": 4265}
+{"shard": 0, "completed": 3976, "total": 4265}
+{"shard": 0, "completed": 3977, "total": 4265}
+{"shard": 0, "completed": 3978, "total": 4265}
+{"shard": 0, "completed": 3979, "total": 4265}
+{"shard": 0, "completed": 3980, "total": 4265}
+{"shard": 0, "completed": 3981, "total": 4265}
+{"shard": 0, "completed": 3982, "total": 4265}
+{"shard": 0, "completed": 3983, "total": 4265}
+{"shard": 0, "completed": 3984, "total": 4265}
+{"shard": 0, "completed": 3985, "total": 4265}
+{"shard": 0, "completed": 3986, "total": 4265}
+{"shard": 0, "completed": 3987, "total": 4265}
+{"shard": 0, "completed": 3988, "total": 4265}
+{"shard": 0, "completed": 3989, "total": 4265}
+{"shard": 0, "completed": 3990, "total": 4265}
+{"shard": 0, "completed": 3991, "total": 4265}
+{"shard": 0, "completed": 3992, "total": 4265}
+{"shard": 0, "completed": 3993, "total": 4265}
+{"shard": 0, "completed": 3994, "total": 4265}
+{"shard": 0, "completed": 3995, "total": 4265}
+{"shard": 0, "completed": 3996, "total": 4265}
+{"shard": 0, "completed": 3997, "total": 4265}
+{"shard": 0, "completed": 3998, "total": 4265}
+{"shard": 0, "completed": 3999, "total": 4265}
+{"shard": 0, "completed": 4000, "total": 4265}
+{"shard": 0, "completed": 4001, "total": 4265}
+{"shard": 0, "completed": 4002, "total": 4265}
+{"shard": 0, "completed": 4003, "total": 4265}
+{"shard": 0, "completed": 4004, "total": 4265}
+{"shard": 0, "completed": 4005, "total": 4265}
+{"shard": 0, "completed": 4006, "total": 4265}
+{"shard": 0, "completed": 4007, "total": 4265}
+{"shard": 0, "completed": 4008, "total": 4265}
+{"shard": 0, "completed": 4009, "total": 4265}
+{"shard": 0, "completed": 4010, "total": 4265}
+{"shard": 0, "completed": 4011, "total": 4265}
+{"shard": 0, "completed": 4012, "total": 4265}
+{"shard": 0, "completed": 4013, "total": 4265}
+{"shard": 0, "completed": 4014, "total": 4265}
+{"shard": 0, "completed": 4015, "total": 4265}
+{"shard": 0, "completed": 4016, "total": 4265}
+{"shard": 0, "completed": 4017, "total": 4265}
+{"shard": 0, "completed": 4018, "total": 4265}
+{"shard": 0, "completed": 4019, "total": 4265}
+{"shard": 0, "completed": 4020, "total": 4265}
+{"shard": 0, "completed": 4021, "total": 4265}
+{"shard": 0, "completed": 4022, "total": 4265}
+{"shard": 0, "completed": 4023, "total": 4265}
+{"shard": 0, "completed": 4024, "total": 4265}
+{"shard": 0, "completed": 4025, "total": 4265}
+{"shard": 0, "completed": 4026, "total": 4265}
+{"shard": 0, "completed": 4027, "total": 4265}
+{"shard": 0, "completed": 4028, "total": 4265}
+{"shard": 0, "completed": 4029, "total": 4265}
+{"shard": 0, "completed": 4030, "total": 4265}
+{"shard": 0, "completed": 4031, "total": 4265}
+{"shard": 0, "completed": 4032, "total": 4265}
+{"shard": 0, "completed": 4033, "total": 4265}
+{"shard": 0, "completed": 4034, "total": 4265}
+{"shard": 0, "completed": 4035, "total": 4265}
+{"shard": 0, "completed": 4036, "total": 4265}
+{"shard": 0, "completed": 4037, "total": 4265}
+{"shard": 0, "completed": 4038, "total": 4265}
+{"shard": 0, "completed": 4039, "total": 4265}
+{"shard": 0, "completed": 4040, "total": 4265}
+{"shard": 0, "completed": 4041, "total": 4265}
+{"shard": 0, "completed": 4042, "total": 4265}
+{"shard": 0, "completed": 4043, "total": 4265}
+{"shard": 0, "completed": 4044, "total": 4265}
+{"shard": 0, "completed": 4045, "total": 4265}
+{"shard": 0, "completed": 4046, "total": 4265}
+{"shard": 0, "completed": 4047, "total": 4265}
+{"shard": 0, "completed": 4048, "total": 4265}
+{"shard": 0, "completed": 4049, "total": 4265}
+{"shard": 0, "completed": 4050, "total": 4265}
+{"shard": 0, "completed": 4051, "total": 4265}
+{"shard": 0, "completed": 4052, "total": 4265}
+{"shard": 0, "completed": 4053, "total": 4265}
+{"shard": 0, "completed": 4054, "total": 4265}
+{"shard": 0, "completed": 4055, "total": 4265}
+{"shard": 0, "completed": 4056, "total": 4265}
+{"shard": 0, "completed": 4057, "total": 4265}
+{"shard": 0, "completed": 4058, "total": 4265}
+{"shard": 0, "completed": 4059, "total": 4265}
+{"shard": 0, "completed": 4060, "total": 4265}
+{"shard": 0, "completed": 4061, "total": 4265}
+{"shard": 0, "completed": 4062, "total": 4265}
+{"shard": 0, "completed": 4063, "total": 4265}
+{"shard": 0, "completed": 4064, "total": 4265}
+{"shard": 0, "completed": 4065, "total": 4265}
+{"shard": 0, "completed": 4066, "total": 4265}
+{"shard": 0, "completed": 4067, "total": 4265}
+{"shard": 0, "completed": 4068, "total": 4265}
+{"shard": 0, "completed": 4069, "total": 4265}
+{"shard": 0, "completed": 4070, "total": 4265}
+{"shard": 0, "completed": 4071, "total": 4265}
+{"shard": 0, "completed": 4072, "total": 4265}
+{"shard": 0, "completed": 4073, "total": 4265}
+{"shard": 0, "completed": 4074, "total": 4265}
+{"shard": 0, "completed": 4075, "total": 4265}
+{"shard": 0, "completed": 4076, "total": 4265}
+{"shard": 0, "completed": 4077, "total": 4265}
+{"shard": 0, "completed": 4078, "total": 4265}
+{"shard": 0, "completed": 4079, "total": 4265}
+{"shard": 0, "completed": 4080, "total": 4265}
+{"shard": 0, "completed": 4081, "total": 4265}
+{"shard": 0, "completed": 4082, "total": 4265}
+{"shard": 0, "completed": 4083, "total": 4265}
+{"shard": 0, "completed": 4084, "total": 4265}
+{"shard": 0, "completed": 4085, "total": 4265}
+{"shard": 0, "completed": 4086, "total": 4265}
+{"shard": 0, "completed": 4087, "total": 4265}
+{"shard": 0, "completed": 4088, "total": 4265}
+{"shard": 0, "completed": 4089, "total": 4265}
+{"shard": 0, "completed": 4090, "total": 4265}
+{"shard": 0, "completed": 4091, "total": 4265}
+{"shard": 0, "completed": 4092, "total": 4265}
+{"shard": 0, "completed": 4093, "total": 4265}
+{"shard": 0, "completed": 4094, "total": 4265}
+{"shard": 0, "completed": 4095, "total": 4265}
+{"shard": 0, "completed": 4096, "total": 4265}
+{"shard": 0, "completed": 4097, "total": 4265}
+{"shard": 0, "completed": 4098, "total": 4265}
+{"shard": 0, "completed": 4099, "total": 4265}
+{"shard": 0, "completed": 4100, "total": 4265}
+{"shard": 0, "completed": 4101, "total": 4265}
+{"shard": 0, "completed": 4102, "total": 4265}
+{"shard": 0, "completed": 4103, "total": 4265}
+{"shard": 0, "completed": 4104, "total": 4265}
+{"shard": 0, "completed": 4105, "total": 4265}
+{"shard": 0, "completed": 4106, "total": 4265}
+{"shard": 0, "completed": 4107, "total": 4265}
+{"shard": 0, "completed": 4108, "total": 4265}
+{"shard": 0, "completed": 4109, "total": 4265}
+{"shard": 0, "completed": 4110, "total": 4265}
+{"shard": 0, "completed": 4111, "total": 4265}
+{"shard": 0, "completed": 4112, "total": 4265}
+{"shard": 0, "completed": 4113, "total": 4265}
+{"shard": 0, "completed": 4114, "total": 4265}
+{"shard": 0, "completed": 4115, "total": 4265}
+{"shard": 0, "completed": 4116, "total": 4265}
+{"shard": 0, "completed": 4117, "total": 4265}
+{"shard": 0, "completed": 4118, "total": 4265}
+{"shard": 0, "completed": 4119, "total": 4265}
+{"shard": 0, "completed": 4120, "total": 4265}
+{"shard": 0, "completed": 4121, "total": 4265}
+{"shard": 0, "completed": 4122, "total": 4265}
+{"shard": 0, "completed": 4123, "total": 4265}
+{"shard": 0, "completed": 4124, "total": 4265}
+{"shard": 0, "completed": 4125, "total": 4265}
+{"shard": 0, "completed": 4126, "total": 4265}
+{"shard": 0, "completed": 4127, "total": 4265}
+{"shard": 0, "completed": 4128, "total": 4265}
+{"shard": 0, "completed": 4129, "total": 4265}
+{"shard": 0, "completed": 4130, "total": 4265}
+{"shard": 0, "completed": 4131, "total": 4265}
+{"shard": 0, "completed": 4132, "total": 4265}
+{"shard": 0, "completed": 4133, "total": 4265}
+{"shard": 0, "completed": 4134, "total": 4265}
+{"shard": 0, "completed": 4135, "total": 4265}
+{"shard": 0, "completed": 4136, "total": 4265}
+{"shard": 0, "completed": 4137, "total": 4265}
+{"shard": 0, "completed": 4138, "total": 4265}
+{"shard": 0, "completed": 4139, "total": 4265}
+{"shard": 0, "completed": 4140, "total": 4265}
+{"shard": 0, "completed": 4141, "total": 4265}
+{"shard": 0, "completed": 4142, "total": 4265}
+{"shard": 0, "completed": 4143, "total": 4265}
+{"shard": 0, "completed": 4144, "total": 4265}
+{"shard": 0, "completed": 4145, "total": 4265}
+{"shard": 0, "completed": 4146, "total": 4265}
+{"shard": 0, "completed": 4147, "total": 4265}
+{"shard": 0, "completed": 4148, "total": 4265}
+{"shard": 0, "completed": 4149, "total": 4265}
+{"shard": 0, "completed": 4150, "total": 4265}
+{"shard": 0, "completed": 4151, "total": 4265}
+{"shard": 0, "completed": 4152, "total": 4265}
+{"shard": 0, "completed": 4153, "total": 4265}
+{"shard": 0, "completed": 4154, "total": 4265}
+{"shard": 0, "completed": 4155, "total": 4265}
+{"shard": 0, "completed": 4156, "total": 4265}
+{"shard": 0, "completed": 4157, "total": 4265}
+{"shard": 0, "completed": 4158, "total": 4265}
+{"shard": 0, "completed": 4159, "total": 4265}
+{"shard": 0, "completed": 4160, "total": 4265}
+{"shard": 0, "completed": 4161, "total": 4265}
+{"shard": 0, "completed": 4162, "total": 4265}
+{"shard": 0, "completed": 4163, "total": 4265}
+{"shard": 0, "completed": 4164, "total": 4265}
+{"shard": 0, "completed": 4165, "total": 4265}
+{"shard": 0, "completed": 4166, "total": 4265}
+{"shard": 0, "completed": 4167, "total": 4265}
+{"shard": 0, "completed": 4168, "total": 4265}
+{"shard": 0, "completed": 4169, "total": 4265}
+{"shard": 0, "completed": 4170, "total": 4265}
+{"shard": 0, "completed": 4171, "total": 4265}
+{"shard": 0, "completed": 4172, "total": 4265}
+{"shard": 0, "completed": 4173, "total": 4265}
+{"shard": 0, "completed": 4174, "total": 4265}
+{"shard": 0, "completed": 4175, "total": 4265}
+{"shard": 0, "completed": 4176, "total": 4265}
+{"shard": 0, "completed": 4177, "total": 4265}
+{"shard": 0, "completed": 4178, "total": 4265}
+{"shard": 0, "completed": 4179, "total": 4265}
+{"shard": 0, "completed": 4180, "total": 4265}
+{"shard": 0, "completed": 4181, "total": 4265}
+{"shard": 0, "completed": 4182, "total": 4265}
+{"shard": 0, "completed": 4183, "total": 4265}
+{"shard": 0, "completed": 4184, "total": 4265}
+{"shard": 0, "completed": 4185, "total": 4265}
+{"shard": 0, "completed": 4186, "total": 4265}
+{"shard": 0, "completed": 4187, "total": 4265}
+{"shard": 0, "completed": 4188, "total": 4265}
+{"shard": 0, "completed": 4189, "total": 4265}
+{"shard": 0, "completed": 4190, "total": 4265}
+{"shard": 0, "completed": 4191, "total": 4265}
+{"shard": 0, "completed": 4192, "total": 4265}
+{"shard": 0, "completed": 4193, "total": 4265}
+{"shard": 0, "completed": 4194, "total": 4265}
+{"shard": 0, "completed": 4195, "total": 4265}
+{"shard": 0, "completed": 4196, "total": 4265}
+{"shard": 0, "completed": 4197, "total": 4265}
+{"shard": 0, "completed": 4198, "total": 4265}
+{"shard": 0, "completed": 4199, "total": 4265}
+{"shard": 0, "completed": 4200, "total": 4265}
+{"shard": 0, "completed": 4201, "total": 4265}
+{"shard": 0, "completed": 4202, "total": 4265}
+{"shard": 0, "completed": 4203, "total": 4265}
+{"shard": 0, "completed": 4204, "total": 4265}
+{"shard": 0, "completed": 4205, "total": 4265}
+{"shard": 0, "completed": 4206, "total": 4265}
+{"shard": 0, "completed": 4207, "total": 4265}
+{"shard": 0, "completed": 4208, "total": 4265}
+{"shard": 0, "completed": 4209, "total": 4265}
+{"shard": 0, "completed": 4210, "total": 4265}
+{"shard": 0, "completed": 4211, "total": 4265}
+{"shard": 0, "completed": 4212, "total": 4265}
+{"shard": 0, "completed": 4213, "total": 4265}
+{"shard": 0, "completed": 4214, "total": 4265}
+{"shard": 0, "completed": 4215, "total": 4265}
+{"shard": 0, "completed": 4216, "total": 4265}
+{"shard": 0, "completed": 4217, "total": 4265}
+{"shard": 0, "completed": 4218, "total": 4265}
+{"shard": 0, "completed": 4219, "total": 4265}
+{"shard": 0, "completed": 4220, "total": 4265}
+{"shard": 0, "completed": 4221, "total": 4265}
+{"shard": 0, "completed": 4222, "total": 4265}
+{"shard": 0, "completed": 4223, "total": 4265}
+{"shard": 0, "completed": 4224, "total": 4265}
+{"shard": 0, "completed": 4225, "total": 4265}
+{"shard": 0, "completed": 4226, "total": 4265}
+{"shard": 0, "completed": 4227, "total": 4265}
+{"shard": 0, "completed": 4228, "total": 4265}
+{"shard": 0, "completed": 4229, "total": 4265}
+{"shard": 0, "completed": 4230, "total": 4265}
+{"shard": 0, "completed": 4231, "total": 4265}
+{"shard": 0, "completed": 4232, "total": 4265}
+{"shard": 0, "completed": 4233, "total": 4265}
+{"shard": 0, "completed": 4234, "total": 4265}
+{"shard": 0, "completed": 4235, "total": 4265}
+{"shard": 0, "completed": 4236, "total": 4265}
+{"shard": 0, "completed": 4237, "total": 4265}
+{"shard": 0, "completed": 4238, "total": 4265}
+{"shard": 0, "completed": 4239, "total": 4265}
+{"shard": 0, "completed": 4240, "total": 4265}
+{"shard": 0, "completed": 4241, "total": 4265}
+{"shard": 0, "completed": 4242, "total": 4265}
+{"shard": 0, "completed": 4243, "total": 4265}
+{"shard": 0, "completed": 4244, "total": 4265}
+{"shard": 0, "completed": 4245, "total": 4265}
+{"shard": 0, "completed": 4246, "total": 4265}
+{"shard": 0, "completed": 4247, "total": 4265}
+{"shard": 0, "completed": 4248, "total": 4265}
+{"shard": 0, "completed": 4249, "total": 4265}
+{"shard": 0, "completed": 4250, "total": 4265}
+{"shard": 0, "completed": 4251, "total": 4265}
+{"shard": 0, "completed": 4252, "total": 4265}
+{"shard": 0, "completed": 4253, "total": 4265}
+{"shard": 0, "completed": 4254, "total": 4265}
+{"shard": 0, "completed": 4255, "total": 4265}
+{"shard": 0, "completed": 4256, "total": 4265}
+{"shard": 0, "completed": 4257, "total": 4265}
+{"shard": 0, "completed": 4258, "total": 4265}
+{"shard": 0, "completed": 4259, "total": 4265}
+{"shard": 0, "completed": 4260, "total": 4265}
+{"shard": 0, "completed": 4261, "total": 4265}
+{"shard": 0, "completed": 4262, "total": 4265}
+{"shard": 0, "completed": 4263, "total": 4265}
+{"shard": 0, "completed": 4264, "total": 4265}
+{"shard": 0, "completed": 4265, "total": 4265}
+End Time: 2026-09-22T00:11:38+09:00
+Elapsed Seconds: 5795
+Exit Code: 0

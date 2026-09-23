@@ -32,7 +32,7 @@ else
   case "${SLURM_JOB_PARTITION:-}" in
     amd_a100nv_8) cpu_per_gpu=8; max_gpus=8;;
     amd_a100_4) cpu_per_gpu=16; max_gpus=4;;
-    amd_h200nv_8) cpu_per_gpu=8; max_gpus=8;;
+    amd_h200nv_8) cpu_per_gpu=8; max_gpus=2;;
     *) echo 'Only reviewed A100/H200 partitions are supported' >&2; exit 2;;
   esac
   NUM_GPUS=${NUM_GPUS:-1}
@@ -57,7 +57,7 @@ fi
 conda activate "${CONDA_ENV:-phdq_blt_hf}"
 export HF_HOME="$PROJECT_ROOT/artifacts/hf_home" HF_HUB_CACHE="$PROJECT_ROOT/artifacts/hub"
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 TOKENIZERS_PARALLELISM=false
-export TMPDIR="$PROJECT_ROOT/artifacts/tmp" PYTHONUNBUFFERED=1
+export TMPDIR="$PROJECT_ROOT/artifacts/tmp" PYTHONUNBUFFERED=1 PYTHONFAULTHANDLER=1
 export OMP_NUM_THREADS=$(( ${SLURM_CPUS_PER_TASK:-1} / ${NUM_GPUS:-1} ))
 (( OMP_NUM_THREADS > 0 )) || export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS="$OMP_NUM_THREADS"

@@ -1,0 +1,7 @@
+==========================================
+SLURM_JOB_ID = 912060
+SLURM_NODELIST = cpu04
+==========================================
+a591ac537d1e8f9e8b8a5fd9e6d79401720e4829e4e4e74cb0be6cbae1871016  outputs/blt_hf/union/union-h200-4gpu-main-01/step-00004479-bed1e948/model.safetensors
+50c96877e6eda2088e1c35bdb4133fbf151265c664dc782ac8e15d808fa96594  outputs/blt_hf/union/union-h200-4gpu-main-01/step-00004479-bed1e948/training.pt
+elapsed=20.32 sec maxrss=3072 KB

@@ -14,7 +14,10 @@ class NeuronContracts(unittest.TestCase):
         with self.assertRaises(ValueError):local_path('../outside')
 
     def test_clis_parse_without_gpu_import_or_network(self):
-        self.assertEqual(train_parser().parse_args(['--run-dir','outputs/example']).epochs,3)
+        parsed=train_parser().parse_args(['--run-dir','outputs/example'])
+        self.assertEqual(parsed.epochs,10)
+        self.assertEqual(parsed.warmup_ratio,.05)
+        self.assertEqual(parsed.max_seconds,21000)
         self.assertTrue(eval_parser().parse_args(['--output-dir','outputs/example','--aggregate']).aggregate)
 
     def test_training_preserves_bf16_model_and_optimizer_state(self):
@@ -40,12 +43,15 @@ class NeuronContracts(unittest.TestCase):
             self.assertIn('#SBATCH --signal=B:TERM@300',text)
             self.assertIn('run_job srun --ntasks=1',text)
         common=(ROOT/'scripts/neuron_blt_hf_common.sh').read_text()
-        self.assertIn('amd_h200nv_8) cpu_per_gpu=8; max_gpus=8',common)
+        self.assertIn('amd_h200nv_8) cpu_per_gpu=8; max_gpus=2',common)
         self.assertIn('expected=(9,0)',common)
         self.assertIn('trap log_job_end EXIT',common)
         self.assertIn("'End Time: %s\\nElapsed Seconds: %s\\nExit Code: %s\\n'",common)
         for name in ('train_blt_hf.sh','eval_blt_hf.sh'):
             self.assertIn('#SBATCH --gres=gpu:1',(ROOT/'scripts'/name).read_text())
+        train=(ROOT/'scripts/train_blt_hf.sh').read_text()
+        self.assertIn('#SBATCH --time=06:00:00',train)
+        self.assertIn('${MAX_SECONDS:-21000}',train)
 
     def test_config_fingerprint_ignores_only_loader_metadata(self):
         from blt_hf.runtime import model_config_identity
@@ -63,6 +69,13 @@ class NeuronContracts(unittest.TestCase):
         self.assertNotEqual(model_config_identity(factory),model_config_identity(loaded))
         self.assertNotEqual(model_config_identity(Config({'dtype':'float32'}),loader_dtype='bfloat16'),
                             model_config_identity(Config({'dtype':'bfloat16'})))
+
+    def test_stage_code_identity_is_content_based(self):
+        from blt_hf.runtime import code_identity
+        identity=code_identity(('blt_hf/training.py','blt_hf/training.py'))
+        self.assertEqual(list(identity['code_files']),['blt_hf/training.py'])
+        self.assertEqual(len(identity['code_hash']),64)
+        self.assertNotIn('code_commit',identity)
 
     def test_conversion_evidence_is_bound_to_current_model_code(self):
         from blt_hf.runtime import conversion_verification, CONVERSION

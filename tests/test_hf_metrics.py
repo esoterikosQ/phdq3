@@ -6,12 +6,25 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 from blt_hf.metrics import compute_gleu
-from blt_hf.m2_resumable import evaluate_m2_resumable, _load_completed
+from blt_hf.m2_resumable import evaluate_m2_resumable, _load_completed, load_m2_annotations
 
 ROOT=Path(__file__).resolve().parents[1]
 FIXTURE=ROOT/'tests/fixtures/m2'
 
 class MetricContracts(unittest.TestCase):
+    def test_new_s_line_starts_record_without_blank_separator(self):
+        text=("S first row\n"
+              "A 0 1|||R|||fixed|||REQUIRED|||-NONE-|||0\n"
+              "S second row\n"
+              "A -1 -1|||noop|||-NONE-|||REQUIRED|||-NONE-|||0\n")
+        with tempfile.TemporaryDirectory() as d:
+            path=Path(d)/'joined.m2';path.write_text(text,encoding='utf-8')
+            sources,edits=load_m2_annotations(path)
+            self.assertEqual(sources,['first row','second row'])
+            self.assertEqual(len(edits),2)
+            self.assertEqual(edits[0][0][0][:3],(0,1,'first'))
+            self.assertEqual(edits[1][0],[])
+
     @unittest.skipUnless((FIXTURE/'source_gold').is_file() and (ROOT/'blt_hf/vendor/m2/levenshtein.py').is_file(),
                          'local M2 source/fixtures are excluded from publication; see THIRD_PARTY_NOTICES.md')
     def test_m2_matches_original_cli_and_resume_does_not_duplicate(self):

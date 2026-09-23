@@ -5,7 +5,7 @@ from pathlib import Path
 
 from blt_hf.data_adapter import (
     GecDataset, SEPARATOR, canonical_split_paths, encode_pair, encode_prompt,
-    read_tsv, prepare_unpadded_batch,
+    read_tsv, prepare_unpadded_batch, dataset_split_path,
 )
 
 
@@ -87,6 +87,8 @@ class DatasetTests(unittest.TestCase):
         paths = canonical_split_paths(Path("data/Preprocessed"))
         self.assertEqual(len(paths), 9)
         self.assertEqual(paths["korean_learner/test"].name, "korean_learner_test.txt")
+        self.assertEqual(dataset_split_path(Path('data/Preprocessed'),'lang8','test'),
+                         Path('artifacts/derived/lang8/lang8_test.txt'))
 
     @unittest.skipUnless(any(p.is_file() for p in canonical_split_paths(Path('data/Preprocessed')).values()),
                          'private dataset is not distributed with the repository')

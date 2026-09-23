@@ -8,7 +8,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=01:55:00
+#SBATCH --time=06:00:00
 #SBATCH --signal=B:TERM@300
 set -euo pipefail
 export NUM_GPUS=${NUM_GPUS:-1}
@@ -17,10 +17,13 @@ source /scratch/r984a02/phdq3/scripts/neuron_blt_hf_common.sh
 DATASET_TYPE=${DATASET_TYPE:-native}
 [[ "$DATASET_TYPE" != learner ]] || DATASET_TYPE=korean_learner
 [[ "$RUN_ID" =~ ^[A-Za-z0-9_-]+$ ]] || { echo 'Invalid RUN_ID' >&2; exit 2; }
+if [[ "$DATASET_TYPE" == lang8 ]]; then
+  python -m blt_hf.derive_lang8
+fi
 args=(--dataset "$DATASET_TYPE" --run-dir "outputs/blt_hf/$DATASET_TYPE/$RUN_ID"
-      --mode "${TRAIN_MODE:-train}" --epochs "${EPOCHS:-3}" --effective-batch "${EFFECTIVE_BATCH:-32}"
-      --lr "${LR:-0.00001}" --warmup-steps "${WARMUP_STEPS:-2000}"
-      --save-every "${SAVE_EVERY:-500}" --seed "${SEED:-0}" --max-seconds "${MAX_SECONDS:-6300}"
+      --mode "${TRAIN_MODE:-train}" --epochs "${EPOCHS:-10}" --effective-batch "${EFFECTIVE_BATCH:-32}"
+      --lr "${LR:-0.00001}" --warmup-ratio "${WARMUP_RATIO:-0.05}"
+      --save-every "${SAVE_EVERY:-500}" --seed "${SEED:-0}" --max-seconds "${MAX_SECONDS:-21000}"
       --max-steps "${MAX_STEPS:-0}" --overfit-steps "${OVERFIT_STEPS:-200}")
 [[ -z "${RESUME:-}" ]] || args+=(--resume "$RESUME")
 if [[ "${TRAIN_MODE:-train}" == smoke ]]; then

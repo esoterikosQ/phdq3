@@ -238,3 +238,22 @@ neuron 학습 코드. 학습은 동질성 검증 완료와 무관하게 진행�
 
 attn backend, mask 구현, entropy 기준, cache 동작은 아직 결정·검증되지 않았다.
 출처를 확인하지 않은 converter commit이나 원격 환경 lock을 임의 생성하지 않는다.
+## 2026-09-23 — learner 생성 완료와 다음 학습 사이클
+
+- learner test beam1 생성은 A100 1GPU에서 4,265/4,265건 완료했다. job 912817과
+  912933은 각각 exit 75로 checkpoint 후 멈췄고 job 913148이 같은 EVAL_DIR에서
+  이어서 exit 0으로 끝났다. 세 job의 실행 시간 합계는 18,478초다. GLEU/M2 CPU
+  채점은 별도 job으로 남아 있다.
+- 기존 union `union-h200-4gpu-main-01`의 step 4479 checkpoint는 보존하되 재개하지
+  않는다. 새 union은 아래 공통 10-epoch 정책으로 처음부터 실행한다.
+- 재개 identity에서 Git commit 문자열을 제거했다. train/generate 단계가 실제 사용하는
+  파일만 `code_hash`로 묶으며 commit·SLURM job·partition·node는 `provenance.jsonl`에
+  기록한다. rank 0만 checkpoint hash를 읽고 결과/오류를 모든 rank에 broadcast한다.
+- 다음 사이클은 BF16, A100 4GPU, effective batch 32, LR 1e-5, 10 epoch,
+  5% warmup이다. epoch별 checkpoint를 보존하고 동일 조건의 전체 validation GLEU로
+  `best_gleu.json`을 선택한 뒤 test에 사용한다.
+- Lang-8은 제공 data를 수정하지 않고 union prefix로 파생한다. union suffix가
+  korean_learner+native와 TSV/M2 모두 정확히 일치하는지 확인했다. 행 수는
+  train 76,692 / val 16,434 / test 16,434다.
+- union 합본 M2의 빈 separator 문제를 막기 위해 모든 새 `S ` 행을 논리 record
+  경계로 처리한다. H200은 script에서도 한 job 최대 2GPU로 제한한다.

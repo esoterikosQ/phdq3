@@ -1,0 +1,512 @@
+==========================================
+SLURM_JOB_ID = 912880
+SLURM_NODELIST = cpu04
+==========================================
+Job ID: 912880
+Node: cpu04
+Start Time: 2026-09-21T17:02:42+09:00
+Submit Dir: /scratch/r984a02/phdq3
+Partition: cpu
+CUDA_VISIBLE_DEVICES: none
+CPUs per task: 8
+{
+  "schema_version": 1,
+  "created_at": "2026-09-21T08:02:48.230151+00:00",
+  "hostname": "cpu04",
+  "platform": "Linux-5.14.0-427.13.1.el9_4.x86_64-x86_64-with-glibc2.34",
+  "python": "3.11.16",
+  "python_executable": "/home01/r984a02/.conda/envs/phdq_blt_hf/bin/python",
+  "scope": "cpu_metadata_only",
+  "torch": "2.11.0+cu128",
+  "transformers": "5.16.1",
+  "xformers": null,
+  "safetensors": "0.8.0",
+  "huggingface_hub": "1.31.0",
+  "devices": [],
+  "errors": [],
+  "status": "informational"
+}
+{
+  "schema_version": 1,
+  "created_at": "2026-09-21T08:02:52.829201+00:00",
+  "check": "raw_utf8_lengths_and_m2_source_alignment",
+  "model_executed": false,
+  "tokenizer_executed": false,
+  "status": "pass",
+  "max_allowed": 2048,
+  "splits": {
+    "native/train": {
+      "rows": 12292,
+      "blank_lines": 0,
+      "tsv_sha256": "a1080e12f528212f25858b1c0093f497d9ffa62f5717848088c4010bad2ea871",
+      "max_sequence_bytes": 398,
+      "max_prompt_bytes": 207,
+      "max_target_bytes": 190,
+      "over_1024": 0,
+      "over_limit": 0
+    },
+    "native/val": {
+      "rows": 2634,
+      "blank_lines": 0,
+      "tsv_sha256": "002645a47593a88735fe7b13fdc7c9fe2e4c1a92191f90ec7fb95449758ecd98",
+      "max_sequence_bytes": 401,
+      "max_prompt_bytes": 209,
+      "max_target_bytes": 191,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "native",
+        "split": "val",
+        "sample_count": 2634,
+        "source_hash": "e63fe872699d99b0ccec7dc04e98fb9bfde1f6b6c7119d90a9070daec279a4c3",
+        "target_hash": "4c13345e12a1b4cd8097edd3b3cbb05fb0e71cef3d3e9f21c237ef9536461feb",
+        "m2_hash": "17558a819658a14031ed8d36032b2f33f2f0094f50da695e818c488037fabb8a",
+        "tsv_hash": "002645a47593a88735fe7b13fdc7c9fe2e4c1a92191f90ec7fb95449758ecd98",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "native/test": {
+      "rows": 2634,
+      "blank_lines": 0,
+      "tsv_sha256": "6c2d6e1551fdd12dd51b764b0daa3de57befedca47c21ed07fb5538d7c33ccc8",
+      "max_sequence_bytes": 399,
+      "max_prompt_bytes": 208,
+      "max_target_bytes": 190,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "native",
+        "split": "test",
+        "sample_count": 2634,
+        "source_hash": "37ec4cb176690066bd411d4dee23001ee77a3cf7825f28b2555390db349ba1c7",
+        "target_hash": "c1b96b70deb626920be67f05d1b371bd16b38ccc9abd941a3f98bd11776d3563",
+        "m2_hash": "a4579825f6fc5e9ee7fbb1ae722cf260518b9305a07f5191ba423bc0f8b0a04c",
+        "tsv_hash": "6c2d6e1551fdd12dd51b764b0daa3de57befedca47c21ed07fb5538d7c33ccc8",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "korean_learner/train": {
+      "rows": 19898,
+      "blank_lines": 0,
+      "tsv_sha256": "163ab6419d259f477b5ab3c913dca6068dd1beaace2f4858d5416ac41bbe1888",
+      "max_sequence_bytes": 1380,
+      "max_prompt_bytes": 694,
+      "max_target_bytes": 685,
+      "over_1024": 4,
+      "over_limit": 0
+    },
+    "korean_learner/val": {
+      "rows": 4264,
+      "blank_lines": 0,
+      "tsv_sha256": "c5b62d189af42807a6dd0679f2a43b5d07dfaae282aeef812724f90a19fc1e1b",
+      "max_sequence_bytes": 845,
+      "max_prompt_bytes": 430,
+      "max_target_bytes": 414,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "korean_learner",
+        "split": "val",
+        "sample_count": 4264,
+        "source_hash": "46384ab2684f369e36aa0fc787b0447796d3760ff7ebfcca2d8e973e93222a08",
+        "target_hash": "25cbe312b4d391f7a32b75100f6c8c2daa0eb6cd9de241775062eef69b17ea14",
+        "m2_hash": "26aa7b334b71ae3d6e0b06acd45cc81cc219d75ad1ff2b573f496b30284b839c",
+        "tsv_hash": "c5b62d189af42807a6dd0679f2a43b5d07dfaae282aeef812724f90a19fc1e1b",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "korean_learner/test": {
+      "rows": 4265,
+      "blank_lines": 0,
+      "tsv_sha256": "cb49c2806cedd8b71d1b5dbbc31ef5c74f0aca3a6ab6dc92a94c9e5ffe52044d",
+      "max_sequence_bytes": 633,
+      "max_prompt_bytes": 324,
+      "max_target_bytes": 320,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "korean_learner",
+        "split": "test",
+        "sample_count": 4265,
+        "source_hash": "4438468750166634cce0e4b03e72f7b82f45e352e7de230e9492c5a9cc4bb1c5",
+        "target_hash": "93878d24629be44430507a067a2ab645e2bf4fc65dc0cd0ba1177c2ff9640933",
+        "m2_hash": "4be33bbc4adf618da33074b9a97525c4d24c08162b9df44db60e69424f51ec01",
+        "tsv_hash": "cb49c2806cedd8b71d1b5dbbc31ef5c74f0aca3a6ab6dc92a94c9e5ffe52044d",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "union/train": {
+      "rows": 108882,
+      "blank_lines": 1,
+      "tsv_sha256": "90a55cac5d37cd3557f6f958b973b6f6a037872c87edade462ac05324843a54a",
+      "max_sequence_bytes": 1380,
+      "max_prompt_bytes": 694,
+      "max_target_bytes": 685,
+      "over_1024": 5,
+      "over_limit": 0
+    },
+    "union/val": {
+      "rows": 23332,
+      "blank_lines": 1,
+      "tsv_sha256": "22b90eee85aa2edd5557cd3009893dd1b1dcff22584b7f96e713878fcbeb5f8b",
+      "max_sequence_bytes": 931,
+      "max_prompt_bytes": 470,
+      "max_target_bytes": 460,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "union",
+        "split": "val",
+        "sample_count": 23332,
+        "source_hash": "a0063540f10386703cf635a5c77922af237d45357202cc5da5420f2c4ebb5a7b",
+        "target_hash": "864380fdab4b860b906a6836f9bb6a61230c40f071332fc1abcae2c4fb990d45",
+        "m2_hash": "22e1cdeed3702fe905b429c872f188b19b70c52e949c3eed1a8b4df5a90def20",
+        "tsv_hash": "22b90eee85aa2edd5557cd3009893dd1b1dcff22584b7f96e713878fcbeb5f8b",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "union/test": {
+      "rows": 23333,
+      "blank_lines": 1,
+      "tsv_sha256": "65b1bd0039ae58c136ee44ebbb6876ee69a5353bb8c00046ec235e7e79592f28",
+      "max_sequence_bytes": 886,
+      "max_prompt_bytes": 451,
+      "max_target_bytes": 434,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "union",
+        "split": "test",
+        "sample_count": 23333,
+        "source_hash": "eb476f3f20ea1abdd1fbb42e0ca006672a744e353bcd836d470569d7ea9e2ea7",
+        "target_hash": "fb2c7f1b332c75a69a4677a09a3f48134469cf40d9cf7f7cb4906696dbd0a176",
+        "m2_hash": "e79ae3c01c211bb58c2a0213f6b9e39bed8d9e4eb2011d7e7ae22a33c1042db7",
+        "tsv_hash": "65b1bd0039ae58c136ee44ebbb6876ee69a5353bb8c00046ec235e7e79592f28",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    }
+  },
+  "total": {
+    "rows": 201534,
+    "max_sequence_bytes": 1380,
+    "max_prompt_bytes": 694,
+    "max_target_bytes": 685,
+    "over_1024": 9,
+    "over_limit": 0
+  }
+}
+M2 pass=0 pending=2634 timeout=30.0s workers=8
+M2 progress completed=10/2634 timeouts=0 errors=0
+M2 progress completed=20/2634 timeouts=0 errors=0
+M2 progress completed=30/2634 timeouts=0 errors=0
+M2 progress completed=40/2634 timeouts=0 errors=0
+M2 progress completed=50/2634 timeouts=0 errors=0
+M2 progress completed=60/2634 timeouts=0 errors=0
+M2 progress completed=70/2634 timeouts=0 errors=0
+M2 progress completed=80/2634 timeouts=0 errors=0
+M2 progress completed=90/2634 timeouts=0 errors=0
+M2 progress completed=100/2634 timeouts=0 errors=0
+M2 progress completed=110/2634 timeouts=0 errors=0
+M2 progress completed=120/2634 timeouts=0 errors=0
+M2 progress completed=130/2634 timeouts=0 errors=0
+M2 progress completed=140/2634 timeouts=0 errors=0
+M2 progress completed=150/2634 timeouts=0 errors=0
+M2 progress completed=160/2634 timeouts=0 errors=0
+M2 progress completed=170/2634 timeouts=0 errors=0
+M2 progress completed=180/2634 timeouts=0 errors=0
+M2 progress completed=190/2634 timeouts=0 errors=0
+M2 progress completed=200/2634 timeouts=0 errors=0
+M2 progress completed=210/2634 timeouts=0 errors=0
+M2 progress completed=220/2634 timeouts=0 errors=0
+M2 progress completed=230/2634 timeouts=0 errors=0
+M2 progress completed=240/2634 timeouts=0 errors=0
+M2 progress completed=250/2634 timeouts=0 errors=0
+M2 progress completed=260/2634 timeouts=0 errors=0
+M2 progress completed=270/2634 timeouts=0 errors=0
+M2 progress completed=280/2634 timeouts=0 errors=0
+M2 progress completed=290/2634 timeouts=0 errors=0
+M2 progress completed=300/2634 timeouts=0 errors=0
+M2 progress completed=310/2634 timeouts=0 errors=0
+M2 progress completed=320/2634 timeouts=0 errors=0
+M2 progress completed=330/2634 timeouts=0 errors=0
+M2 progress completed=340/2634 timeouts=0 errors=0
+M2 progress completed=350/2634 timeouts=0 errors=0
+M2 progress completed=360/2634 timeouts=0 errors=0
+M2 progress completed=370/2634 timeouts=0 errors=0
+M2 progress completed=380/2634 timeouts=0 errors=0
+M2 progress completed=390/2634 timeouts=0 errors=0
+M2 progress completed=400/2634 timeouts=0 errors=0
+M2 progress completed=410/2634 timeouts=0 errors=0
+M2 progress completed=420/2634 timeouts=0 errors=0
+M2 progress completed=430/2634 timeouts=0 errors=0
+M2 progress completed=440/2634 timeouts=0 errors=0
+M2 progress completed=450/2634 timeouts=0 errors=0
+M2 progress completed=460/2634 timeouts=0 errors=0
+M2 progress completed=470/2634 timeouts=0 errors=0
+M2 progress completed=480/2634 timeouts=0 errors=0
+M2 progress completed=490/2634 timeouts=0 errors=0
+M2 progress completed=500/2634 timeouts=0 errors=0
+M2 progress completed=510/2634 timeouts=0 errors=0
+M2 progress completed=520/2634 timeouts=0 errors=0
+M2 progress completed=530/2634 timeouts=0 errors=0
+M2 progress completed=540/2634 timeouts=0 errors=0
+M2 progress completed=550/2634 timeouts=0 errors=0
+M2 progress completed=560/2634 timeouts=0 errors=0
+M2 progress completed=570/2634 timeouts=0 errors=0
+M2 progress completed=580/2634 timeouts=0 errors=0
+M2 progress completed=590/2634 timeouts=0 errors=0
+M2 progress completed=600/2634 timeouts=0 errors=0
+M2 progress completed=610/2634 timeouts=0 errors=0
+M2 progress completed=620/2634 timeouts=0 errors=0
+M2 progress completed=630/2634 timeouts=0 errors=0
+M2 progress completed=640/2634 timeouts=0 errors=0
+M2 progress completed=650/2634 timeouts=0 errors=0
+M2 progress completed=660/2634 timeouts=0 errors=0
+M2 progress completed=670/2634 timeouts=0 errors=0
+M2 progress completed=680/2634 timeouts=0 errors=0
+M2 progress completed=690/2634 timeouts=0 errors=0
+M2 progress completed=700/2634 timeouts=0 errors=0
+M2 progress completed=710/2634 timeouts=0 errors=0
+M2 progress completed=720/2634 timeouts=0 errors=0
+M2 progress completed=730/2634 timeouts=0 errors=0
+M2 progress completed=740/2634 timeouts=0 errors=0
+M2 progress completed=750/2634 timeouts=0 errors=0
+M2 progress completed=760/2634 timeouts=0 errors=0
+M2 progress completed=770/2634 timeouts=0 errors=0
+M2 progress completed=780/2634 timeouts=0 errors=0
+M2 progress completed=790/2634 timeouts=0 errors=0
+M2 progress completed=800/2634 timeouts=0 errors=0
+M2 progress completed=810/2634 timeouts=0 errors=0
+M2 progress completed=820/2634 timeouts=0 errors=0
+M2 progress completed=830/2634 timeouts=0 errors=0
+M2 progress completed=840/2634 timeouts=0 errors=0
+M2 progress completed=850/2634 timeouts=0 errors=0
+M2 progress completed=860/2634 timeouts=0 errors=0
+M2 progress completed=870/2634 timeouts=0 errors=0
+M2 progress completed=880/2634 timeouts=0 errors=0
+M2 progress completed=890/2634 timeouts=0 errors=0
+M2 progress completed=900/2634 timeouts=0 errors=0
+M2 progress completed=910/2634 timeouts=0 errors=0
+M2 progress completed=920/2634 timeouts=0 errors=0
+M2 progress completed=930/2634 timeouts=0 errors=0
+M2 progress completed=940/2634 timeouts=0 errors=0
+M2 progress completed=950/2634 timeouts=0 errors=0
+M2 progress completed=960/2634 timeouts=0 errors=0
+M2 progress completed=970/2634 timeouts=0 errors=0
+M2 progress completed=980/2634 timeouts=0 errors=0
+M2 progress completed=990/2634 timeouts=0 errors=0
+M2 progress completed=1000/2634 timeouts=0 errors=0
+M2 progress completed=1010/2634 timeouts=0 errors=0
+M2 progress completed=1020/2634 timeouts=0 errors=0
+M2 progress completed=1030/2634 timeouts=0 errors=0
+M2 progress completed=1040/2634 timeouts=0 errors=0
+M2 progress completed=1050/2634 timeouts=0 errors=0
+M2 progress completed=1060/2634 timeouts=0 errors=0
+M2 progress completed=1070/2634 timeouts=0 errors=0
+M2 progress completed=1080/2634 timeouts=0 errors=0
+M2 progress completed=1090/2634 timeouts=0 errors=0
+M2 progress completed=1100/2634 timeouts=0 errors=0
+M2 progress completed=1110/2634 timeouts=0 errors=0
+M2 progress completed=1120/2634 timeouts=0 errors=0
+M2 progress completed=1130/2634 timeouts=0 errors=0
+M2 progress completed=1140/2634 timeouts=0 errors=0
+M2 progress completed=1150/2634 timeouts=0 errors=0
+M2 progress completed=1160/2634 timeouts=0 errors=0
+M2 progress completed=1170/2634 timeouts=0 errors=0
+M2 progress completed=1180/2634 timeouts=0 errors=0
+M2 progress completed=1190/2634 timeouts=0 errors=0
+M2 progress completed=1200/2634 timeouts=0 errors=0
+M2 progress completed=1210/2634 timeouts=0 errors=0
+M2 progress completed=1220/2634 timeouts=0 errors=0
+M2 progress completed=1230/2634 timeouts=0 errors=0
+M2 progress completed=1240/2634 timeouts=0 errors=0
+M2 progress completed=1250/2634 timeouts=0 errors=0
+M2 progress completed=1260/2634 timeouts=0 errors=0
+M2 progress completed=1270/2634 timeouts=0 errors=0
+M2 progress completed=1280/2634 timeouts=0 errors=0
+M2 progress completed=1290/2634 timeouts=0 errors=0
+M2 progress completed=1300/2634 timeouts=0 errors=0
+M2 progress completed=1310/2634 timeouts=0 errors=0
+M2 progress completed=1320/2634 timeouts=0 errors=0
+M2 progress completed=1330/2634 timeouts=0 errors=0
+M2 progress completed=1340/2634 timeouts=0 errors=0
+M2 progress completed=1350/2634 timeouts=0 errors=0
+M2 progress completed=1360/2634 timeouts=0 errors=0
+M2 progress completed=1370/2634 timeouts=0 errors=0
+M2 progress completed=1380/2634 timeouts=0 errors=0
+M2 progress completed=1390/2634 timeouts=0 errors=0
+M2 progress completed=1400/2634 timeouts=0 errors=0
+M2 progress completed=1410/2634 timeouts=0 errors=0
+M2 progress completed=1420/2634 timeouts=0 errors=0
+M2 progress completed=1430/2634 timeouts=0 errors=0
+M2 progress completed=1440/2634 timeouts=0 errors=0
+M2 progress completed=1450/2634 timeouts=0 errors=0
+M2 progress completed=1460/2634 timeouts=0 errors=0
+M2 progress completed=1470/2634 timeouts=0 errors=0
+M2 progress completed=1480/2634 timeouts=0 errors=0
+M2 progress completed=1490/2634 timeouts=0 errors=0
+M2 progress completed=1500/2634 timeouts=0 errors=0
+M2 progress completed=1510/2634 timeouts=0 errors=0
+M2 progress completed=1520/2634 timeouts=0 errors=0
+M2 progress completed=1530/2634 timeouts=0 errors=0
+M2 progress completed=1540/2634 timeouts=0 errors=0
+M2 progress completed=1550/2634 timeouts=0 errors=0
+M2 progress completed=1560/2634 timeouts=0 errors=0
+M2 progress completed=1570/2634 timeouts=0 errors=0
+M2 progress completed=1580/2634 timeouts=0 errors=0
+M2 progress completed=1590/2634 timeouts=0 errors=0
+M2 progress completed=1600/2634 timeouts=0 errors=0
+M2 progress completed=1610/2634 timeouts=0 errors=0
+M2 progress completed=1620/2634 timeouts=0 errors=0
+M2 progress completed=1630/2634 timeouts=0 errors=0
+M2 progress completed=1640/2634 timeouts=0 errors=0
+M2 progress completed=1650/2634 timeouts=0 errors=0
+M2 progress completed=1660/2634 timeouts=0 errors=0
+M2 progress completed=1670/2634 timeouts=0 errors=0
+M2 progress completed=1680/2634 timeouts=0 errors=0
+M2 progress completed=1690/2634 timeouts=0 errors=0
+M2 progress completed=1700/2634 timeouts=0 errors=0
+M2 progress completed=1710/2634 timeouts=0 errors=0
+M2 progress completed=1720/2634 timeouts=0 errors=0
+M2 progress completed=1730/2634 timeouts=0 errors=0
+M2 progress completed=1740/2634 timeouts=0 errors=0
+M2 progress completed=1750/2634 timeouts=0 errors=0
+M2 progress completed=1760/2634 timeouts=0 errors=0
+M2 progress completed=1770/2634 timeouts=0 errors=0
+M2 progress completed=1780/2634 timeouts=0 errors=0
+M2 progress completed=1790/2634 timeouts=0 errors=0
+M2 progress completed=1800/2634 timeouts=0 errors=0
+M2 progress completed=1810/2634 timeouts=0 errors=0
+M2 progress completed=1820/2634 timeouts=0 errors=0
+M2 progress completed=1830/2634 timeouts=0 errors=0
+M2 progress completed=1840/2634 timeouts=0 errors=0
+M2 progress completed=1850/2634 timeouts=0 errors=0
+M2 progress completed=1860/2634 timeouts=0 errors=0
+M2 progress completed=1870/2634 timeouts=0 errors=0
+M2 progress completed=1880/2634 timeouts=0 errors=0
+M2 progress completed=1890/2634 timeouts=0 errors=0
+M2 progress completed=1900/2634 timeouts=0 errors=0
+M2 progress completed=1910/2634 timeouts=0 errors=0
+M2 progress completed=1920/2634 timeouts=0 errors=0
+M2 progress completed=1930/2634 timeouts=0 errors=0
+M2 progress completed=1940/2634 timeouts=0 errors=0
+M2 progress completed=1950/2634 timeouts=0 errors=0
+M2 progress completed=1960/2634 timeouts=0 errors=0
+M2 progress completed=1970/2634 timeouts=0 errors=0
+M2 progress completed=1980/2634 timeouts=0 errors=0
+M2 progress completed=1990/2634 timeouts=0 errors=0
+M2 progress completed=2000/2634 timeouts=0 errors=0
+M2 progress completed=2010/2634 timeouts=0 errors=0
+M2 progress completed=2020/2634 timeouts=0 errors=0
+M2 progress completed=2030/2634 timeouts=0 errors=0
+M2 progress completed=2040/2634 timeouts=0 errors=0
+M2 progress completed=2050/2634 timeouts=0 errors=0
+M2 progress completed=2060/2634 timeouts=0 errors=0
+M2 progress completed=2070/2634 timeouts=0 errors=0
+M2 progress completed=2080/2634 timeouts=0 errors=0
+M2 progress completed=2090/2634 timeouts=0 errors=0
+M2 progress completed=2100/2634 timeouts=0 errors=0
+M2 progress completed=2110/2634 timeouts=0 errors=0
+M2 progress completed=2120/2634 timeouts=0 errors=0
+M2 progress completed=2130/2634 timeouts=0 errors=0
+M2 progress completed=2140/2634 timeouts=0 errors=0
+M2 progress completed=2150/2634 timeouts=0 errors=0
+M2 progress completed=2160/2634 timeouts=0 errors=0
+M2 progress completed=2170/2634 timeouts=0 errors=0
+M2 progress completed=2180/2634 timeouts=0 errors=0
+M2 progress completed=2190/2634 timeouts=0 errors=0
+M2 progress completed=2200/2634 timeouts=0 errors=0
+M2 progress completed=2210/2634 timeouts=0 errors=0
+M2 progress completed=2220/2634 timeouts=0 errors=0
+M2 progress completed=2230/2634 timeouts=0 errors=0
+M2 progress completed=2240/2634 timeouts=0 errors=0
+M2 progress completed=2250/2634 timeouts=0 errors=0
+M2 progress completed=2260/2634 timeouts=0 errors=0
+M2 progress completed=2270/2634 timeouts=0 errors=0
+M2 progress completed=2280/2634 timeouts=0 errors=0
+M2 progress completed=2290/2634 timeouts=0 errors=0
+M2 progress completed=2300/2634 timeouts=0 errors=0
+M2 progress completed=2310/2634 timeouts=0 errors=0
+M2 progress completed=2320/2634 timeouts=0 errors=0
+M2 progress completed=2330/2634 timeouts=0 errors=0
+M2 progress completed=2340/2634 timeouts=0 errors=0
+M2 progress completed=2350/2634 timeouts=0 errors=0
+M2 progress completed=2360/2634 timeouts=0 errors=0
+M2 progress completed=2370/2634 timeouts=0 errors=0
+M2 progress completed=2380/2634 timeouts=0 errors=0
+M2 progress completed=2390/2634 timeouts=0 errors=0
+M2 progress completed=2400/2634 timeouts=0 errors=0
+M2 progress completed=2410/2634 timeouts=0 errors=0
+M2 progress completed=2420/2634 timeouts=0 errors=0
+M2 progress completed=2430/2634 timeouts=0 errors=0
+M2 progress completed=2440/2634 timeouts=0 errors=0
+M2 progress completed=2450/2634 timeouts=0 errors=0
+M2 progress completed=2460/2634 timeouts=0 errors=0
+M2 progress completed=2470/2634 timeouts=0 errors=0
+M2 progress completed=2480/2634 timeouts=0 errors=0
+M2 progress completed=2490/2634 timeouts=0 errors=0
+M2 progress completed=2500/2634 timeouts=0 errors=0
+M2 progress completed=2510/2634 timeouts=0 errors=0
+M2 progress completed=2520/2634 timeouts=0 errors=0
+M2 progress completed=2530/2634 timeouts=0 errors=0
+M2 progress completed=2540/2634 timeouts=0 errors=0
+M2 progress completed=2550/2634 timeouts=0 errors=0
+M2 progress completed=2560/2634 timeouts=0 errors=0
+M2 progress completed=2570/2634 timeouts=0 errors=0
+M2 progress completed=2580/2634 timeouts=0 errors=0
+M2 progress completed=2590/2634 timeouts=0 errors=0
+M2 progress completed=2600/2634 timeouts=0 errors=0
+M2 progress completed=2610/2634 timeouts=0 errors=0
+M2 progress completed=2620/2634 timeouts=0 errors=0
+M2 progress completed=2630/2634 timeouts=0 errors=0
+{
+  "precision": 0.7329001367989056,
+  "recall": 0.4731728858467653,
+  "status": "complete",
+  "completed": 2634,
+  "total": 2634,
+  "unresolved": 0,
+  "elapsed_seconds": 20.040463743265718,
+  "f0.5": 0.6604006163328197,
+  "correct": 2143.0,
+  "proposed": 2924.0,
+  "gold": 4529.0,
+  "coverage": 1.0,
+  "average_sentence_seconds": 0.004931363621698346,
+  "slow_sentences": 848
+}
+{
+  "fingerprint": "71487ef417cdca0406586ae483a22e2470975101a8d3f0a82d1caf7af0085dff",
+  "samples": 2634,
+  "gleu": 55.3096,
+  "eos_rate": 1.0,
+  "copy_rate": 0.2266514806378132,
+  "invalid_utf8": 0,
+  "invalid_token_ids": 0,
+  "budget_exhausted": 0,
+  "m2": {
+    "precision": 0.7329001367989056,
+    "recall": 0.4731728858467653,
+    "status": "complete",
+    "completed": 2634,
+    "total": 2634,
+    "unresolved": 0,
+    "elapsed_seconds": 20.040463743265718,
+    "f0.5": 0.6604006163328197
+  },
+  "status": "complete",
+  "scorer_hash": "98033ebe98ee06b6d2c3138eff35d35e3d7a83b2e280684f21a89ecc056ac297",
+  "evaluation_checks": "passed",
+  "training_checks": "passed",
+  "conversion_checks": {
+    "weight_checks": "passed",
+    "attention_mask_checks": "passed",
+    "conversion_check_environment": "itcerdo/eager/bfloat16/no-cache/unpadded",
+    "weight_report_hash": "97c8988056486cff1cc9ffc7597ec9d954ee10e56b7f6b769af2d50e4e54fa7d",
+    "mask_report_hash": "60ddf26beb4d4f34dda3b15b693e8cc1591fbbde49cdfb4be5e6d39175a0962b",
+    "original_forward_equivalence": "not_required_not_claimed"
+  }
+}
+End Time: 2026-09-21T17:03:55+09:00
+Elapsed Seconds: 73
+Exit Code: 0

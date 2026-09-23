@@ -15,6 +15,18 @@ NEURON_ROOT = Path('/scratch/r984a02/phdq3')
 CONVERSION = Path('blt_hf_checks/manifests/conversion_B_20260915.json')
 MODEL = Path('artifacts/converted/blt-1b-hf-own')
 
+MODEL_RUNTIME_FILES = (
+    'blt_hf/model.py', 'blt_hf/patched/modeling_blt.py', 'blt_hf/attention.py',
+    'blt_hf/patching.py', 'blt_hf/data_adapter.py', 'blt_hf/manifest.py',
+    'blt_hf/runtime.py',
+)
+TRAIN_RUNTIME_FILES = (*MODEL_RUNTIME_FILES, 'blt_hf/train.py', 'blt_hf/training.py',
+                       'blt_hf/checkpoint.py', 'scripts/train_blt_hf.sh',
+                       'scripts/neuron_blt_hf_common.sh')
+EVAL_RUNTIME_FILES = (*MODEL_RUNTIME_FILES, 'blt_hf/eval.py', 'blt_hf/generation.py',
+                      'blt_hf/evaluation.py', 'blt_hf/checkpoint.py',
+                      'scripts/eval_blt_hf.sh', 'scripts/neuron_blt_hf_common.sh')
+
 
 def local_path(value, *, root=ROOT):
     root = Path(root).resolve()
@@ -46,15 +58,34 @@ def require_neuron_job(*, gpu=True):
                     raise RuntimeError(f'Native BF16 is required on GPU {index}')
 
 
-def code_identity():
-    paths = sorted([*ROOT.glob('blt_hf/**/*.py'), *ROOT.glob('scripts/*blt_hf*.sh')])
-    files = {str(p.relative_to(ROOT)): sha256_file(p) for p in paths}
+def git_commit():
     try:
-        commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+        return subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     except (OSError, subprocess.SubprocessError):
-        commit = 'exported-source'
-    # The digest prevents uncommitted source changes from sharing a fingerprint.
-    return {'code_commit': commit + ':' + sha256_json(files), 'code_files': files}
+        return 'exported-source'
+
+
+def code_identity(relative_paths):
+    """Hash only files executable in one stage; Git history remains provenance."""
+    names = sorted(set(relative_paths))
+    files = {name: sha256_file(ROOT / name) for name in names}
+    return {'code_hash': sha256_json(files), 'code_files': files}
+
+
+def record_invocation(directory, *, stage, identity, details=None):
+    """Append audit provenance without making commit/log-only changes part of identity."""
+    directory = Path(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+    event = {'time': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+             'stage': stage, 'git_commit': git_commit(), 'code_hash': identity['code_hash'],
+             'slurm_job_id': os.environ.get('SLURM_JOB_ID'),
+             'slurm_restart_count': int(os.environ.get('SLURM_RESTART_COUNT', '0')),
+             'partition': os.environ.get('SLURM_JOB_PARTITION'),
+             'node': os.environ.get('SLURMD_NODENAME')}
+    if details: event.update(details)
+    with (directory / 'provenance.jsonl').open('a', encoding='utf-8', buffering=1) as stream:
+        stream.write(json.dumps(event, ensure_ascii=False, sort_keys=True) + '\n')
+        stream.flush(); os.fsync(stream.fileno())
 
 
 def tokenizer_identity(model_path):

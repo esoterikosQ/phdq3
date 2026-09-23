@@ -8,28 +8,30 @@ import random
 import time
 from pathlib import Path
 from .training import epoch_batches, rank_work, lr_factor, normalize_gradient_scale
-from .runtime import (ROOT, MODEL, CONVERSION, local_path, require_neuron_job, code_identity,
-                      tokenizer_identity, model_config_identity, conversion_verification, ensure_json, exclusive_lock, StopRequest, atomic_json)
+from .runtime import (ROOT, MODEL, CONVERSION, TRAIN_RUNTIME_FILES, local_path,
+                      require_neuron_job, code_identity, record_invocation,
+                      tokenizer_identity, model_config_identity, conversion_verification,
+                      ensure_json, exclusive_lock, StopRequest, atomic_json)
 from .manifest import sha256_file, sha256_json, write_json
 
 
 def parser():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--dataset', choices=['native', 'korean_learner', 'union'], default='native')
+    p.add_argument('--dataset', choices=['native', 'korean_learner', 'union', 'lang8'], default='native')
     p.add_argument('--run-dir', required=True)
     p.add_argument('--model-path', default=str(MODEL))
     p.add_argument('--conversion-report', default=str(CONVERSION))
     p.add_argument('--resume', help='Checkpoint directory or latest.json; exact run contract required')
-    p.add_argument('--epochs', type=int, default=3)
+    p.add_argument('--epochs', type=int, default=10)
     p.add_argument('--effective-batch', type=int, default=32)
     p.add_argument('--lr', type=float, default=1e-5)
-    p.add_argument('--warmup-steps', type=int, default=2000)
+    p.add_argument('--warmup-ratio', type=float, default=.05)
     p.add_argument('--weight-decay', type=float, default=.1)
     p.add_argument('--clip-grad-norm', type=float, default=1.)
     p.add_argument('--seed', type=int, default=0)
     p.add_argument('--save-every', type=int, default=500)
     p.add_argument('--max-steps', type=int, default=0, help='Stop this invocation after N updates, without changing schedule')
-    p.add_argument('--max-seconds', type=int, default=6300)
+    p.add_argument('--max-seconds', type=int, default=21000)
     p.add_argument('--mode', choices=['train', 'smoke', 'overfit'], default='train')
     p.add_argument('--overfit-steps', type=int, default=200)
     return p
@@ -43,16 +45,19 @@ def run(args):
     from transformers import AutoTokenizer
     from safetensors.torch import load_file
     from .model import load_model
-    from .data_adapter import GecDataset, collate, canonical_split_paths
+    from .data_adapter import GecDataset, collate, dataset_split_path
     from .checkpoint import resolve_checkpoint, save_checkpoint
 
     rank, world, local_rank = (int(os.environ.get(k, d)) for k, d in
                                [('RANK', '0'), ('WORLD_SIZE', '1'), ('LOCAL_RANK', '0')])
+    def stage(name, **details):
+        print(json.dumps({'event':'train_stage','stage':name,'rank':rank,
+                          'local_rank':local_rank,'world_size':world,**details}),flush=True)
     if world != torch.cuda.device_count() or local_rank >= world:
         raise ValueError('torchrun world size must equal allocated visible GPU count')
     if min(args.epochs, args.effective_batch, args.save_every) < 1 or args.lr <= 0 or args.clip_grad_norm <= 0:
         raise ValueError('Invalid positive training setting')
-    if min(args.max_steps, args.max_seconds, args.warmup_steps, args.weight_decay) < 0:
+    if min(args.max_steps, args.max_seconds, args.weight_decay) < 0 or not 0 <= args.warmup_ratio < 1:
         raise ValueError('Negative training setting')
     if args.mode == 'overfit' and (world != 1 or args.overfit_steps < 1):
         raise ValueError('Overfit diagnostic requires one GPU and positive steps')
@@ -60,6 +65,7 @@ def run(args):
     device = torch.device('cuda', local_rank)
     torch.set_num_threads(max(1, int(os.environ.get('SLURM_CPUS_PER_TASK', '1')) // world))
     if world > 1: dist.init_process_group('nccl', device_id=device)
+    stage('distributed_initialized',device=str(device))
     stopper = StopRequest(args.max_seconds)
     run_dir = local_path(args.run_dir)
     guard = exclusive_lock(run_dir) if rank == 0 else contextlib.nullcontext()
@@ -68,7 +74,9 @@ def run(args):
             random.seed(args.seed + rank); torch.manual_seed(args.seed + rank); torch.cuda.manual_seed(args.seed + rank)
             model_path, conversion = local_path(args.model_path), local_path(args.conversion_report)
             tok = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
-            paths = canonical_split_paths(ROOT / 'data/Preprocessed')
+            data_root = ROOT / 'data/Preprocessed'
+            paths = {f'{args.dataset}/{split}':dataset_split_path(data_root,args.dataset,split)
+                     for split in ('train','val')}
             # Audit ALL provided splits without altering or truncating any records.
             # Dataset encoding below verifies actual tokenizer IDs for train and validation.
             train = GecDataset(paths[f'{args.dataset}/train'], tok)
@@ -86,7 +94,7 @@ def run(args):
             steps_per_epoch = math.ceil(count / batch_size)
             epochs = args.overfit_steps if args.mode == 'overfit' else args.epochs
             total_steps = steps_per_epoch * epochs
-            warmup = min(args.warmup_steps, max(total_steps-1, 0)) if args.mode != 'overfit' else 0
+            warmup = round(total_steps * args.warmup_ratio) if args.mode != 'overfit' else 0
             model = load_model(model_path, conversion, attention_mode='osc', device='cpu')
             model.model.patcher.bfloat16().requires_grad_(False).eval()
             wrong_dtypes = [(name, str(param.dtype)) for name, param in model.named_parameters()
@@ -100,7 +108,8 @@ def run(args):
             free, _ = torch.cuda.mem_get_info(device)
             if minimum > free * .95:
                 raise RuntimeError(f'BF16 Adam/DDP minimum {minimum} exceeds available {free}; plan sharding')
-            manifest = {'schema_version': 1, 'run_id': str(run_dir.relative_to(ROOT)), 'dataset': args.dataset, 'mode': args.mode,
+            identity = code_identity(TRAIN_RUNTIME_FILES)
+            manifest = {'schema_version': 2, 'run_id': str(run_dir.relative_to(ROOT)), 'dataset': args.dataset, 'mode': args.mode,
                         'train_file_hash': sha256_file(paths[f'{args.dataset}/train']),
                         'val_file_hash': sha256_file(paths[f'{args.dataset}/val']),
                         'train_count': len(train), 'val_count': len(val), 'diagnostic_count': count,
@@ -113,29 +122,56 @@ def run(args):
                         'entropy_trainable': False, 'gradient_checkpointing': True, 'use_cache': False,
                         'world_size': world, 'ddp_bucket_priming': world > 1, 'micro_batch_size': 1, 'effective_batch': batch_size,
                         'loss_normalization': 'global_supervised_token_mean', 'epochs': epochs,
-                        'total_steps': total_steps, 'warmup_steps': warmup, 'seed': args.seed,
+                        'total_steps': total_steps, 'warmup_ratio': args.warmup_ratio,
+                        'warmup_steps': warmup, 'seed': args.seed,
                         'lr': args.lr, 'weight_decay': args.weight_decay, 'clip_grad_norm': args.clip_grad_norm,
                         'optimizer': 'AdamW-fused-bfloat16-state', 'betas': [.9, .95], 'eps': 1e-8,
-                        'conversion_checks': conversion_verification(conversion), **code_identity()}
+                        'conversion_checks': conversion_verification(conversion), **identity}
             signature = sha256_json(manifest)
+            manifest_status=[None]
             if rank == 0:
-                if (run_dir/'run.json').exists() and not args.resume:
-                    raise ValueError('Existing run requires explicit --resume, or choose a fresh run directory')
-                ensure_json(run_dir/'run.json', manifest)
-            if world > 1: dist.barrier()
-            state = {'epoch': 0, 'next_batch': 0, 'global_step': 0, 'best_val_loss': None, 'last_training_loss': None, 'run_signature': signature,
+                try:
+                    if (run_dir/'run.json').exists() and not args.resume:
+                        raise ValueError('Existing run requires explicit --resume, or choose a fresh run directory')
+                    ensure_json(run_dir/'run.json', manifest)
+                    record_invocation(run_dir, stage='train', identity=identity,
+                                      details={'resume': bool(args.resume), 'world_size': world})
+                    manifest_status[0]={'error':None}
+                except Exception as exc:
+                    manifest_status[0]={'error':f'{type(exc).__name__}: {exc}'}
+            if world > 1: dist.broadcast_object_list(manifest_status,src=0)
+            if manifest_status[0]['error'] is not None:
+                raise ValueError(f"Run manifest verification failed: {manifest_status[0]['error']}")
+            stage('manifest_verified',resume=bool(args.resume),code_hash=identity['code_hash'])
+            state = {'epoch': 0, 'next_batch': 0, 'global_step': 0, 'best_val_loss': None,
+                     'last_val_loss': None, 'last_training_loss': None, 'run_signature': signature,
                      'training_checks': 'not_run', 'evaluation_checks': 'not_run'}
             restore = None
             if args.resume:
-                cp, meta = resolve_checkpoint(local_path(args.resume))
+                payload = [None]
+                if rank == 0:
+                    try:
+                        cp, meta = resolve_checkpoint(local_path(args.resume))
+                        payload[0] = {'path':str(cp),'metadata':meta,'error':None}
+                    except Exception as exc:
+                        payload[0] = {'path':None,'metadata':None,
+                                      'error':f'{type(exc).__name__}: {exc}'}
+                if world > 1: dist.broadcast_object_list(payload,src=0)
+                if payload[0]['error'] is not None:
+                    raise ValueError(f"Rank-0 checkpoint verification failed: {payload[0]['error']}")
+                cp, meta = Path(payload[0]['path']), payload[0]['metadata']
+                stage('checkpoint_hashes_verified',checkpoint=cp.name)
                 if meta['run_signature'] != signature: raise ValueError('Resume contract mismatch (code/data/world/schedule/model)')
                 model.load_state_dict(load_file(str(cp/'model.safetensors')), strict=True)
+                stage('model_state_loaded',checkpoint=cp.name)
                 restore = torch.load(cp/'training.pt', map_location='cpu', weights_only=True)
+                stage('optimizer_state_file_loaded',checkpoint=cp.name)
                 state.update({k: meta[k] for k in state})
                 if state['epoch'] >= epochs and (run_dir/'completed.json').exists():
                     done = json.loads((run_dir/'completed.json').read_text())
                     return 0 if done.get('overfit_passed', True) else 1
             model.to(device)
+            stage('model_moved_to_device')
             groups = [{'params': [p for p in model.parameters() if p.requires_grad and p.ndim >= 2], 'weight_decay': args.weight_decay},
                       {'params': [p for p in model.parameters() if p.requires_grad and p.ndim < 2], 'weight_decay': 0.}]
             optimizer = torch.optim.AdamW(groups, lr=args.lr, betas=(.9, .95), eps=1e-8, fused=True)
@@ -157,6 +193,7 @@ def run(args):
                 rng = restore['rng_states'][rank]
                 random.setstate(rng['python']); torch.set_rng_state(rng['cpu']); torch.cuda.set_rng_state(rng['cuda'], device)
                 del restore
+                stage('optimizer_and_rng_restored',global_step=state['global_step'])
             def stopping():
                 flag = torch.tensor(int(bool(stopper)), device=device)
                 if world > 1: dist.all_reduce(flag, op=dist.ReduceOp.MAX)
@@ -167,7 +204,8 @@ def run(args):
                 if world > 1: dist.all_gather_object(all_rng, rng)
                 else: all_rng[0] = rng
                 if rank == 0:
-                    save_checkpoint(run_dir, model, optimizer, {**state, 'run_manifest': manifest}, all_rng, best=best)
+                    checkpoint_name=save_checkpoint(run_dir, model, optimizer, {**state, 'run_manifest': manifest}, all_rng, best=best)
+                    stage('checkpoint_published',checkpoint=checkpoint_name,best=best)
                 if world > 1: dist.barrier()
             def validate():
                 model.eval()
@@ -187,6 +225,7 @@ def run(args):
                 return (stats[0]/stats[1]).item()
             invocation_steps = 0
             grad_report = None
+            stage('training_loop_entered',global_step=state['global_step'],epoch=state['epoch'],next_batch=state['next_batch'])
             for epoch in range(state['epoch'], epochs):
                 batches = epoch_batches(count, batch_size, seed=args.seed, epoch=epoch)
                 start = state['next_batch'] if epoch == state['epoch'] else 0
@@ -260,6 +299,7 @@ def run(args):
                     save(); return 75
                 best = val_loss is not None and (state['best_val_loss'] is None or val_loss < state['best_val_loss'])
                 if best: state['best_val_loss'] = val_loss
+                state['last_val_loss'] = val_loss
                 state.update(epoch=epoch+1, next_batch=0)
                 if epoch+1 == epochs:
                     state['training_checks'] = 'passed' if args.mode == 'train' or state['last_training_loss'] < .05 else 'failed'

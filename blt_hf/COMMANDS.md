@@ -1,5 +1,42 @@
 # P1 명령 및 현재 실행 범위
 
+## 2026-09-23 — 기존 learner 채점 후 새 사이클
+
+새 코드를 Neuron에 반영하기 전에 기존 learner beam1 생성 결과를 기존 scorer로 채점한다.
+
+```bash
+cd /scratch/r984a02/phdq3
+conda activate phdq_blt_hf
+EVAL_DIR=outputs/blt_hf_eval/korean_learner/test/learner-main-01-beam1
+sbatch --export=ALL,CONDA_ENV=phdq_blt_hf,EVAL_DIR="$EVAL_DIR",DATASET_TYPE=korean_learner,M2_WORKERS=8 \
+  scripts/score_blt_hf.sh
+```
+
+새 코드 배포 후 Lang-8 파생 검사를 로그인 노드에서 먼저 실행할 수 있다. 출력은
+`artifacts/derived/lang8`이며 제공 `data/`는 변경하지 않는다.
+
+```bash
+conda activate phdq_blt_hf
+python -m blt_hf.derive_lang8
+```
+
+새 seed 0 학습은 A100 4GPU에서 시작한다. 기존 union run을 재사용하지 않는다.
+
+```bash
+sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 --time=00:30:00 \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=union-v2-s0,DATASET_TYPE=union,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,MAX_STEPS=1,MAX_SECONDS=1200 \
+  scripts/train_blt_hf.sh
+```
+
+최초 1 step이 성공하면 같은 설정과 RUN_ID에 다음 인자를 넣어 다시 1 step을 실행한다.
+두 번째 job에서 재개 stage와 global step 2를 확인한 뒤 `MAX_STEPS`를 빼고 계속한다.
+
+```bash
+RESUME=outputs/blt_hf/union/union-v2-s0/latest.json
+```
+
+전체 명령과 epoch별 validation GLEU 선택 절차는 `NEURON.md`를 정본으로 한다.
+
 ## Neuron 학습·성능 평가 — 코드 준비 완료
 
 실제 사용자 실행 명령·SLURM 정책·재개·생성 shard·CPU 채점 절차는 `NEURON.md`를 따른다.

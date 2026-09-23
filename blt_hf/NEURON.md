@@ -67,14 +67,22 @@ shell에서 직접 확인한다. job script를 `bash`로 실행하면 SBATCH 줄
 (GPU당 CPU ≤16, active ≤2), `amd_h200nv_8`(GPU당 CPU ≤8, active ≤2)이다.
 GPU job에는 `--gres=gpu:N`을 지정한다. 기본은
 `amd_a100nv_8`, 1 node/1 SLURM task, GPU당 CPU 8개이며 torchrun이 GPU별 rank를 만든다.
+본 학습은 A100 4GPU, 생성은 A100 1GPU를 기본으로 한다. H200은 긴 대기와 자원
+단편화를 피하기 위해 한 작업당 최대 2GPU만 요청하며, 1GPU 검사·생성을 우선한다.
+H200 4GPU 이상 작업은 제출하지 않는다. 같은 run의 재개에서는 GPU 수를 바꾸지 않는다.
 일반 환경 검사는 A100(sm_80), H100/H200(sm_90), itcerdo 검증용 RTX 5090(sm_120)을
 인식하고 각 GPU의 native BF16 지원 및 실제 BF16 matmul을 검사한다. BF16 미지원
 V100(sm_70)은 거부한다. 파티션과 실제 capability가 A100=sm_80, H200=sm_90으로
-일치해야 하며 H200 결과는 A100 결과와 별도 RUN_ID·로그로 보존한다.
+일치해야 한다. 새 비교 run은 GPU 종류별로 RUN_ID·로그를 분리한다. 중단된 기존 run을
+다른 GPU 종류에서 복구해야 할 때는 GPU 수와 BF16 설정을 유지하고 SLURM 로그에 전환
+경계를 남긴다.
 job array는 사용하지 않으며 running limit은 scheduler가 적용한다.
 
 CPU 채점은 `cpu` partition을 사용한다. GPU를 할당해 CPU 채점을 기다리지 않는다.
-기본 제한 시간은 1:55, 5분 전 TERM 신호와 Python 실행 시간 제한으로 저장·중단한다.
+본 학습의 기본 SLURM 제한 시간은 6시간이며 Python은 21,000초(5시간 50분)에
+재개 가능한 checkpoint를 저장하고 종료한다. 남은 10분은 26GB급 checkpoint 게시와
+정리에 사용한다. 생성·CPU 채점은 기존 1시간 55분 제한을 유지한다. 모든 job은
+5분 전 TERM 신호도 보조 종료 신호로 사용한다.
 반환 코드 75는 **재개 가능한 미완료**이며 완료로 해석하지 않는다. 자동 재제출하지 않는다.
 
 ## 1. 사용자 실행 학습 검사
@@ -118,27 +126,66 @@ sbatch --export=ALL,RUN_ID=native-overfit-01,DATASET_TYPE=native,NUM_GPUS=1,TRAI
 
 ## 2. 본 학습 및 재개
 
+새 사이클은 2026-09-18의 3-epoch run과 다른 RUN_ID를 쓴다. 기존
+`union-h200-4gpu-main-01`은 재개하지 않는다. 재개 identity는 Git commit 전체가 아니라
+학습 단계에서 실제 실행하는 파일의 `code_hash`와 데이터·모델·schedule·world size로
+결정한다. 로그만 추가한 commit은 재개를 깨뜨리지 않는다. commit·job·GPU 전환 기록은
+`provenance.jsonl`에 별도로 누적한다. 실행 파일 hash가 달라지면 재개를 거부한다.
+
 ```bash
-sbatch --gres=gpu:8 --cpus-per-task=32 \
-  --export=ALL,RUN_ID=native-main-01,DATASET_TYPE=native,NUM_GPUS=8,TRAIN_MODE=train,EFFECTIVE_BATCH=32 \
+python3 - <<'PY'
+import json
+from pathlib import Path
+from blt_hf.runtime import code_identity, TRAIN_RUNTIME_FILES
+run = Path('outputs/blt_hf/union/union-v2-s0/run.json')
+saved = json.loads(run.read_text())
+current = code_identity(TRAIN_RUNTIME_FILES)
+print('saved code hash:', saved['code_hash'])
+print('current code hash:', current['code_hash'])
+print('different code files:', sorted(k for k in set(saved['code_files']) | set(current['code_files'])
+                                     if saved['code_files'].get(k) != current['code_files'].get(k)))
+print('saved world/effective batch:', saved['world_size'], saved['effective_batch'])
+PY
+```
+
+```bash
+# seed 0의 새 10-epoch native run. learner/union/lang8도 서로 다른 RUN_ID를 쓴다.
+sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=native-v2-s0,DATASET_TYPE=native,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0 \
   scripts/train_blt_hf.sh
 
 # 시간 제한/중단 후, 동일 코드·설정·GPU 수·RUN_ID로 이어서 수행한다.
-sbatch --gres=gpu:8 --cpus-per-task=32 \
-  --export=ALL,RUN_ID=native-main-01,DATASET_TYPE=native,NUM_GPUS=8,TRAIN_MODE=train,EFFECTIVE_BATCH=32,RESUME=outputs/blt_hf/native/native-main-01/latest.json \
+sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=native-v2-s0,DATASET_TYPE=native,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,RESUME=outputs/blt_hf/native/native-v2-s0/latest.json \
   scripts/train_blt_hf.sh
 
 # 별도 실험 ID, 각 원본 split 유지. native 결과 확인 후 순차 제출한다.
-sbatch --gres=gpu:8 --cpus-per-task=32 \
-  --export=ALL,RUN_ID=learner-main-01,DATASET_TYPE=korean_learner,NUM_GPUS=8,TRAIN_MODE=train \
+sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=learner-v2-s0,DATASET_TYPE=korean_learner,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0 \
   scripts/train_blt_hf.sh
-sbatch --gres=gpu:8 --cpus-per-task=32 \
-  --export=ALL,RUN_ID=union-main-01,DATASET_TYPE=union,NUM_GPUS=8,TRAIN_MODE=train \
+sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 --time=00:30:00 \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=union-v2-s0,DATASET_TYPE=union,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,MAX_STEPS=1,MAX_SECONDS=1200 \
+  scripts/train_blt_hf.sh
+sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=lang8-v2-s0,DATASET_TYPE=lang8,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0 \
+  scripts/train_blt_hf.sh
+
+# 재개 경로를 먼저 1 update만 검사할 때. 성공하면 latest.json이 1 step 전진한다.
+sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 --time=00:30:00 \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=union-v2-s0,DATASET_TYPE=union,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,RESUME=outputs/blt_hf/union/union-v2-s0/latest.json,MAX_STEPS=1,MAX_SECONDS=1200 \
+  scripts/train_blt_hf.sh
+
+# 위의 최초 step과 재개 step이 모두 성공한 뒤 같은 checkpoint에서 제한 없이 계속한다.
+sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=union-v2-s0,DATASET_TYPE=union,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,RESUME=outputs/blt_hf/union/union-v2-s0/latest.json \
   scripts/train_blt_hf.sh
 ```
 
-학습 기본값은 3 epoch, LR 1e-5, warmup 2000 update(총 step 안으로 제한), cosine decay,
+학습 기본값은 10 epoch, LR 1e-5, 전체 update의 5% warmup, cosine decay,
 AdamW `(0.9,0.95)`, eps 1e-8, weight decay 0.1, grad clip 1.0이다.
+먼저 seed 0으로 native→learner→union→lang8의 학습·validation 선택·test 채점을 끝내
+전체 절차를 확인한다. 그다음 `SEED=1`, `SEED=2`를 각각 `-s1`, `-s2` RUN_ID로
+반복하며 같은 RUN_ID에 seed를 섞지 않는다.
 main 모델 전체(해시 임베딩 포함)를 학습하며 entropy patcher는 고정한다.
 원본·변환 artifact와 동일하게 파라미터·gradient·Adam 상태·연산은 BF16을 유지하고
 gradient checkpointing을 쓴다. 코드가 각 dtype을 검사하며 불일치는 즉시 실패한다.
@@ -160,7 +207,8 @@ DDP는 optimizer 상태 할당 전에 gradient bucket view를 준비하는 2회�
 
 - 경로: `outputs/blt_hf/<dataset>/<RUN_ID>/step-<update>-<id>/`
 - `model.safetensors`, `training.pt`, `checkpoint.json`을 staging directory에 완성한 뒤 게시한다.
-- `latest.json`/`best.json`은 작은 포인터다. **best는 전체 validation의 target-token loss**로 선택한다.
+- `latest.json`/`best.json`은 작은 포인터다. `best.json`은 전체 validation의
+  target-token loss 기준이며 `epoch_checkpoints.json`은 모든 epoch 끝 checkpoint를 기록한다.
 - 기본 `SAVE_EVERY=500` update, epoch 끝 및 중단 때 저장한다. `MAX_STEPS`는 이번 job의
   실행량만 제한하며 학습 schedule을 다시 만들지 않는다.
 - optimizer·epoch 내 다음 배치·global step·rank별 RNG·실행 manifest를 복원한다.
@@ -168,9 +216,27 @@ DDP는 optimizer 상태 할당 전에 gradient bucket view를 준비하는 2회�
 - 진짜 epoch가 끝난 뒤 전체 validation을 평가하며, 중단된 validation 부분 점수로
   best를 갱신하지 않는다. `completed.json`이 있어야 모든 epoch 완료다.
 
+최종 비교 checkpoint는 각 epoch checkpoint에 대해 전체 validation 생성·채점을 끝낸 뒤
+GLEU가 가장 높은 것을 선택한다. 모든 validation 조건은 같아야 하며 누락된 epoch가 있으면
+선택을 거부한다. 동률은 M2 F0.5, 그다음 이른 epoch 순서로 결정한다.
+
+```bash
+python -m blt_hf.select_best \
+  --run-dir outputs/blt_hf/native/native-v2-s0 \
+  --evaluation-dir outputs/blt_hf_eval/native/val/native-v2-s0-epoch01-beam1 \
+  --evaluation-dir outputs/blt_hf_eval/native/val/native-v2-s0-epoch02-beam1
+# 실제 실행에서는 epoch_checkpoints.json의 10개 epoch evaluation directory를 모두 지정한다.
+```
+
+Lang-8은 제공 데이터를 수정하지 않는다. `union = lang8 + korean_learner + native`의
+정확한 순서와 train/val/test의 76,692/16,434/16,434행을 검사한 뒤
+`artifacts/derived/lang8/`에 파생본을 만든다. train/eval shell은 DATASET_TYPE=lang8일 때
+이를 자동으로 실행하며 suffix나 M2 annotation이 다르면 실패한다.
+
 ## 3. 생성
 
-학습 완료 후 `best.json`이 가리키는 **불변 step 디렉터리**를 확인해 `CKPT_PATH`로
+학습 완료 후 validation GLEU 선택을 수행했다면 `best_gleu.json`, 그렇지 않으면
+`best.json`이 가리키는 **불변 step 디렉터리**를 확인해 `CKPT_PATH`로
 지정한다. 포인터가 학습 중 움직이면 다른 checkpoint의 shard를 합칠 수 없도록 실패한다.
 beam 1과 4, batch 설정별로 **서로 다른 EVAL_DIR**를 사용한다.
 
@@ -178,7 +244,8 @@ beam 1과 4, batch 설정별로 **서로 다른 EVAL_DIR**를 사용한다.
 # 아래 STEP_DIRECTORY를 best.json의 실제 checkpoint 이름으로 바꾼다.
 export CKPT_PATH=outputs/blt_hf/native/native-main-01/STEP_DIRECTORY
 export EVAL_DIR=outputs/blt_hf_eval/native/test/native-main-01-beam1
-sbatch --export=ALL,CKPT_PATH="$CKPT_PATH",EVAL_DIR="$EVAL_DIR",DATASET_TYPE=native,BLT_NUM_BEAMS=1,BATCH_SIZE=1,SHARD_COUNT=1,SHARD_ID=0 \
+sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=4 \
+  --export=ALL,CKPT_PATH="$CKPT_PATH",EVAL_DIR="$EVAL_DIR",DATASET_TYPE=native,BLT_NUM_BEAMS=1,BATCH_SIZE=1,SHARD_COUNT=1,SHARD_ID=0 \
   scripts/eval_blt_hf.sh
 
 # interrupted generation: 같은 인자와 EVAL_DIR로 다시 제출하면 완료 batch부터 재개한다.
@@ -213,6 +280,8 @@ scorer는 `/Users/esoterikos/Nextcloud/QLab/phdq`에서 확인한 **기존 실�
 runtime으로 import하지 않으며, 새 평가에는 NumPy/SciPy도 필요 없다.
 기존 GLEU wrapper의 단일 reference·6자리 반올림·100배 척도를 유지한다.
 M2는 기존 NUS scorer Python3 사본, beta=.5, max unchanged words=2, case/공백 무시 옵션 false다.
+빈 줄이 빠진 합본에서도 새 `S ` 행을 문장 경계로 처리하므로 union의 데이터셋 접합부를
+앞 문장 annotation에 합치지 않는다.
 
 합산 시 모든 canonical 행이 정확히 1회 있어야 한다. GLEU는 corpus 충분통계를 합산하고
 M2 annotator 선택도 원래 문장 순서로 수행한다. shard별 점수를 평균하지 않는다.

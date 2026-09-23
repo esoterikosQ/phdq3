@@ -1,0 +1,78 @@
+Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights:  75%|███████▍  | 381/510 [00:00<00:00, 3809.07it/s]Loading weights:  86%|████████▌ | 437/510 [00:00<00:00, 4368.16it/s]Loading weights:  82%|████████▏ | 417/510 [00:00<00:00, 4168.93it/s]Loading weights:  86%|████████▋ | 440/510 [00:00<00:00, 4396.04it/s]Loading weights: 100%|██████████| 510/510 [00:00<00:00, 4189.61it/s]
+Loading weights: 100%|██████████| 510/510 [00:00<00:00, 4143.43it/s]
+Loading weights: 100%|██████████| 510/510 [00:00<00:00, 4123.45it/s]
+Loading weights: 100%|██████████| 510/510 [00:00<00:00, 3735.24it/s]
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "<frozen runpy>", line 198, in _run_module_as_main
+[rank0]:   File "<frozen runpy>", line 88, in _run_code
+[rank0]:   File "/scratch/r984a02/phdq3/blt_hf/train.py", line 285, in <module>
+[rank0]:     if __name__ == '__main__': raise SystemExit(main())
+[rank0]:                                                 ^^^^^^
+[rank0]:   File "/scratch/r984a02/phdq3/blt_hf/train.py", line 284, in main
+[rank0]:     def main(): return run(parser().parse_args())
+[rank0]:                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/scratch/r984a02/phdq3/blt_hf/train.py", line 124, in run
+[rank0]:     ensure_json(run_dir/'run.json', manifest)
+[rank0]:   File "/scratch/r984a02/phdq3/blt_hf/runtime.py", line 83, in ensure_json
+[rank0]:     raise ValueError(f'Existing output has different identity: {path}')
+[rank0]: ValueError: Existing output has different identity: /scratch/r984a02/phdq3/outputs/blt_hf/union/union-h200-4gpu-main-01/run.json
+W0922 04:57:50.883000 2089769 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:1012] Sending process 2089797 closing signal SIGTERM
+W0922 04:57:50.883000 2089769 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:1012] Sending process 2089798 closing signal SIGTERM
+W0922 04:57:50.883000 2089769 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:1012] Sending process 2089799 closing signal SIGTERM
+W0922 04:58:20.884000 2089769 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:1031] Unable to shutdown process 2089797 via 15, forcefully exiting via 9
+W0922 04:58:21.305000 2089769 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:1031] Unable to shutdown process 2089798 via 15, forcefully exiting via 9
+W0922 04:58:21.717000 2089769 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:1031] Unable to shutdown process 2089799 via 15, forcefully exiting via 9
+E0922 04:58:22.161000 2089769 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:986] failed (exitcode: 1) local_rank: 0 (pid: 2089796) of binary: /home01/r984a02/.conda/envs/phdq_blt_hf/bin/python3.11
+Traceback (most recent call last):
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/bin/torchrun", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 362, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/run.py", line 990, in main
+    run(args)
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/run.py", line 981, in run
+    elastic_launch(
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 170, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 317, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError:
+============================================================
+blt_hf.train FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2026-09-22_04:58:22
+  host      : gpu37.eth
+  rank      : 1 (local_rank: 1)
+  exitcode  : -9 (pid: 2089797)
+  error_file: <N/A>
+  traceback : Signal 9 (SIGKILL) received by PID 2089797
+[2]:
+  time      : 2026-09-22_04:58:22
+  host      : gpu37.eth
+  rank      : 2 (local_rank: 2)
+  exitcode  : -9 (pid: 2089798)
+  error_file: <N/A>
+  traceback : Signal 9 (SIGKILL) received by PID 2089798
+[3]:
+  time      : 2026-09-22_04:58:22
+  host      : gpu37.eth
+  rank      : 3 (local_rank: 3)
+  exitcode  : -9 (pid: 2089799)
+  error_file: <N/A>
+  traceback : Signal 9 (SIGKILL) received by PID 2089799
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-09-22_04:57:50
+  host      : gpu37.eth
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 2089796)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: gpu37: task 0: Exited with exit code 1

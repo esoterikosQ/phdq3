@@ -10,6 +10,7 @@ from typing import Protocol, Sequence
 SEPARATOR = "\n<BLT_GEC_SEP>\n"
 MAX_SEQUENCE_LENGTH = 2048
 DATASETS = ("native", "korean_learner", "union")
+EXPERIMENT_DATASETS = (*DATASETS, "lang8")
 SPLITS = ("train", "val", "test")
 BYTE_OFFSET = 4
 
@@ -39,6 +40,16 @@ class GecEncoding:
 def canonical_split_paths(root: Path | str) -> dict[str, Path]:
     root = Path(root)
     return {f"{d}/{s}": root / d / f"{d}_{s}.txt" for d in DATASETS for s in SPLITS}
+
+
+def dataset_split_path(root: Path | str, dataset: str, split: str) -> Path:
+    root = Path(root)
+    if dataset not in EXPERIMENT_DATASETS or split not in SPLITS:
+        raise ValueError(f"Unsupported dataset/split: {dataset}/{split}")
+    if dataset == "lang8":
+        # Derived outside data/: source datasets remain byte-for-byte unchanged.
+        return root.parents[1] / "artifacts" / "derived" / "lang8" / f"lang8_{split}.txt"
+    return canonical_split_paths(root)[f"{dataset}/{split}"]
 
 
 def read_tsv(path: Path | str) -> list[GecExample]:

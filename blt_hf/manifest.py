@@ -13,7 +13,7 @@ FINGERPRINT_KEYS = (
     "attn_implementation", "attention_mode", "model_config_hash", "tokenizer_hash",
     "generation_backend", "use_cache", "dataset", "split", "source_hash", "target_hash",
     "m2_hash", "num_beams", "length_penalty", "batch_size", "max_sequence_bytes",
-    "max_new_bytes", "code_commit",
+    "max_new_bytes", "code_hash",
 )
 
 

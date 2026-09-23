@@ -17,6 +17,9 @@ source /scratch/r984a02/phdq3/scripts/neuron_blt_hf_common.sh
 : "${EVAL_DIR:?Set EVAL_DIR to a separate directory for each checkpoint/beam/batch condition}"
 DATASET_TYPE=${DATASET_TYPE:-native}
 [[ "$DATASET_TYPE" != learner ]] || DATASET_TYPE=korean_learner
+if [[ "$DATASET_TYPE" == lang8 ]]; then
+  python -m blt_hf.derive_lang8
+fi
 run_job srun --ntasks=1 python -m blt_hf.eval --dataset "$DATASET_TYPE" --split "${SPLIT:-test}" \
   --checkpoint "$CKPT_PATH" --output-dir "$EVAL_DIR" \
   --shard-id "${SHARD_ID:-0}" --shard-count "${SHARD_COUNT:-1}" \
