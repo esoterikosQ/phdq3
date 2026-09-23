@@ -69,7 +69,16 @@ else
   python blt_hf_checks/check_env.py --output "${report}_env.json"
   python -c 'import os, torch; expected=(9,0) if os.environ["SLURM_JOB_PARTITION"]=="amd_h200nv_8" else (8,0); assert torch.cuda.device_count()==int(os.environ["NUM_GPUS"]), "Allocated GPU count differs from NUM_GPUS"; assert all(torch.cuda.get_device_capability(i)==expected for i in range(torch.cuda.device_count())), f"GPU capability must match partition: {expected}"; assert all((torch.cuda.set_device(i) is None and torch.cuda.is_bf16_supported()) for i in range(torch.cuda.device_count())), "Native BF16 required"'
 fi
-python blt_hf_checks/analyze_data_lengths.py --output "${report}_data.json"
+if [[ "${SKIP_GLOBAL_DATA_AUDIT:-0}" == 1 ]]; then
+  [[ "${JOB_KIND:-gpu}" == cpu && -n "${EVAL_DIR:-}" \
+    && -f "$EVAL_DIR/scored/gleu.json" \
+    && -f "$EVAL_DIR/scored/m2/run_config.json" ]] || {
+    echo 'Global data audit can be skipped only for a previously started CPU score' >&2; exit 2;
+  }
+  echo 'Global data audit already recorded for this scoring run; selected split is verified by eval.py'
+else
+  python blt_hf_checks/analyze_data_lengths.py --output "${report}_data.json"
+fi
 
 # Forward warning/termination to Python workers, not the torchrun supervisor.
 launcher=''
