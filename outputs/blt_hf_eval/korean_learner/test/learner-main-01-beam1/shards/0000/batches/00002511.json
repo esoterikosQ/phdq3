@@ -1,0 +1,45 @@
+{
+  "fingerprint": "bbedfc3bf3bfe8d79c7936ca7d8667b790f8f04c4f73495fe975b86728358db3",
+  "records": [
+    {
+      "index": 2511,
+      "source": "코엑스는 아주 커요.",
+      "text": "코엑스는 아주 커요.",
+      "raw_text": "코엑스는 아주 커요.",
+      "token_ids": [
+        240,
+        193,
+        152,
+        240,
+        155,
+        149,
+        240,
+        142,
+        168,
+        239,
+        142,
+        152,
+        36,
+        240,
+        153,
+        136,
+        240,
+        167,
+        192,
+        36,
+        240,
+        191,
+        168,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.2234605951234698
+}

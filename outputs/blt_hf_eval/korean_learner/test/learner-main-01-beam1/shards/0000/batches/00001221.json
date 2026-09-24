@@ -1,0 +1,41 @@
+{
+  "fingerprint": "bbedfc3bf3bfe8d79c7936ca7d8667b790f8f04c4f73495fe975b86728358db3",
+  "records": [
+    {
+      "index": 1221,
+      "source": "동생이 없습니다.",
+      "text": "동생이 없습니다.",
+      "raw_text": "동생이 없습니다.",
+      "token_ids": [
+        239,
+        147,
+        157,
+        240,
+        135,
+        161,
+        240,
+        161,
+        184,
+        36,
+        240,
+        155,
+        138,
+        240,
+        142,
+        185,
+        239,
+        143,
+        140,
+        239,
+        143,
+        168,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.0338650969788432
+}

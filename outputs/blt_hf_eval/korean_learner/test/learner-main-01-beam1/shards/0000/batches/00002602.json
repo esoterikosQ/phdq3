@@ -1,0 +1,46 @@
+{
+  "fingerprint": "bbedfc3bf3bfe8d79c7936ca7d8667b790f8f04c4f73495fe975b86728358db3",
+  "records": [
+    {
+      "index": 2602,
+      "source": "새언니 23살이에요.",
+      "text": "새언니는 23살이에요.",
+      "raw_text": "새언니는 23살이에요.",
+      "token_ids": [
+        240,
+        135,
+        140,
+        240,
+        154,
+        188,
+        239,
+        143,
+        140,
+        239,
+        142,
+        152,
+        36,
+        54,
+        55,
+        240,
+        134,
+        184,
+        240,
+        161,
+        184,
+        240,
+        155,
+        148,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.2764350050128996
+}

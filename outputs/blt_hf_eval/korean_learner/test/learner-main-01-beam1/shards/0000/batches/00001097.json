@@ -1,0 +1,44 @@
+{
+  "fingerprint": "bbedfc3bf3bfe8d79c7936ca7d8667b790f8f04c4f73495fe975b86728358db3",
+  "records": [
+    {
+      "index": 1097,
+      "source": "여의도역에 만날게요.",
+      "text": "여의도역에 만나요.",
+      "raw_text": "여의도역에 만나요.",
+      "token_ids": [
+        240,
+        155,
+        176,
+        240,
+        161,
+        156,
+        239,
+        147,
+        136,
+        240,
+        155,
+        177,
+        240,
+        155,
+        148,
+        36,
+        239,
+        171,
+        144,
+        239,
+        134,
+        156,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.16217075381428
+}

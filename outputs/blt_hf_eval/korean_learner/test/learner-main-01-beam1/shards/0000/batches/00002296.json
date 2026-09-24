@@ -1,0 +1,47 @@
+{
+  "fingerprint": "bbedfc3bf3bfe8d79c7936ca7d8667b790f8f04c4f73495fe975b86728358db3",
+  "records": [
+    {
+      "index": 2296,
+      "source": "너무너무 재미겠어요.",
+      "text": "너무너무 재미있어요.",
+      "raw_text": "너무너무 재미있어요.",
+      "token_ids": [
+        239,
+        136,
+        140,
+        239,
+        176,
+        184,
+        239,
+        136,
+        140,
+        239,
+        176,
+        184,
+        36,
+        240,
+        162,
+        176,
+        239,
+        179,
+        188,
+        240,
+        162,
+        140,
+        240,
+        154,
+        184,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.3240778692997992
+}

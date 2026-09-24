@@ -1,0 +1,42 @@
+{
+  "fingerprint": "71487ef417cdca0406586ae483a22e2470975101a8d3f0a82d1caf7af0085dff",
+  "records": [
+    {
+      "index": 1639,
+      "source": "여? 이 꼭 있어야 돼요.",
+      "text": "여가 있어야 돼요.",
+      "raw_text": "여가 있어야 돼요.",
+      "token_ids": [
+        240,
+        155,
+        176,
+        238,
+        180,
+        132,
+        36,
+        240,
+        162,
+        140,
+        240,
+        154,
+        184,
+        240,
+        153,
+        192,
+        36,
+        239,
+        147,
+        192,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.1158942668698728
+}

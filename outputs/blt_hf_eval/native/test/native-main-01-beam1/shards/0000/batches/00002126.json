@@ -1,0 +1,45 @@
+{
+  "fingerprint": "71487ef417cdca0406586ae483a22e2470975101a8d3f0a82d1caf7af0085dff",
+  "records": [
+    {
+      "index": 2126,
+      "source": "라디오 좀 켜주세요.",
+      "text": "라디오 좀 켜주세요.",
+      "raw_text": "라디오 좀 켜주세요.",
+      "token_ids": [
+        239,
+        161,
+        192,
+        239,
+        152,
+        152,
+        240,
+        156,
+        168,
+        36,
+        240,
+        166,
+        132,
+        36,
+        240,
+        192,
+        160,
+        240,
+        167,
+        192,
+        240,
+        136,
+        188,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.2667053863406181
+}

@@ -1,0 +1,43 @@
+{
+  "fingerprint": "71487ef417cdca0406586ae483a22e2470975101a8d3f0a82d1caf7af0085dff",
+  "records": [
+    {
+      "index": 843,
+      "source": "정말 잘 읽는 군요.",
+      "text": "정말 잘 읽는 군요.",
+      "raw_text": "정말 잘 읽는 군요.",
+      "token_ids": [
+        240,
+        164,
+        153,
+        239,
+        171,
+        148,
+        36,
+        240,
+        162,
+        156,
+        36,
+        240,
+        161,
+        193,
+        239,
+        142,
+        152,
+        36,
+        238,
+        185,
+        180,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.1270178370177746
+}

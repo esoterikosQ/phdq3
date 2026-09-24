@@ -1,0 +1,13 @@
+{
+  "status": "partial",
+  "m2": {
+    "precision": null,
+    "recall": null,
+    "status": "partial",
+    "completed": 1720,
+    "total": 4265,
+    "unresolved": 2545,
+    "elapsed_seconds": 5354.3268432510085,
+    "f0.5": null
+  }
+}

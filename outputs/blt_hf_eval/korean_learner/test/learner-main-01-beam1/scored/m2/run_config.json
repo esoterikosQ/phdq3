@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "settings": {
+    "beta": 0.5,
+    "max_unchanged_words": 2,
+    "ignore_whitespace_casing": false
+  },
+  "scorer_sha256": "1134a7a423f008d1579b5da56ceefccadf7d790be1869285352fc5d3d320bd9c",
+  "wrapper_sha256": "c0eba88f6ee01aae4ded8a9264644f43065b6086828539b9a33f00724c4352ac",
+  "hypothesis_path": "/scratch/r984a02/phdq3/outputs/blt_hf_eval/korean_learner/test/learner-main-01-beam1/scored/hypothesis.txt",
+  "hypothesis_sha256": "3ca11dd3201bfa089359ccaf1f61eeafa58cb5bb96b10f13e19202b235a62a1b",
+  "source_gold_path": "/scratch/r984a02/phdq3/data/Preprocessed/korean_learner/korean_learner_test.m2",
+  "source_gold_sha256": "4be33bbc4adf618da33074b9a97525c4d24c08162b9df44db60e69424f51ec01",
+  "examples": 4265
+}

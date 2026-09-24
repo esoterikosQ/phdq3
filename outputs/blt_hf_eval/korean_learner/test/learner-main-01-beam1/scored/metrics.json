@@ -1,0 +1,32 @@
+{
+  "fingerprint": "bbedfc3bf3bfe8d79c7936ca7d8667b790f8f04c4f73495fe975b86728358db3",
+  "samples": 4265,
+  "gleu": 33.212599999999995,
+  "eos_rate": 0.9995310668229778,
+  "copy_rate": 0.4600234466588511,
+  "invalid_utf8": 3,
+  "invalid_token_ids": 0,
+  "budget_exhausted": 2,
+  "m2": {
+    "precision": 0.3906428299733739,
+    "recall": 0.11567920702861005,
+    "status": "complete",
+    "completed": 4265,
+    "total": 4265,
+    "unresolved": 0,
+    "elapsed_seconds": 0.05507200723513961,
+    "f0.5": 0.2647726100855935
+  },
+  "status": "complete",
+  "scorer_hash": "98033ebe98ee06b6d2c3138eff35d35e3d7a83b2e280684f21a89ecc056ac297",
+  "evaluation_checks": "passed",
+  "training_checks": "passed",
+  "conversion_checks": {
+    "weight_checks": "passed",
+    "attention_mask_checks": "passed",
+    "conversion_check_environment": "itcerdo/eager/bfloat16/no-cache/unpadded",
+    "weight_report_hash": "97c8988056486cff1cc9ffc7597ec9d954ee10e56b7f6b769af2d50e4e54fa7d",
+    "mask_report_hash": "60ddf26beb4d4f34dda3b15b693e8cc1591fbbde49cdfb4be5e6d39175a0962b",
+    "original_forward_equivalence": "not_required_not_claimed"
+  }
+}

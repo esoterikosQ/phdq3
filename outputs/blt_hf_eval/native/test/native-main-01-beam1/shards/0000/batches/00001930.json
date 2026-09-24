@@ -1,0 +1,45 @@
+{
+  "fingerprint": "71487ef417cdca0406586ae483a22e2470975101a8d3f0a82d1caf7af0085dff",
+  "records": [
+    {
+      "index": 1930,
+      "source": "빤과 라면을 샀어요.",
+      "text": "빤과 라면을 샀어요.",
+      "raw_text": "빤과 라면을 샀어요.",
+      "token_ids": [
+        239,
+        189,
+        168,
+        238,
+        183,
+        192,
+        36,
+        239,
+        161,
+        192,
+        239,
+        173,
+        184,
+        240,
+        161,
+        136,
+        36,
+        240,
+        135,
+        132,
+        240,
+        154,
+        184,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.2455751160159707
+}

@@ -1,0 +1,45 @@
+{
+  "fingerprint": "bbedfc3bf3bfe8d79c7936ca7d8667b790f8f04c4f73495fe975b86728358db3",
+  "records": [
+    {
+      "index": 1190,
+      "source": "한 명 딸 있어요",
+      "text": "한 명의 딸이 있어요",
+      "raw_text": "한 명의 딸이 있어요",
+      "token_ids": [
+        241,
+        153,
+        160,
+        36,
+        239,
+        174,
+        137,
+        240,
+        161,
+        156,
+        36,
+        239,
+        152,
+        188,
+        240,
+        161,
+        184,
+        36,
+        240,
+        162,
+        140,
+        240,
+        154,
+        184,
+        240,
+        158,
+        152
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.227809377014637
+}

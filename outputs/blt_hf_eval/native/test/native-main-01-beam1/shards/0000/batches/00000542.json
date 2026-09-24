@@ -1,0 +1,42 @@
+{
+  "fingerprint": "71487ef417cdca0406586ae483a22e2470975101a8d3f0a82d1caf7af0085dff",
+  "records": [
+    {
+      "index": 542,
+      "source": "희망을 놓치 말 것.",
+      "text": "희망을 놓치말 것.",
+      "raw_text": "희망을 놓치말 것.",
+      "token_ids": [
+        241,
+        161,
+        176,
+        239,
+        171,
+        161,
+        240,
+        161,
+        136,
+        36,
+        239,
+        138,
+        151,
+        240,
+        189,
+        156,
+        239,
+        171,
+        148,
+        36,
+        238,
+        182,
+        135,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.0873505496419966
+}

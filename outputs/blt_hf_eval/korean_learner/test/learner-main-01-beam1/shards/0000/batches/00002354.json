@@ -1,0 +1,42 @@
+{
+  "fingerprint": "bbedfc3bf3bfe8d79c7936ca7d8667b790f8f04c4f73495fe975b86728358db3",
+  "records": [
+    {
+      "index": 2354,
+      "source": "외모는 1위입니다.",
+      "text": "외모는 1위입니다.",
+      "raw_text": "외모는 1위입니다.",
+      "token_ids": [
+        240,
+        157,
+        188,
+        239,
+        174,
+        172,
+        239,
+        142,
+        152,
+        36,
+        53,
+        240,
+        160,
+        136,
+        240,
+        162,
+        137,
+        239,
+        143,
+        140,
+        239,
+        143,
+        168,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.1029434008523822
+}

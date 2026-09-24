@@ -1,0 +1,16 @@
+{
+  "precision": 0.3906428299733739,
+  "recall": 0.11567920702861005,
+  "status": "complete",
+  "completed": 4265,
+  "total": 4265,
+  "unresolved": 0,
+  "elapsed_seconds": 0.05507200723513961,
+  "f0.5": 0.2647726100855935,
+  "correct": 1027.0,
+  "proposed": 2629.0,
+  "gold": 8878.0,
+  "coverage": 1.0,
+  "average_sentence_seconds": 0.02219712776617788,
+  "slow_sentences": 67
+}

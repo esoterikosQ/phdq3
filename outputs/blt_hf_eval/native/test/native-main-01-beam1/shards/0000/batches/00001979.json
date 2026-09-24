@@ -1,0 +1,46 @@
+{
+  "fingerprint": "71487ef417cdca0406586ae483a22e2470975101a8d3f0a82d1caf7af0085dff",
+  "records": [
+    {
+      "index": 1979,
+      "source": "그런 말 하지 마세여.",
+      "text": "그런 말 하지 마세요.",
+      "raw_text": "그런 말 하지 마세요.",
+      "token_ids": [
+        238,
+        187,
+        188,
+        239,
+        163,
+        180,
+        36,
+        239,
+        171,
+        148,
+        36,
+        241,
+        153,
+        156,
+        240,
+        171,
+        132,
+        36,
+        239,
+        171,
+        140,
+        240,
+        136,
+        188,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.3078342908993363
+}

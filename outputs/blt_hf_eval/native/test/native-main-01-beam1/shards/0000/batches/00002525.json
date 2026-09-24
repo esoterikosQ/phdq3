@@ -1,0 +1,38 @@
+{
+  "fingerprint": "71487ef417cdca0406586ae483a22e2470975101a8d3f0a82d1caf7af0085dff",
+  "records": [
+    {
+      "index": 2525,
+      "source": "12 시 전에 자라.",
+      "text": "12시 전에 자라.",
+      "raw_text": "12시 전에 자라.",
+      "token_ids": [
+        53,
+        54,
+        240,
+        143,
+        160,
+        36,
+        240,
+        164,
+        136,
+        240,
+        155,
+        148,
+        36,
+        240,
+        162,
+        148,
+        239,
+        161,
+        192,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 0.9322873610071838
+}

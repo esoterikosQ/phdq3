@@ -1,0 +1,39 @@
+{
+  "fingerprint": "bbedfc3bf3bfe8d79c7936ca7d8667b790f8f04c4f73495fe975b86728358db3",
+  "records": [
+    {
+      "index": 1941,
+      "source": "그 이유는 뭐?",
+      "text": "그 이유는 뭐야?",
+      "raw_text": "그 이유는 뭐야?",
+      "token_ids": [
+        238,
+        187,
+        188,
+        36,
+        240,
+        161,
+        184,
+        240,
+        160,
+        164,
+        239,
+        142,
+        152,
+        36,
+        239,
+        177,
+        148,
+        240,
+        153,
+        192,
+        67
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 0.9741258388385177
+}

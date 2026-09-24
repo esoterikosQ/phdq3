@@ -1,0 +1,46 @@
+{
+  "fingerprint": "71487ef417cdca0406586ae483a22e2470975101a8d3f0a82d1caf7af0085dff",
+  "records": [
+    {
+      "index": 2394,
+      "source": "저는 술을 못마셔여.",
+      "text": "저는 술을 못 마셔요.",
+      "raw_text": "저는 술을 못 마셔요.",
+      "token_ids": [
+        240,
+        164,
+        132,
+        239,
+        142,
+        152,
+        36,
+        240,
+        140,
+        164,
+        240,
+        161,
+        136,
+        36,
+        239,
+        174,
+        191,
+        36,
+        239,
+        171,
+        140,
+        240,
+        137,
+        152,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.2941136150620878
+}

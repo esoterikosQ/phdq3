@@ -1,0 +1,37 @@
+{
+  "fingerprint": "bbedfc3bf3bfe8d79c7936ca7d8667b790f8f04c4f73495fe975b86728358db3",
+  "records": [
+    {
+      "index": 2088,
+      "source": "고독스러운 중학생",
+      "text": "고독한 중학생",
+      "raw_text": "고독한 중학생",
+      "token_ids": [
+        238,
+        183,
+        164,
+        239,
+        147,
+        137,
+        241,
+        153,
+        160,
+        36,
+        240,
+        168,
+        149,
+        241,
+        153,
+        157,
+        240,
+        135,
+        161
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 0.8882355261594057
+}

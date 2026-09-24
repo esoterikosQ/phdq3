@@ -1,0 +1,46 @@
+{
+  "fingerprint": "71487ef417cdca0406586ae483a22e2470975101a8d3f0a82d1caf7af0085dff",
+  "records": [
+    {
+      "index": 2191,
+      "source": "꽃밭에 나비좀 봐요.",
+      "text": "꽃밭에 나비 좀 봐요.",
+      "raw_text": "꽃밭에 나비 좀 봐요.",
+      "token_ids": [
+        238,
+        193,
+        135,
+        239,
+        180,
+        177,
+        240,
+        155,
+        148,
+        36,
+        239,
+        134,
+        156,
+        239,
+        189,
+        136,
+        36,
+        240,
+        166,
+        132,
+        36,
+        239,
+        184,
+        148,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.3105396307073534
+}

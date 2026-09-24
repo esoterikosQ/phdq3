@@ -1,0 +1,2 @@
+srun: error: cpu04: task 0: Exited with exit code 75
+Paused with persisted progress. Resume explicitly with the same run configuration.
