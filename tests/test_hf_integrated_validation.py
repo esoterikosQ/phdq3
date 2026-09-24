@@ -3,10 +3,25 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from blt_hf.integrated_validation import gleu_improved, order_predictions, score_validation_epoch
+from blt_hf.integrated_validation import (
+    gleu_improved, order_predictions, score_validation_epoch, validation_groups,
+)
+from blt_hf.data_adapter import GecEncoding
 
 
 class IntegratedValidationContracts(unittest.TestCase):
+    def test_equal_length_validation_batches_cover_each_rank_once(self):
+        lengths = [4, 5, 4, 6, 4, 5, 4, 6, 4, 5, 4, 6]
+        examples = [GecEncoding([1] * length + [2], [-100] * length + [2], length)
+                    for length in lengths]
+        groups = [validation_groups(examples, rank=rank, world_size=4, batch_size=2)
+                  for rank in range(4)]
+        self.assertEqual(sorted(index for rank_groups in groups for group in rank_groups
+                                for index in group), list(range(len(examples))))
+        self.assertTrue(all(len(group) <= 2 and len({lengths[i] for i in group}) == 1
+                            for rank_groups in groups for group in rank_groups))
+        self.assertEqual(groups[0], [[0, 4], [8]])
+
     def test_gleu_not_teacher_forced_loss_selects_best_epoch(self):
         self.assertTrue(gleu_improved(40., None))
         self.assertFalse(gleu_improved(39., 40.))

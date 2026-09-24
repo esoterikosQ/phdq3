@@ -2,6 +2,7 @@
 from pathlib import Path
 
 from .evaluation import publish_lines
+from .generation import group_prompts
 from .manifest import sha256_file
 from .metrics import compute_gleu
 from .runtime import ensure_json
@@ -12,6 +13,16 @@ def gleu_improved(score, previous_best):
     if score is None:
         return False
     return previous_best is None or score > previous_best
+
+
+def validation_groups(encodings, *, rank, world_size, batch_size):
+    """Group one rank's validation rows by exact prompt length, preserving row IDs."""
+    if world_size < 1 or not 0 <= rank < world_size or batch_size < 1:
+        raise ValueError('Invalid validation rank or batch size')
+    indices = list(range(rank, len(encodings), world_size))
+    prompts = [encodings[index].input_ids[:encodings[index].source_len] for index in indices]
+    return [[indices[local_index] for local_index in group]
+            for group in group_prompts(prompts, batch_size)]
 
 
 def order_predictions(rank_parts, total):
@@ -33,7 +44,8 @@ def order_predictions(rank_parts, total):
 
 
 def score_validation_epoch(run_dir, *, epoch, global_step, sources, references,
-                           predictions, num_beams, max_new_bytes, validation_file_hash):
+                           predictions, num_beams, max_new_bytes, validation_file_hash,
+                           batch_size=1):
     if not sources or len({len(sources), len(references), len(predictions)}) != 1:
         raise ValueError('Validation GLEU requires the complete aligned split')
     root = Path(run_dir) / 'validation' / f'epoch-{epoch:04d}'
@@ -45,6 +57,7 @@ def score_validation_epoch(run_dir, *, epoch, global_step, sources, references,
     publish_lines(hypothesis, predictions)
     result = {'epoch': epoch, 'global_step': global_step, 'split': 'val',
               'sample_count': len(sources), 'num_beams': num_beams,
+              'batch_size': batch_size,
               'max_new_bytes': max_new_bytes, 'validation_file_hash': validation_file_hash,
               'source_hash': sha256_file(source), 'reference_hash': sha256_file(reference),
               'hypothesis_hash': sha256_file(hypothesis),

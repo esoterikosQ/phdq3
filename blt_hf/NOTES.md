@@ -277,3 +277,15 @@ attn backend, mask 구현, entropy 기준, cache 동작은 아직 결정·검증
   로컬 M2 채점 shell은 실행 전에 동일한 파생 검사를 수행한다.
 - 제공된 union val의 별도 corrected sidecar에는 TSV 정답과 끝 공백 한 곳의 차이가
   있다. Lang-8 원문·교정문 sidecar는 학습·평가의 정본인 TSV 열에서 생성한다.
+
+## 2026-09-25 — 통합 validation 생성 병목
+
+- native 2-epoch A100 4GPU 시험 job 914931은 exit 0, epoch 1/2 GLEU
+  53.7270/55.1762, 총 7,585초였다. 각 epoch의 학습은 969/1,088초,
+  validation 생성·GLEU는 2,477/2,458초로 생성이 우세하다.
+- 현재 OSC는 cache/padding을 거부하고 통합 validation에서 문장별 batch 1로
+  `generate()`를 호출한다. 우선 정확히 같은 길이의 prompt를 묶는 선택적
+  `VALIDATION_BATCH_SIZE`를 추가했다. 기본값 1은 유지한다.
+- 실제 checkpoint에서 beam 1/4 각각 단건과 batch 4의 token ID 일치, 시간,
+  GPU 메모리를 재는 `bench_generation.py`를 추가했다. 성능 향상은 측정 전까지
+  주장하지 않는다. native 2-epoch run의 재개 identity는 변경된다.

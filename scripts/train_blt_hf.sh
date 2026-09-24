@@ -25,6 +25,7 @@ args=(--dataset "$DATASET_TYPE" --run-dir "outputs/blt_hf/$DATASET_TYPE/$RUN_ID"
       --lr "${LR:-0.00001}" --warmup-ratio "${WARMUP_RATIO:-0.05}"
       --selection-metric "${SELECTION_METRIC:-val_loss}"
       --validation-beams "${VALIDATION_BEAMS:-1}"
+      --validation-batch-size "${VALIDATION_BATCH_SIZE:-1}"
       --validation-max-new-bytes "${VALIDATION_MAX_NEW_BYTES:-768}"
       --save-every "${SAVE_EVERY:-500}" --seed "${SEED:-0}" --max-seconds "${MAX_SECONDS:-21000}"
       --max-steps "${MAX_STEPS:-0}" --overfit-steps "${OVERFIT_STEPS:-200}")

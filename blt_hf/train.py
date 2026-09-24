@@ -28,6 +28,7 @@ def parser():
     p.add_argument('--warmup-ratio', type=float, default=.05)
     p.add_argument('--selection-metric', choices=['val_loss', 'val_gleu'], default='val_loss')
     p.add_argument('--validation-beams', type=int, choices=[1, 4], default=1)
+    p.add_argument('--validation-batch-size', type=int, default=1)
     p.add_argument('--validation-max-new-bytes', type=int, default=768)
     p.add_argument('--weight-decay', type=float, default=.1)
     p.add_argument('--clip-grad-norm', type=float, default=1.)
@@ -53,7 +54,9 @@ def run(args):
     if args.selection_metric == 'val_gleu':
         from .data_adapter import read_tsv
         from .generation import GenerationConfig, generate_batch
-        from .integrated_validation import gleu_improved, order_predictions, score_validation_epoch
+        from .integrated_validation import (
+            gleu_improved, order_predictions, score_validation_epoch, validation_groups,
+        )
 
     rank, world, local_rank = (int(os.environ.get(k, d)) for k, d in
                                [('RANK', '0'), ('WORLD_SIZE', '1'), ('LOCAL_RANK', '0')])
@@ -62,7 +65,8 @@ def run(args):
                           'local_rank':local_rank,'world_size':world,**details}),flush=True)
     if world != torch.cuda.device_count() or local_rank >= world:
         raise ValueError('torchrun world size must equal allocated visible GPU count')
-    if min(args.epochs, args.effective_batch, args.save_every, args.validation_max_new_bytes) < 1 or args.lr <= 0 or args.clip_grad_norm <= 0:
+    if min(args.epochs, args.effective_batch, args.save_every, args.validation_batch_size,
+           args.validation_max_new_bytes) < 1 or args.lr <= 0 or args.clip_grad_norm <= 0:
         raise ValueError('Invalid positive training setting')
     if min(args.max_steps, args.max_seconds, args.weight_decay) < 0 or not 0 <= args.warmup_ratio < 1:
         raise ValueError('Negative training setting')
@@ -138,6 +142,7 @@ def run(args):
                         'warmup_steps': warmup, 'seed': args.seed,
                         'selection_metric': args.selection_metric,
                         'validation_num_beams': args.validation_beams if args.selection_metric == 'val_gleu' else None,
+                        'validation_batch_size': args.validation_batch_size if args.selection_metric == 'val_gleu' else None,
                         'validation_max_new_bytes': args.validation_max_new_bytes if args.selection_metric == 'val_gleu' else None,
                         'lr': args.lr, 'weight_decay': args.weight_decay, 'clip_grad_norm': args.clip_grad_norm,
                         'optimizer': 'AdamW-fused-bfloat16-state', 'betas': [.9, .95], 'eps': 1e-8,
@@ -247,15 +252,18 @@ def run(args):
             def validate_gleu(epoch_number):
                 model.eval()
                 config = GenerationConfig(num_beams=args.validation_beams,
-                                          max_new_bytes=args.validation_max_new_bytes)
+                                          max_new_bytes=args.validation_max_new_bytes,
+                                          batch_size=args.validation_batch_size)
                 started = time.monotonic()
                 local = []
-                for index in range(rank, len(val_rows), world):
+                for indices in validation_groups(val_items, rank=rank, world_size=world,
+                                                 batch_size=args.validation_batch_size):
                     if stopper: break
-                    prediction = generate_batch(model, tok, [val_rows[index].source], config)[0]
-                    local.append({'index': index, 'text': prediction['text'],
+                    predictions = generate_batch(model, tok, [val_rows[index].source for index in indices], config)
+                    local.extend({'index': index, 'text': prediction['text'],
                                   'invalid_utf8': not prediction['valid_utf8'],
-                                  'budget_exhausted': prediction['budget_exhausted']})
+                                  'budget_exhausted': prediction['budget_exhausted']}
+                                 for index, prediction in zip(indices, predictions))
                 part = {'stopped': bool(stopper), 'predictions': local,
                         'peak_allocated_bytes': torch.cuda.max_memory_allocated(device)}
                 if world > 1:
@@ -275,6 +283,7 @@ def run(args):
                                 sources=[row.source for row in val_rows],
                                 references=[row.target for row in val_rows], predictions=predictions,
                                 num_beams=args.validation_beams,
+                                batch_size=args.validation_batch_size,
                                 max_new_bytes=args.validation_max_new_bytes,
                                 validation_file_hash=manifest['val_file_hash'])
                             outcome[0] = {'gleu': report['gleu'],

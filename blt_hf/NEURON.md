@@ -217,6 +217,31 @@ sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
 `blt_hf_checks/results/native-gleu2-b1-s0_integrated_gleu.json`에도 남는다.
 기존 별도 `select_best.py`는 이 통합 run에 다시 적용하지 않는다.
 
+### 생성 병목 진단 (native 시험 checkpoint, A100 1GPU)
+
+현재 OSC 생성은 `use_cache=False`라 생성 바이트마다 앞부분을 다시 계산한다.
+통합 validation은 기본값 `VALIDATION_BATCH_SIZE=1`을 유지한다. 다음 명령은
+**학습하지 않고** 실제 native checkpoint의 같은 64개 문장을 단건과 동일 prompt 길이
+batch 4로 각각 생성해 시간·출력 token ID 일치·peak GPU 메모리를 기록한다.
+beam 1과 4는 다른 job/report로 실행한다. 결과를 확인하기 전에는 batch 4를
+본 학습의 기본값으로 사용하지 않는다.
+
+```bash
+cd /scratch/r984a02/phdq3
+conda activate phdq_blt_hf
+export CKPT_PATH=outputs/blt_hf/native/native-gleu2-b1-s0/best_gleu.json
+sbatch --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",BENCH_OUTPUT=blt_hf_checks/results/native-gleu2-beam1-batch4-bench.json,DATASET_TYPE=native,BLT_NUM_BEAMS=1,BATCH_SIZE=4,GROUPS=16 \
+  scripts/bench_blt_generation.sh
+sbatch --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",BENCH_OUTPUT=blt_hf_checks/results/native-gleu2-beam4-batch4-bench.json,DATASET_TYPE=native,BLT_NUM_BEAMS=4,BATCH_SIZE=4,GROUPS=16 \
+  scripts/bench_blt_generation.sh
+```
+
+보고서의 `status=passed`, `token_id_mismatches=[]`, `speedup>1`과 메모리 여유를
+확인한 뒤 **새 RUN_ID**의 학습 명령에만 `SELECTION_METRIC=val_gleu`,
+`VALIDATION_BATCH_SIZE=4`를 함께 지정한다. 기존 native 2-epoch run은 코드
+identity가 달라지므로 이 옵션으로 재개하지 않는다. cache 경로는 OSC에서
+명시적으로 거부하며 별도 구현·검증 전에는 켜지 않는다.
+
 ### 기존 분리형 10-epoch 절차
 
 새 사이클은 2026-09-18의 3-epoch run과 다른 RUN_ID를 쓴다. 기존
