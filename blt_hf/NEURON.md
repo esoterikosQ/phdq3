@@ -6,11 +6,12 @@
 
 ## 준비
 
-**코드 정본은 GitHub `main`이다.** 전달용
+**코드 정본은 GitHub `main` 하나다.** 전달용
 `artifacts/releases/p1-neuron-code-20260916.tar.gz`는 현재 `main`보다 오래됐으므로
-최종 실행 코드로 사용하지 않는다. 이미 프로젝트 루트에 압축을 풀었다면 아래 명령으로
-Git 추적 파일을 `main`으로 복구한다. `git reset --hard`는 추적 파일의 로컬 변경을
-폐기하지만 Git에서 제외된 `data/`, `artifacts/`, `outputs/`, `ssh.md`는 지우지 않는다.
+최종 실행 코드로 사용하지 않는다. 평소에는 현재 작업을 커밋한 뒤 `main`만
+`pull --ff-only`/`push`한다. `outputs/blt_hf_eval/`도 Git 추적 대상이므로
+`git reset --hard`는 평가 결과의 로컬 변경을 덮어쓴다. 학습 체크포인트가 있는
+`outputs/blt_hf/`, `data/`, `artifacts/`, `ssh.md`는 Git에서 제외한다.
 `git clean`은 실행하지 않는다.
 
 기존 Git checkout인 경우:
@@ -18,11 +19,44 @@ Git 추적 파일을 `main`으로 복구한다. `git reset --hard`는 추적 파
 ```bash
 cd /scratch/r984a02/phdq3
 git fetch origin main
-git reset --hard origin/main
+git merge --ff-only origin/main
 git branch --set-upstream-to=origin/main main
 git status --short
 git log -1 --oneline
 ```
+
+과거 로그 전용 커밋 때문에 로컬 `main`의 이력이 원격 `main`과 갈라졌다면 위
+`merge --ff-only`는 안전하게 실패한다. 이 경우 바로 `pull`/`rebase`하지 말고
+현재 커밋과 미커밋 변경을 보존한 뒤 한 번만 원격 `main`으로 정렬한다.
+진행 중인 작업이 끝나기 전에는 코드를 교체하지 않는다.
+
+2026-09-24 로그 전송 후 Neuron HEAD가 정확히 `089c377`인 기존 checkout의
+일회성 정렬 절차는 다음과 같다. 먼저 HEAD와 브랜치를 검사한다. 검사에 실패하면
+`reset`을 실행하지 않고 현재 상태를 확인한다. `main`에는 이 로그 브랜치의 파일이
+모두 반영되어 있으며, 완료 상태와 과거에 잘린 로그만 수정되어 있다.
+
+```bash
+bash -e <<'SH'
+cd /scratch/r984a02/phdq3
+git fetch origin main
+test "$(git branch --show-current)" = main
+test "$(git rev-parse HEAD)" = 089c3779232040815daf2fe61949fdba49cc90b5
+git tag neuron-before-single-main-20260924 HEAD
+git stash push -u -m neuron-before-single-main-20260924
+git reset --hard origin/main
+git branch --set-upstream-to=origin/main main
+git status --short --branch
+SH
+```
+
+위 stash는 미커밋 변경의 안전 사본이다. 새 `main`에 이미 들어간 코드를 다시
+덮어쓰지 않도록 자동으로 `stash pop`하지 않는다. 이후에는 한 브랜치에서
+`git pull --ff-only origin main`으로 받고, 변경 파일만 커밋한 뒤
+`git -c credential.helper= push origin main`으로 보낸다. GitHub `Password`
+프롬프트에는 계정 비밀번호가 아니라 PAT를 입력한다.
+브랜치를 합쳐도 기존 run의 코드·scorer fingerprint는 바뀌지 않는다. 새 코드가
+다른 fingerprint를 내면 기존 `RUN_ID`/`EVAL_DIR`의 이어하기는 거부되는 것이
+정상이며, 새 실험은 새 ID와 디렉터리에서 시작한다.
 
 압축만 풀어서 `.git`이 없는 경우:
 
@@ -272,6 +306,11 @@ code·config·scorer·생성 설정 fingerprint가 다르면 재개·합산을 �
 # 모든 shard 완료 후 CPU job에서 GLEU + M2 P/R/F0.5를 계산한다.
 sbatch --export=ALL,EVAL_DIR="$EVAL_DIR",DATASET_TYPE=native,M2_WORKERS=8 \
   scripts/score_blt_hf.sh
+
+# gleu.json과 m2/run_config.json이 생긴 부분 채점을 이어서 할 때는
+# 노드 로컬 M2 저널을 사용한다. 공유 저장소에는 주기적으로 snapshot을 남긴다.
+sbatch --export=ALL,EVAL_DIR="$EVAL_DIR",DATASET_TYPE=native,M2_WORKERS=8 \
+  scripts/score_blt_hf_local.sh
 ```
 
 scorer는 `/Users/esoterikos/Nextcloud/QLab/phdq`에서 확인한 **기존 실험 구현**을 독립
@@ -289,7 +328,14 @@ GLEU는 먼저 `scored/gleu.json`에 저장한다. M2는 문장별 통계를 저
 30초→120초→480초→1920초 timeout pass로 재시도한다. wall-time이 오면 중단 후 재개한다.
 미완료 문장이 있으면 partial/75를 반환하고 전체 F0.5를 발표하지 않는다.
 완료 시 `scored/metrics.json`에 GLEU(0–100), M2 P/R/F0.5(0–1), EOS/copy율,
-UTF-8 오류·budget 소진 건수 및 전체 행 수를 기록한다.
+UTF-8 오류·budget 소진 건수 및 전체 행 수를 기록하고, 상위
+`scored/progress.json`도 `complete`로 갱신한다. 이전 코드의 learner 결과는
+`metrics.json`은 완전하지만 상위 progress만 `partial`로 남았으며 GSM 사본을
+복구했다. 당시 실제 M2 채점 시간은 job 914870 로그의 77.65초이고
+`metrics.json`의 0.055초는 완료 후 재집계 시간이다.
+그 결과는 당시 scorer hash와 함께 보존한다. 현재 `main`은 union 접합부의 M2
+문장 경계를 수정했으므로 이전 native/learner 평가 디렉터리에 재채점을 시도하지
+않는다.
 
 ## 검증 범위
 

@@ -13,15 +13,16 @@ git check-ignore -v blt_gec/train.py
 ```
 
 ```bash
-git status # 최신 상태인지 확인
-git pull # 깃허브 최신 상태 동기화
+git status --short --branch # 현재 브랜치와 변경 파일 확인
+git switch main
+git pull --ff-only origin main # 이력이 갈라지면 멈추고 원인 확인
 ```
 
 ```bash
 # 작업 종료시
-git status # version control 상태 확인
-git add .
+git status --short # 커밋할 파일 확인
+git add -A -- blt_hf scripts runtimelog outputs/blt_hf_eval # 실제 수정한 경로만 선택
+git diff --cached --name-only
 git commit -m "수정내용 입력"
-git push
+git push origin main
 ```
-
