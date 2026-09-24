@@ -32,21 +32,40 @@ git log -1 --oneline
 
 2026-09-24 로그 전송 후 Neuron HEAD가 정확히 `089c377`인 기존 checkout의
 일회성 정렬 절차는 다음과 같다. 먼저 HEAD와 브랜치를 검사한다. 검사에 실패하면
-`reset`을 실행하지 않고 현재 상태를 확인한다. `main`에는 이 로그 브랜치의 파일이
+브랜치를 교체하지 않고 현재 상태를 확인한다. `main`에는 이 로그 브랜치의 파일이
 모두 반영되어 있으며, 완료 상태와 과거에 잘린 로그만 수정되어 있다.
 
 ```bash
-bash -e <<'SH'
+bash <<'SH'
 cd /scratch/r984a02/phdq3
-git fetch origin main
-test "$(git branch --show-current)" = main
-test "$(git rev-parse HEAD)" = 089c3779232040815daf2fe61949fdba49cc90b5
-git tag neuron-before-single-main-20260924 HEAD
-git stash push -u -m neuron-before-single-main-20260924
-git reset --hard origin/main
-git branch --set-upstream-to=origin/main main
+git fetch origin main || exit 1
+if [ "$(git rev-parse HEAD)" != 089c3779232040815daf2fe61949fdba49cc90b5 ]; then
+  echo 'Unexpected HEAD; stop before changing branches' >&2
+  exit 1
+fi
+case "$(git branch --show-current)" in
+  ''|main) ;;
+  *) echo 'Unexpected branch; stop before changing branches' >&2; exit 1 ;;
+esac
+git tag neuron-before-single-main-20260924 HEAD || exit 1
+git stash push -u -m neuron-before-single-main-20260924 || exit 1
+git switch -C main origin/main || exit 1
+git branch --set-upstream-to=origin/main main || exit 1
 git status --short --branch
 SH
+```
+
+위 절차의 이전 버전으로 이미 `8877a81`에 도달했지만 `## HEAD (no branch)`가
+표시된다면, stash를 적용하거나 다시 reset하지 말고 아래처럼 `main`에 붙인다.
+`origin/main`의 최신 문서 수정도 함께 받는다.
+
+```bash
+cd /scratch/r984a02/phdq3
+git fetch origin main
+git switch -C main origin/main
+git status --short --branch
+git log -1 --oneline
+git stash list -1
 ```
 
 위 stash는 미커밋 변경의 안전 사본이다. 새 `main`에 이미 들어간 코드를 다시
