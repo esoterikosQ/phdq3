@@ -88,7 +88,7 @@ class DatasetTests(unittest.TestCase):
         self.assertEqual(len(paths), 9)
         self.assertEqual(paths["korean_learner/test"].name, "korean_learner_test.txt")
         self.assertEqual(dataset_split_path(Path('data/Preprocessed'),'lang8','test'),
-                         Path('artifacts/derived/lang8/lang8_test.txt'))
+                         Path('data/Preprocessed/lang8/lang8_test.txt'))
 
     @unittest.skipUnless(any(p.is_file() for p in canonical_split_paths(Path('data/Preprocessed')).values()),
                          'private dataset is not distributed with the repository')

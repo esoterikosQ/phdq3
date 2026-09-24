@@ -323,10 +323,11 @@ python -m blt_hf.select_best \
 # 실제 실행에서는 epoch_checkpoints.json의 10개 epoch evaluation directory를 모두 지정한다.
 ```
 
-Lang-8은 제공 데이터를 수정하지 않는다. `union = lang8 + korean_learner + native`의
+Lang-8은 기존 제공 데이터 파일을 수정하지 않는다. `union = lang8 + korean_learner + native`의
 정확한 순서와 train/val/test의 76,692/16,434/16,434행을 검사한 뒤
-`artifacts/derived/lang8/`에 파생본을 만든다. train/eval shell은 DATASET_TYPE=lang8일 때
-이를 자동으로 실행하며 suffix나 M2 annotation이 다르면 실패한다.
+`data/Preprocessed/lang8/`에 다른 데이터셋처럼 split TSV/M2와 원문·교정문 파일을
+만든다. train/eval/score shell은 DATASET_TYPE=lang8일 때 이를 자동으로 검사·생성하며
+suffix나 M2 annotation이 다르면 실패한다.
 
 ## 3. 생성
 

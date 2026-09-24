@@ -47,8 +47,7 @@ def dataset_split_path(root: Path | str, dataset: str, split: str) -> Path:
     if dataset not in EXPERIMENT_DATASETS or split not in SPLITS:
         raise ValueError(f"Unsupported dataset/split: {dataset}/{split}")
     if dataset == "lang8":
-        # Derived outside data/: source datasets remain byte-for-byte unchanged.
-        return root.parents[1] / "artifacts" / "derived" / "lang8" / f"lang8_{split}.txt"
+        return root / "lang8" / f"lang8_{split}.txt"
     return canonical_split_paths(root)[f"{dataset}/{split}"]
 
 

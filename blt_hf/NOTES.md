@@ -267,3 +267,13 @@ attn backend, mask 구현, entropy 기준, cache 동작은 아직 결정·검증
   train 76,692 / val 16,434 / test 16,434다.
 - union 합본 M2의 빈 separator 문제를 막기 위해 모든 새 `S ` 행을 논리 record
   경계로 처리한다. H200은 script에서도 한 job 최대 2GPU로 제한한다.
+
+## 2026-09-24 — Lang-8 데이터 디렉터리 정리
+
+- 요청에 따라 파생 Lang-8을 `data/Preprocessed/lang8`에 배치한다. 기존
+  union/korean_learner/native 파일은 수정하지 않는다. split TSV/M2와 원문·교정문,
+  val/test hanspell, train→test→val 순서의 합본 파일을 만든다.
+- 학습·생성·채점의 `dataset_split_path`는 새 디렉터리를 읽는다. 세 job shell과
+  로컬 M2 채점 shell은 실행 전에 동일한 파생 검사를 수행한다.
+- 제공된 union val의 별도 corrected sidecar에는 TSV 정답과 끝 공백 한 곳의 차이가
+  있다. Lang-8 원문·교정문 sidecar는 학습·평가의 정본인 TSV 열에서 생성한다.

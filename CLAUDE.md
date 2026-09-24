@@ -138,7 +138,7 @@ sbatch --export=ALL,EVAL_DIR=<동일-output-directory>,DATASET_TYPE=native scrip
   GLEU로 checkpoint를 고른다. 시험 명령과 재개는 `blt_hf/NEURON.md`를 따른다.
 - 실행 identity는 단계별 실행 파일 hash로 고정하고 Git commit/job/node는
   `provenance.jsonl`에 감사 정보로 기록한다. 로그만 추가한 commit은 resume을 막지 않는다.
-- Lang-8은 union prefix를 검증해 `artifacts/derived/lang8`에 만들며 제공 data는 변경하지 않는다.
+- Lang-8은 union prefix를 검증해 `data/Preprocessed/lang8`에 별도로 만들며 기존 제공 파일은 변경하지 않는다.
 - 원본·변환 artifact와 동일하게 main parameter/gradient/Adam 상태와 연산은 BF16,
   entropy는 BF16 고정, gradient checkpointing. dtype 불일치는 즉시 실패한다.
   rank당 무패딩 1개와 전역 supervised-token loss, DDP accumulation을 사용한다.

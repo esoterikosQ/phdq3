@@ -21,7 +21,7 @@ sbatch --export=ALL,CONDA_ENV=phdq_blt_hf,EVAL_DIR="$EVAL_DIR",DATASET_TYPE=kore
 ```
 
 새 코드 배포 후 Lang-8 파생 검사를 로그인 노드에서 먼저 실행할 수 있다. 출력은
-`artifacts/derived/lang8`이며 제공 `data/`는 변경하지 않는다.
+`data/Preprocessed/lang8`이며 기존 제공 데이터 파일은 변경하지 않는다.
 
 ```bash
 conda activate phdq_blt_hf
