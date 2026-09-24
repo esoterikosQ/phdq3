@@ -1,13 +1,13 @@
 {
-  "status": "partial",
+  "status": "complete",
   "m2": {
-    "precision": null,
-    "recall": null,
-    "status": "partial",
-    "completed": 1720,
+    "precision": 0.3906428299733739,
+    "recall": 0.11567920702861005,
+    "status": "complete",
+    "completed": 4265,
     "total": 4265,
-    "unresolved": 2545,
-    "elapsed_seconds": 5354.3268432510085,
-    "f0.5": null
+    "unresolved": 0,
+    "elapsed_seconds": 0.05507200723513961,
+    "f0.5": 0.2647726100855935
   }
 }

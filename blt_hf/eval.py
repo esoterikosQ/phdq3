@@ -168,7 +168,11 @@ def aggregate(args):
         print(json.dumps({'stage':'score_inputs_ready','cached':cached,
                           'elapsed_seconds':round(time.monotonic()-prepared_at,2)}),flush=True)
         if (scored/'metrics.json').exists():
-            print((scored/'metrics.json').read_text(),flush=True);return 0
+            final=json.loads((scored/'metrics.json').read_text())
+            if final.get('status')!='complete' or final.get('fingerprint')!=manifest['fingerprint']:
+                raise ValueError('Existing final metrics do not match this completed evaluation')
+            atomic_json(scored/'progress.json',{'status':'complete','m2':final['m2']})
+            print(json.dumps(final,ensure_ascii=False,indent=2),flush=True);return 0
         stop=StopRequest(args.max_seconds)
         workers=min(args.m2_workers,int(os.environ.get('SLURM_CPUS_PER_TASK',str(args.m2_workers))))
         result=compute_m2_with_checkpoints(scored/'hypothesis.txt',m2,scored/'m2',workers=workers,
@@ -180,6 +184,7 @@ def aggregate(args):
                'evaluation_checks':'passed','training_checks':manifest['training_checks'],
                'conversion_checks':manifest['conversion_checks']}
         write_json(scored/'metrics.json',final)
+        atomic_json(scored/'progress.json',{'status':'complete','m2':result.to_dict()})
         print(json.dumps(final,ensure_ascii=False,indent=2),flush=True)
     return 0
 
