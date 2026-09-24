@@ -134,6 +134,8 @@ sbatch --export=ALL,EVAL_DIR=<동일-output-directory>,DATASET_TYPE=native scrip
 - 체크포인트는 불변 directory이며 `latest.json`/`best.json`만 포인터로 갱신한다.
 - 새 본 학습은 10 epoch와 5% warmup을 사용한다. epoch별 checkpoint를 전체 validation
   GLEU로 비교해 `best_gleu.json`을 만들고 그 checkpoint만 test 비교에 사용한다.
+- 먼저 별도 native 2-epoch 통합 시험에서 A100 4GPU rank가 validation 생성을 분담하고
+  GLEU로 checkpoint를 고른다. 시험 명령과 재개는 `blt_hf/NEURON.md`를 따른다.
 - 실행 identity는 단계별 실행 파일 hash로 고정하고 Git commit/job/node는
   `provenance.jsonl`에 감사 정보로 기록한다. 로그만 추가한 commit은 resume을 막지 않는다.
 - Lang-8은 union prefix를 검증해 `artifacts/derived/lang8`에 만들며 제공 data는 변경하지 않는다.

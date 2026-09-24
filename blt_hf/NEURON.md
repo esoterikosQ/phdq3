@@ -179,6 +179,46 @@ sbatch --export=ALL,RUN_ID=native-overfit-01,DATASET_TYPE=native,NUM_GPUS=1,TRAI
 
 ## 2. 본 학습 및 재개
 
+### native 2-epoch 통합 GLEU 시험 (A100 4GPU)
+
+이 시험은 기존 3-epoch/10-epoch run과 다른 `RUN_ID`를 쓴다. 역전파는 target-token
+loss로 수행하지만, 매 epoch 전체 native validation을 네 rank가 나눠 생성하고
+corpus GLEU로 `best.json`과 `best_gleu.json`을 갱신한다. validation loss도 진단용으로
+남긴다. M2는 checkpoint 선택에 필요하지 않아 이 단계에서 계산하지 않는다.
+첫 시험은 기존 생성 조건인 beam 1로 통합 처리량과 GPU 메모리를 측정한다.
+논문 조건의 beam 4는 이 결과를 확인한 뒤 **새 RUN_ID**로 실행한다.
+2 epoch는 학습률 schedule의 일부이므로 이 run의 `EPOCHS`를 10으로 바꿔 이어갈 수
+없다. 본 학습은 별도 10-epoch run을 처음부터 시작한다.
+
+```bash
+cd /scratch/r984a02/phdq3
+conda activate phdq_blt_hf
+sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=native-gleu2-b1-s0,DATASET_TYPE=native,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=2,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1 \
+  scripts/train_blt_hf.sh
+```
+
+시간 제한으로 exit 75가 나오면 코드와 위 설정을 그대로 유지하고 다음을 제출한다.
+
+```bash
+sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=native-gleu2-b1-s0,DATASET_TYPE=native,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=2,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,RESUME=outputs/blt_hf/native/native-gleu2-b1-s0/latest.json \
+  scripts/train_blt_hf.sh
+```
+
+완료 판정은 `completed.json`의 `status=complete`, `epoch=2`,
+`training_checks=passed`다. `validation/epoch-0001/metrics.json`과
+`validation/epoch-0002/metrics.json`에 GLEU·입력/출력 hash가 남고,
+`epoch_checkpoints.json`에는 각 epoch의 loss와 GLEU가 기록된다.
+`best_gleu.json`/`best.json`은 높은 GLEU의 불변 checkpoint를 가리킨다.
+동점이면 이른 epoch가 유지된다. `validation_gleu_complete` 로그의
+`elapsed_seconds`는 4GPU 전체 validation 생성·GLEU 채점 시간이다.
+작은 결과 요약은 Git 추적 대상인
+`blt_hf_checks/results/native-gleu2-b1-s0_integrated_gleu.json`에도 남는다.
+기존 별도 `select_best.py`는 이 통합 run에 다시 적용하지 않는다.
+
+### 기존 분리형 10-epoch 절차
+
 새 사이클은 2026-09-18의 3-epoch run과 다른 RUN_ID를 쓴다. 기존
 `union-h200-4gpu-main-01`은 재개하지 않는다. 재개 identity는 Git commit 전체가 아니라
 학습 단계에서 실제 실행하는 파일의 `code_hash`와 데이터·모델·schedule·world size로
@@ -260,8 +300,10 @@ DDP는 optimizer 상태 할당 전에 gradient bucket view를 준비하는 2회�
 
 - 경로: `outputs/blt_hf/<dataset>/<RUN_ID>/step-<update>-<id>/`
 - `model.safetensors`, `training.pt`, `checkpoint.json`을 staging directory에 완성한 뒤 게시한다.
-- `latest.json`/`best.json`은 작은 포인터다. `best.json`은 전체 validation의
-  target-token loss 기준이며 `epoch_checkpoints.json`은 모든 epoch 끝 checkpoint를 기록한다.
+- `latest.json`/`best.json`은 작은 포인터다. 기본 분리형 run의 `best.json`은 전체
+  validation target-token loss 기준이다. `SELECTION_METRIC=val_gleu` 통합 run에서는
+  GLEU 기준이며 `best_gleu.json`도 같은 checkpoint를 가리킨다.
+  `epoch_checkpoints.json`은 모든 epoch 끝 checkpoint를 기록한다.
 - 기본 `SAVE_EVERY=500` update, epoch 끝 및 중단 때 저장한다. `MAX_STEPS`는 이번 job의
   실행량만 제한하며 학습 schedule을 다시 만들지 않는다.
 - optimizer·epoch 내 다음 배치·global step·rank별 RNG·실행 manifest를 복원한다.

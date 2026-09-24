@@ -52,6 +52,8 @@ def save_checkpoint(run_dir, model, optimizer, state, rng_states, *, best=False)
         epochs = json.loads(epochs_path.read_text()) if epochs_path.exists() else []
         entry = {'epoch':state['epoch'],'checkpoint':name,'global_step':state['global_step'],
                  'val_loss':state.get('last_val_loss')}
+        if state.get('run_manifest', {}).get('selection_metric') == 'val_gleu':
+            entry['val_gleu'] = state.get('last_val_gleu')
         prior = [item for item in epochs if item['epoch'] == entry['epoch']]
         if prior and prior[0] != entry:
             raise ValueError(f"Epoch checkpoint already recorded differently: {entry['epoch']}")

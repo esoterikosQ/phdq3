@@ -190,6 +190,16 @@ neuron 학습 코드. 학습은 동질성 검증 완료와 무관하게 진행�
 
 현재 단계: 실행 준비 G 진행 중. 본 학습·동질성 검증 완료 상태가 아니다.
 
+2026-09-24 통합 validation 시험 설계: 기존 별도 1GPU 생성 대신 A100 4GPU
+학습 job 내부에서 rank별로 전체 validation 행을 분담한다. 이전 코드의 역전파
+목표는 target-token loss로 유지하되, `SELECTION_METRIC=val_gleu`에서는 epoch별
+전체 corpus GLEU가 높은 checkpoint를 `best.json`/`best_gleu.json`으로 선택한다.
+generation.py와 이전 실험에서 이식한 GLEU scorer를 재사용하며 M2는 선택에서 제외한다.
+첫 2-epoch native 시험은 beam1로 기존 생성 조건과 처리량·메모리를 비교한다.
+beam4는 별도 RUN_ID로 검증한다. 전체 생성 rank의 index를 정확히 1회 수집하고,
+score 입력·출력 hash를 불변 epoch 기록에 남긴다. Mac CPU 계약 테스트만 수행하며
+Neuron GPU 실행은 사용자가 맡는다.
+
 - 사용자: itcerdo/neuron의 환경 설치 완료. 원격 버전·GPU 구동은 아직 확인하지 않음.
 - 사용자 지시로 에이전트는 neuron에 접속·파일 전송·작업 제출하지 않음.
   neuron용 코드·명령은 로컬에서 준비하고 사용자가 실행한다.

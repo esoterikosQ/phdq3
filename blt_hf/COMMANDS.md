@@ -1,5 +1,13 @@
 # P1 명령 및 현재 실행 범위
 
+## 2026-09-24 — native 2-epoch 통합 GLEU 시험
+
+Neuron에서는 사용자가 `NEURON.md`의 "native 2-epoch 통합 GLEU 시험" 명령을
+실행한다. `native-gleu2-b1-s0`은 A100 4GPU에서 두 epoch를 학습하고 각 epoch마다
+동일 4GPU로 전체 validation 생성·corpus GLEU를 계산한다. 최종 선택 기준은
+validation GLEU이며 loss는 진단값이다. 에이전트는 Neuron에 접속하거나 job을
+제출하지 않는다.
+
 ## 2026-09-23 — 기존 learner 채점 후 새 사이클
 
 새 코드를 Neuron에 반영하기 전에 기존 learner beam1 생성 결과를 기존 scorer로 채점한다.

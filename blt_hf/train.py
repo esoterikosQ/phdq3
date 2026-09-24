@@ -26,6 +26,9 @@ def parser():
     p.add_argument('--effective-batch', type=int, default=32)
     p.add_argument('--lr', type=float, default=1e-5)
     p.add_argument('--warmup-ratio', type=float, default=.05)
+    p.add_argument('--selection-metric', choices=['val_loss', 'val_gleu'], default='val_loss')
+    p.add_argument('--validation-beams', type=int, choices=[1, 4], default=1)
+    p.add_argument('--validation-max-new-bytes', type=int, default=768)
     p.add_argument('--weight-decay', type=float, default=.1)
     p.add_argument('--clip-grad-norm', type=float, default=1.)
     p.add_argument('--seed', type=int, default=0)
@@ -47,6 +50,10 @@ def run(args):
     from .model import load_model
     from .data_adapter import GecDataset, collate, dataset_split_path
     from .checkpoint import resolve_checkpoint, save_checkpoint
+    if args.selection_metric == 'val_gleu':
+        from .data_adapter import read_tsv
+        from .generation import GenerationConfig, generate_batch
+        from .integrated_validation import gleu_improved, order_predictions, score_validation_epoch
 
     rank, world, local_rank = (int(os.environ.get(k, d)) for k, d in
                                [('RANK', '0'), ('WORLD_SIZE', '1'), ('LOCAL_RANK', '0')])
@@ -55,7 +62,7 @@ def run(args):
                           'local_rank':local_rank,'world_size':world,**details}),flush=True)
     if world != torch.cuda.device_count() or local_rank >= world:
         raise ValueError('torchrun world size must equal allocated visible GPU count')
-    if min(args.epochs, args.effective_batch, args.save_every) < 1 or args.lr <= 0 or args.clip_grad_norm <= 0:
+    if min(args.epochs, args.effective_batch, args.save_every, args.validation_max_new_bytes) < 1 or args.lr <= 0 or args.clip_grad_norm <= 0:
         raise ValueError('Invalid positive training setting')
     if min(args.max_steps, args.max_seconds, args.weight_decay) < 0 or not 0 <= args.warmup_ratio < 1:
         raise ValueError('Negative training setting')
@@ -83,6 +90,9 @@ def run(args):
             val = GecDataset(paths[f'{args.dataset}/val'], tok)
             train_items = [train[i] for i in range(len(train))]
             val_items = [val[i] for i in range(len(val))]
+            val_rows = read_tsv(paths[f'{args.dataset}/val']) if args.selection_metric == 'val_gleu' else None
+            if val_rows is not None and len(val_rows) != len(val_items):
+                raise ValueError('Validation text and encoded row counts differ')
             if args.mode == 'smoke':
                 # Stress longest TRAIN rows, in a diagnostic run that evaluation rejects.
                 train_items = sorted(train_items, key=lambda item: len(item.input_ids), reverse=True)[:max(4, 2*world)]
@@ -108,7 +118,9 @@ def run(args):
             free, _ = torch.cuda.mem_get_info(device)
             if minimum > free * .95:
                 raise RuntimeError(f'BF16 Adam/DDP minimum {minimum} exceeds available {free}; plan sharding')
-            identity = code_identity(TRAIN_RUNTIME_FILES)
+            gleu_files = ('blt_hf/generation.py', 'blt_hf/integrated_validation.py',
+                          'blt_hf/metrics.py', 'blt_hf/evaluation.py', 'blt_hf/vendor/gleu.py')
+            identity = code_identity(TRAIN_RUNTIME_FILES + (gleu_files if args.selection_metric == 'val_gleu' else ()))
             manifest = {'schema_version': 2, 'run_id': str(run_dir.relative_to(ROOT)), 'dataset': args.dataset, 'mode': args.mode,
                         'train_file_hash': sha256_file(paths[f'{args.dataset}/train']),
                         'val_file_hash': sha256_file(paths[f'{args.dataset}/val']),
@@ -124,6 +136,9 @@ def run(args):
                         'loss_normalization': 'global_supervised_token_mean', 'epochs': epochs,
                         'total_steps': total_steps, 'warmup_ratio': args.warmup_ratio,
                         'warmup_steps': warmup, 'seed': args.seed,
+                        'selection_metric': args.selection_metric,
+                        'validation_num_beams': args.validation_beams if args.selection_metric == 'val_gleu' else None,
+                        'validation_max_new_bytes': args.validation_max_new_bytes if args.selection_metric == 'val_gleu' else None,
                         'lr': args.lr, 'weight_decay': args.weight_decay, 'clip_grad_norm': args.clip_grad_norm,
                         'optimizer': 'AdamW-fused-bfloat16-state', 'betas': [.9, .95], 'eps': 1e-8,
                         'conversion_checks': conversion_verification(conversion), **identity}
@@ -144,7 +159,8 @@ def run(args):
                 raise ValueError(f"Run manifest verification failed: {manifest_status[0]['error']}")
             stage('manifest_verified',resume=bool(args.resume),code_hash=identity['code_hash'])
             state = {'epoch': 0, 'next_batch': 0, 'global_step': 0, 'best_val_loss': None,
-                     'last_val_loss': None, 'last_training_loss': None, 'run_signature': signature,
+                     'last_val_loss': None, 'best_val_gleu': None, 'last_val_gleu': None,
+                     'last_training_loss': None, 'run_signature': signature,
                      'training_checks': 'not_run', 'evaluation_checks': 'not_run'}
             restore = None
             if args.resume:
@@ -205,6 +221,11 @@ def run(args):
                 else: all_rng[0] = rng
                 if rank == 0:
                     checkpoint_name=save_checkpoint(run_dir, model, optimizer, {**state, 'run_manifest': manifest}, all_rng, best=best)
+                    if best and args.selection_metric == 'val_gleu':
+                        atomic_json(run_dir/'best_gleu.json',
+                                    {'checkpoint': checkpoint_name, 'global_step': state['global_step'],
+                                     'epoch': state['epoch'], 'val_gleu': state['best_val_gleu'],
+                                     'num_beams': args.validation_beams})
                     stage('checkpoint_published',checkpoint=checkpoint_name,best=best)
                 if world > 1: dist.barrier()
             def validate():
@@ -223,10 +244,56 @@ def run(args):
                 if world > 1: dist.all_reduce(stats)
                 if int(stats[2]) != len(val_items): return None
                 return (stats[0]/stats[1]).item()
+            def validate_gleu(epoch_number):
+                model.eval()
+                config = GenerationConfig(num_beams=args.validation_beams,
+                                          max_new_bytes=args.validation_max_new_bytes)
+                started = time.monotonic()
+                local = []
+                for index in range(rank, len(val_rows), world):
+                    if stopper: break
+                    prediction = generate_batch(model, tok, [val_rows[index].source], config)[0]
+                    local.append({'index': index, 'text': prediction['text'],
+                                  'invalid_utf8': not prediction['valid_utf8'],
+                                  'budget_exhausted': prediction['budget_exhausted']})
+                part = {'stopped': bool(stopper), 'predictions': local,
+                        'peak_allocated_bytes': torch.cuda.max_memory_allocated(device)}
+                if world > 1:
+                    gathered = [None] * world
+                    dist.all_gather_object(gathered, part)
+                else:
+                    gathered = [part]
+                outcome = [None]
+                if rank == 0:
+                    try:
+                        if any(item['stopped'] for item in gathered):
+                            outcome[0] = {'gleu': None}
+                        else:
+                            predictions = order_predictions([item['predictions'] for item in gathered], len(val_rows))
+                            report = score_validation_epoch(
+                                run_dir, epoch=epoch_number, global_step=state['global_step'],
+                                sources=[row.source for row in val_rows],
+                                references=[row.target for row in val_rows], predictions=predictions,
+                                num_beams=args.validation_beams,
+                                max_new_bytes=args.validation_max_new_bytes,
+                                validation_file_hash=manifest['val_file_hash'])
+                            outcome[0] = {'gleu': report['gleu'],
+                                          'invalid_utf8': sum(record['invalid_utf8'] for item in gathered for record in item['predictions']),
+                                          'budget_exhausted': sum(record['budget_exhausted'] for item in gathered for record in item['predictions']),
+                                          'max_rank_peak_allocated_bytes': max(item['peak_allocated_bytes'] for item in gathered)}
+                            stage('validation_gleu_complete', epoch=epoch_number,
+                                  elapsed_seconds=round(time.monotonic()-started, 2), **outcome[0])
+                    except Exception as exc:
+                        outcome[0] = {'error': f'{type(exc).__name__}: {exc}'}
+                if world > 1: dist.broadcast_object_list(outcome, src=0)
+                if 'error' in outcome[0]:
+                    raise RuntimeError(f"Validation GLEU failed: {outcome[0]['error']}")
+                return outcome[0]['gleu']
             invocation_steps = 0
             grad_report = None
             stage('training_loop_entered',global_step=state['global_step'],epoch=state['epoch'],next_batch=state['next_batch'])
             for epoch in range(state['epoch'], epochs):
+                epoch_started = time.monotonic()
                 batches = epoch_batches(count, batch_size, seed=args.seed, epoch=epoch)
                 start = state['next_batch'] if epoch == state['epoch'] else 0
                 for batch_index in range(start, len(batches)):
@@ -294,24 +361,57 @@ def run(args):
                         return 75 if preempted else 0
                     if state['global_step'] % args.save_every == 0: save()
                 # Validation belongs to this epoch; a resumed end-of-epoch checkpoint repeats it safely.
+                training_seconds = time.monotonic() - epoch_started
+                validation_started = time.monotonic()
                 val_loss = validate() if args.mode == 'train' else None
                 if args.mode == 'train' and val_loss is None:
                     save(); return 75
-                best = val_loss is not None and (state['best_val_loss'] is None or val_loss < state['best_val_loss'])
-                if best: state['best_val_loss'] = val_loss
+                if rank == 0 and val_loss is not None:
+                    stage('validation_loss_complete', epoch=epoch+1, val_loss=val_loss,
+                          training_seconds=round(training_seconds, 2),
+                          validation_loss_seconds=round(time.monotonic()-validation_started, 2))
+                val_gleu = validate_gleu(epoch+1) if args.mode == 'train' and args.selection_metric == 'val_gleu' else None
+                if args.mode == 'train' and args.selection_metric == 'val_gleu' and val_gleu is None:
+                    save(); return 75
+                loss_improved = val_loss is not None and (state['best_val_loss'] is None or val_loss < state['best_val_loss'])
+                if loss_improved: state['best_val_loss'] = val_loss
                 state['last_val_loss'] = val_loss
+                gleu_is_better = gleu_improved(val_gleu, state['best_val_gleu'])
+                if gleu_is_better: state['best_val_gleu'] = val_gleu
+                state['last_val_gleu'] = val_gleu
+                best = gleu_is_better if args.selection_metric == 'val_gleu' else loss_improved
                 state.update(epoch=epoch+1, next_batch=0)
-                if epoch+1 == epochs:
-                    state['training_checks'] = 'passed' if args.mode == 'train' or state['last_training_loss'] < .05 else 'failed'
+                if args.mode == 'train':
+                    state['training_checks'] = 'passed'
+                elif epoch+1 == epochs:
+                    state['training_checks'] = 'passed' if state['last_training_loss'] < .05 else 'failed'
                 if args.mode != 'overfit' or epoch+1 == epochs: save(best=best)
                 if rank == 0:
-                    atomic_json(run_dir/'progress.json', {**state, 'status': 'running', 'val_loss': val_loss, 'gradient_norms': grad_report})
+                    atomic_json(run_dir/'progress.json', {**state, 'status': 'running',
+                                                          'gradient_norms': grad_report})
+                    stage('epoch_complete', epoch=epoch+1, global_step=state['global_step'],
+                          selection_metric=args.selection_metric, best=best,
+                          val_loss=val_loss, val_gleu=val_gleu,
+                          elapsed_seconds=round(time.monotonic()-epoch_started, 2))
             if rank == 0:
                 result = {**state, 'status': 'complete', 'mode': args.mode, 'gradient_norms': grad_report,
                           'peak_allocated_bytes': torch.cuda.max_memory_allocated(device)}
                 if args.mode == 'overfit':
                     result['final_training_loss'] = state['last_training_loss']
                     result['overfit_passed'] = result['final_training_loss'] < .05
+                if args.mode == 'train' and args.selection_metric == 'val_gleu':
+                    best_pointer = json.loads((run_dir/'best_gleu.json').read_text())
+                    best_meta = json.loads((run_dir/best_pointer['checkpoint']/'checkpoint.json').read_text())
+                    ensure_json(ROOT/'blt_hf_checks/results'/f'{run_dir.name}_integrated_gleu.json',
+                                {'status': 'complete', 'run_id': manifest['run_id'],
+                                 'run_signature': signature, 'code_hash': identity['code_hash'],
+                                 'dataset': args.dataset, 'epochs': epochs,
+                                 'selection_metric': args.selection_metric,
+                                 'validation_num_beams': args.validation_beams,
+                                 'validation_max_new_bytes': args.validation_max_new_bytes,
+                                 'epoch_checkpoints': json.loads((run_dir/'epoch_checkpoints.json').read_text()),
+                                 'best': {**best_pointer,
+                                          'model_sha256': best_meta['files']['model.safetensors']}})
                 write_json(run_dir/'completed.json', result)
                 atomic_json(run_dir/'progress.json', result)
             if args.mode == 'overfit' and state['last_training_loss'] >= .05:

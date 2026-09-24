@@ -83,3 +83,11 @@
 - 9개 split 재검사: 201,534행, 최대 입력 1,380, 2,048 초과 0건; TSV–M2 정합성 확인.
 - 사용자 지시: neuron 접속·원격 작업 금지. itcerdo 정보 파일 수신 후 원격 단계 진행.
 - 현 상태/명령/다음 단계는 blt_hf/NOTES.md, blt_hf/COMMANDS.md 참조.
+## 2026-09-24 — native 2-epoch 통합 GLEU 시험 준비
+
+- 사용자 요청: A100 4GPU 학습 job에서 매 epoch 전체 validation 생성·GLEU를 함께
+  수행하고 같은 GLEU로 checkpoint를 선택하는 native 2-epoch 시험.
+- 학습 역전파는 token loss, checkpoint 선택은 validation corpus GLEU로 분리해
+  기록한다. 이전 run과 충돌하지 않는 새 RUN_ID를 사용한다.
+- 첫 시험은 beam1, 2 epoch로 통합 소요시간·GPU 메모리를 측정한다.
+  beam4는 실측 후 별도 run으로 진행한다. Neuron 접속·제출은 사용자 담당.
