@@ -51,6 +51,16 @@ class ScoreResumeTests(unittest.TestCase):
                 (scored / 'hypothesis.txt').write_text('tampered\n', encoding='utf-8')
                 with self.assertRaisesRegex(ValueError, 'Cached M2 input identity mismatch'):
                     evaluation.aggregate(args)
+                (scored / 'hypothesis.txt').write_text('correct\n', encoding='utf-8')
+                complete = SimpleNamespace(status='complete', to_dict=lambda: {
+                    'status': 'complete', 'completed': 1, 'total': 1, 'unresolved': 0,
+                    'precision': 1.0, 'recall': 1.0, 'f0.5': 1.0})
+                with patch.object(evaluation, 'compute_m2_with_checkpoints', return_value=complete):
+                    self.assertEqual(evaluation.aggregate(args), 0)
+                self.assertEqual(json.loads((scored / 'progress.json').read_text())['status'], 'complete')
+                (scored / 'progress.json').write_text(json.dumps({'status': 'partial'}), encoding='utf-8')
+                self.assertEqual(evaluation.aggregate(args), 0)
+                self.assertEqual(json.loads((scored / 'progress.json').read_text())['status'], 'complete')
 
 
 if __name__ == '__main__':
