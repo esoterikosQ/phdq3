@@ -36,6 +36,8 @@ batch 1·빔 1 전용이다. 에이전트는 Neuron에 접속·전송·제출하
 판단은 철회했다. 선택형 `global-prefix-greedy-v1` backend와 완성 생성 05
 시험 명령은 `NEURON.md`의 P3a 절을 따른다. decoder KV는 이 backend에서
 꺼져 있고 기존 no-cache가 기본이다.
+05 완성 생성은 12/12 출력 일치·1.467배였으며, 전체 native validation의
+별도 EVAL_DIR 두 개와 CPU 전수 비교 명령도 같은 절에 있다.
 
 ## 2026-09-26 — P3a 패치 경계 인과성 검사
 

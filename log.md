@@ -1,5 +1,15 @@
 # 일자별 작업 내역
 
+## 2026-09-26 — native 완성 생성 A100 915874 결과
+
+- 사용자 동기화 커밋 `b542bd8`의 05 보고서·SLURM 로그 수신. exit 0,
+  native validation 길이별 12문장의 전체 token ID·EOS·UTF-8·문자열
+  12/12 일치, 모두 EOS 종료, 예산 소진 0.
+- 기준 생성 43.594초→global 캐시 29.711초(1.467배). 첫 기준 문장의
+  초기 비용을 빼면 약 1.432배다. 전체 split 동등성·속도는 미측정.
+- 전체 2,634건을 두 backend로 별도 생성 후 지문/완료 파일·출력·생성
+  시간을 전수 비교하는 CPU 도구와 Neuron 절차를 준비했다. decoder KV off.
+
 ## 2026-09-26 — 선택형 global 캐시 생성 연결
 
 - 실용 생성 속도 개선을 위해 `global-prefix-greedy-v1`을 beam1/batch1에

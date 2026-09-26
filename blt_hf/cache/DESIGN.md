@@ -188,6 +188,21 @@ validation 생성, EOS, beam 4, GLEU 및 최종 문자열 동일성은 아직 �
 `bench_complete_generation.py`로 native validation 길이별 12문장을 끝까지
 양쪽에서 생성한다. 이 검사가 통과한 후 전체 native validation을 비교한다.
 
+사용자 A100 job `915874`의 `p3a_native_complete_global_05.json`은 같은
+fine-tuned native checkpoint와 validation TSV에서 12개 길이별 문장을
+양쪽 backend로 끝까지 생성했다. 모든 문장이 EOS로 종료했고 12/12에서
+전체 token ID·EOS·UTF-8·최종 문자열이 같았다. 한도 소진은 0건, job exit 0.
+문장별 생성 시간 합계는 기준 43.594초, global 캐시 29.711초로
+**1.467배**였다. 첫 기준 문장의 2.420초에는 초기 실행 비용이 섞여 있어
+그 문장을 제외하면 약 **1.432배**다. 모든 문장에서 캐시가 더 빨랐지만
+표본 결과를 전체 native validation으로 일반화하지 않는다.
+
+다음은 동일 checkpoint·설정으로 전체 native validation 2,634문장을
+HF/global backend 각각 별도 `EVAL_DIR`에 생성한 뒤, 불변 batch/완료 파일을
+검증하면서 각 문장의 token ID·EOS·UTF-8·문자열을 전수 대조하고 batch
+생성 시간 합계·p50/p95를 비교하는 것이다. 이 단계는 M2/GLEU 채점과
+분리한다. 현재 decoder KV는 계속 꺼져 있다.
+
 ## 기준 생성 경로
 
 `blt_hf/generation.py`는 생성할 때마다 `[BOS] source SEP generated_prefix`를

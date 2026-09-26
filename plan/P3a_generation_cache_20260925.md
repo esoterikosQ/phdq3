@@ -123,6 +123,12 @@ validation의 출력 일치·실제 시간을 측정하는 단계다.
 기준 backend와 대조하고, 통과하면 전체 native validation을 비교한다.
 beam 4와 decoder KV는 이 경로의 검증 범위가 아니다.
 
+A100 완성 생성 검사(915874)는 길이별 native 12문장 모두 token ID·EOS·
+문자열 일치, EOS 종료, 기준 43.594초→global 캐시 29.711초(1.467배)였다.
+첫 기준 문장의 초기 비용을 제외한 표본 속도비는 약 1.432배다. 다음에는
+전체 native validation 2,634건을 동일 조건의 별도 평가 디렉터리에서
+생성하고 전수 출력·실제 생성 시간을 대조한다.
+
 ## 단계 2: 빔 4·배치·재개
 
 1. 빔 4에서 부모 빔 선택 시 entropy, patch, encoder/global/decoder 상태를

@@ -353,9 +353,9 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
 beam 1·batch 1 생성 backend다. 기존 HF no-cache가 기본이며 학습과
 beam 4에는 적용하지 않는다. 먼저 같은 native checkpoint와 validation
 길이별 12문장을 양쪽에서 끝까지 생성해 byte ID·EOS·UTF-8·완성 문장과
-시간을 비교한다. 아래 명령은 사용자만 Neuron에서, 공유 checkout의 다른
-작업이 종료된 뒤 실행한다. 보고서가 `complete_output_parity=passed`인지
-확인하기 전에는 전체 validation의 결과 동일성을 주장하지 않는다.
+시간을 비교한다. 아래는 사용자 job 915874의 실행 이력이며 기존 출력
+경로로 재실행하지 않는다. 보고서의 `complete_output_parity=passed`는
+이 12문장에만 적용된다.
 
 ```bash
 cd /scratch/r984a02/phdq3
@@ -372,11 +372,52 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
   scripts/bench_blt_cache_complete.sh
 ```
 
-완성 생성 시험을 통과한 다음 전체 split 비교에는 `scripts/eval_blt_hf.sh`에
-`GENERATION_BACKEND=global-prefix-greedy-v1`, `BLT_NUM_BEAMS=1`, `BATCH_SIZE=1`,
-`SPLIT=val`을 전달하고 **새 `EVAL_DIR`**을 쓴다. 기준 backend도 동일
-checkpoint·split·길이 설정으로 별도 `EVAL_DIR`에서 생성해 전수 대조한다.
-이 전체 비교의 제출 명령은 05 결과를 확인한 뒤 구체적인 경로로 작성한다.
+915874는 12/12 완성 출력 일치, 모두 EOS 종료, 기준 43.594초→global 캐시
+29.711초(1.467배)였다. 첫 기준 문장을 제외하면 약 1.432배다. 다음은
+**전체 native validation 2,634건** 비교다. 아래 두 생성 job은 같은
+checkpoint·beam1·batch1·최대 768바이트를 쓰며 backend와 출력 디렉터리만
+다르다. 새 Git 코드는 공유 checkout의 다른 작업이 끝난 후 받는다. 두 job은
+각각 1GPU이며 독립적으로 제출할 수 있다. exit 75면 같은 명령과 디렉터리로
+재개하고, `shards/0000/complete.json`이 생겨야 완료다.
+
+```bash
+cd /scratch/r984a02/phdq3
+git status --short --branch
+git pull --ff-only origin main
+conda activate phdq_blt_hf
+export CKPT_PATH=outputs/blt_hf/native/native-main-01/step-00001155-24b756e2
+export HF_EVAL_DIR=outputs/blt_hf_eval/native/val/native-main-01-beam1-hf-p3a
+export CACHE_EVAL_DIR=outputs/blt_hf_eval/native/val/native-main-01-beam1-global-p3a
+test -f "$CKPT_PATH/model.safetensors"
+sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=4 \
+  --time=01:55:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",EVAL_DIR="$HF_EVAL_DIR",DATASET_TYPE=native,SPLIT=val,BLT_NUM_BEAMS=1,BATCH_SIZE=1,SHARD_COUNT=1,SHARD_ID=0,GENERATION_BACKEND=hf-generate-exact-length-unpadded-v1 \
+  scripts/eval_blt_hf.sh
+sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=4 \
+  --time=01:55:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",EVAL_DIR="$CACHE_EVAL_DIR",DATASET_TYPE=native,SPLIT=val,BLT_NUM_BEAMS=1,BATCH_SIZE=1,SHARD_COUNT=1,SHARD_ID=0,GENERATION_BACKEND=global-prefix-greedy-v1 \
+  scripts/eval_blt_hf.sh
+```
+
+두 생성이 모두 완료된 뒤 **CPU**에서 불변 batch 파일·지문을 검증하고 매
+문장의 token ID·EOS·UTF-8·문자열, 생성 시간 합계와 p50/p95를 비교한다.
+M2/GLEU 채점은 이 출력 동등성·속도 검사에 필요하지 않다. 새 보고서 경로를
+사용한다.
+
+```bash
+cd /scratch/r984a02/phdq3
+conda activate phdq_blt_hf
+export HF_EVAL_DIR=outputs/blt_hf_eval/native/val/native-main-01-beam1-hf-p3a
+export CACHE_EVAL_DIR=outputs/blt_hf_eval/native/val/native-main-01-beam1-global-p3a
+export COMPARE_OUTPUT=blt_hf_checks/results/p3a_native_full_global_06.json
+test -f "$HF_EVAL_DIR/shards/0000/complete.json"
+test -f "$CACHE_EVAL_DIR/shards/0000/complete.json"
+test ! -e "$COMPARE_OUTPUT"
+sbatch -p cpu --cpus-per-task=4 --time=01:00:00 \
+  --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,REFERENCE_DIR="$HF_EVAL_DIR",CANDIDATE_DIR="$CACHE_EVAL_DIR",COMPARE_OUTPUT="$COMPARE_OUTPUT" \
+  scripts/compare_blt_cache_eval.sh
+```
 
 ### 기존 분리형 10-epoch 절차
 

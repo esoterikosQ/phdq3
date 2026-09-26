@@ -107,6 +107,16 @@ HF↔global 캐시 결과와 cache reset을 포함한 6개 테스트가 통과�
 checkout은 정리했고 기존 itcerdo 작업 파일은 변경하지 않았다. 이 테스트는
 fine-tuned A100 전체 생성 검증을 대신하지 않는다.
 
+## 2026-09-26 — native 완성 생성 A100 915874
+
+선택형 global 캐시(행당 beam1/batch1, decoder KV off)의 길이별 native
+validation 12문장 완성 생성에서 HF 기준과 token ID·EOS·UTF-8·최종 문자열이
+12/12 같았다. 모두 EOS 종료, 한도 소진 0. 기준 43.594초→캐시 29.711초
+(1.467배), 첫 기준 문장의 초기 비용을 빼면 약 1.432배다. job exit 0.
+전체 split 속도나 동등성은 아직 미확인이다. 두 평가 backend의 결과를
+별도 EVAL_DIR에 만들고 완료 파일/지문을 검증해 전체 2,634건의 출력과
+생성 시간을 전수 비교하는 CPU 도구를 추가했다. 채점은 이 비교에 필요 없다.
+
 ## 2026-09-17 — FP32 학습 정책 폐기, BF16 레거시 조건 복구
 
 변환 artifact B는 원본과 동일한 BF16이지만 초기 학습 코드가 근거 없이 main을 FP32로
