@@ -31,8 +31,9 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
 batch 1·빔 1 전용이다. 에이전트는 Neuron에 접속·전송·제출하지 않는다.
 완료된 `01.json`/`02.json` 및 선택형 decoder KV의 `03_decoder.json`
 진단 명령은 `NEURON.md`의 P3a 절에 실행 이력으로 남긴다. 기존 보고서를
-덮어쓰지 않는다. 03은 다음 ID 384/384 일치·forward 1.377배였고, 2배
-채택 기준에 미달했다. 본 평가의 no-cache 경로는 그대로다.
+덮어쓰지 않는다. 03은 다음 ID 384/384 일치·forward 1.377배였다.
+두 지연의 원인 진단 명령은 `NEURON.md`에 있다. 적용을 배제한 이전
+판단은 철회했고, no-cache가 기본인 것은 아직 통합 backend가 없기 때문이다.
 
 ## 2026-09-26 — P3a 패치 경계 인과성 검사
 

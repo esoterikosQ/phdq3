@@ -316,8 +316,30 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
 915710은 같은 checkpoint·데이터·12문장과 코드에서 decoder 재사용을 켜
 384/384 다음 ID가 일치했지만, forward 합계는 16.405→11.917초(1.377배)로
 02의 1.463배보다 낮았다. EOS 생성 사례가 없고 전체 validation·beam4·GLEU
-검사도 아니다. 추가 속도 이득과 2배 채택 기준은 확인되지 않아 no-cache
-본 평가를 유지한다. 상세 판정은 `cache/DESIGN.md`에 있다.
+검사도 아니다. 두 큰 지연의 원인은 이 보고서만으로 특정할 수 없으므로
+2배 목표만으로 적용을 배제한 이전 판단은 철회했다. 기본 no-cache는
+통합 backend가 아직 없기 때문에 유지 중이다. 상세 분석은 `cache/DESIGN.md`에 있다.
+
+다음은 사용자 실행용 **지연 원인 진단**이다. 같은 native 체크포인트와
+03 보고서의 두 접두부를 복원해 decoder on/off를 번갈아 3회씩 실행한다.
+patch 시작점 변경 위치, 모듈별 CUDA/호스트 시간, GC 시간을 새 JSON에
+기록한다. 기존 보고서 경로를 덮어쓰지 않는다. 공유 checkout의 다른
+작업이 모두 끝난 뒤 사용자만 Neuron에서 실행한다.
+
+```bash
+cd /scratch/r984a02/phdq3
+git status --short --branch
+git pull --ff-only origin main
+conda activate phdq_blt_hf
+export CKPT_PATH=outputs/blt_hf/native/native-main-01/step-00001155-24b756e2
+export DIAG_OUTPUT=blt_hf_checks/results/p3a_native_cache_spike_diagnostic_04.json
+test -f "$CKPT_PATH/model.safetensors"
+test ! -e "$DIAG_OUTPUT"
+sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
+  --time=00:30:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",DIAG_OUTPUT="$DIAG_OUTPUT",REPEATS=3 \
+  scripts/diagnose_blt_cache_spikes.sh
+```
 
 ### 기존 분리형 10-epoch 절차
 
