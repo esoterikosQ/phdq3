@@ -145,6 +145,36 @@ validation 생성, EOS, beam 4, GLEU 및 최종 문자열 동일성은 아직 �
 적용을 포기한 판정이 아니다. 2배는 속도 목표로 남기되, 실제 개선과 출력
 검증 결과를 보고 선택형 적용을 결정한다.
 
+사용자가 실행한 A100 job `915864`의
+`p3a_native_cache_spike_diagnostic_04.json`은 같은 checkpoint·TSV·03 보고서
+접두부를 복원해 decoder on/off, 계측 on/off를 각 3회 교차 실행했다. 환경 검사와
+24/24 다음 ID 확인을 통과했고 exit 0, 전체 job 217초였다.
+
+- sample 2290 step 3의 **첫** decoder 재사용 실행은 569.42ms로 03의
+  578.85ms 지연을 재현했다. 그 다음 계측 실행은 25.57ms, 후속 반복은
+  25.79~25.94ms다. 같은 step의 decoder off도 25.48~25.96ms였다.
+  첫 실행에서 GC는 없었고 추가 GPU 할당은 약 2.8MB, 예약 메모리 증가는
+  없었다. 한 번만 발생한 첫 사용 비용으로 보이지만 어느 kernel/라이브러리
+  초기화인지 이번 계측만으로 특정할 수 없다. 첫 지연이 지난 후 모듈 시간은
+  patcher 약 10.8~11.0ms, local encoder 약 1.5ms, global skip 약 0.03ms,
+  local decoder 약 10.3~10.8ms로 decoder on/off 차이가 작았다.
+- sample 297 step 27은 이전 patch 시작점의 index 43 값 79 앞에 새 시작점
+  **76**이 삽입돼 경계가 변했다. 따라서 이전 global/decoder 상태를
+  무효화한 것은 설계된 분기다. 이 step의 decoder on은 43.59~43.86ms,
+  off는 42.74~43.41ms로, 03의 263.19ms가 반복되지 않았다. 계측 시
+  patcher 약 11ms, global 약 17.3~17.6ms, decoder 약 10.6~10.8ms였고
+  GC 기록은 없었다. 원래의 일회성 263ms 원인은 이 자료만으로 확정할 수
+  없지만, 경계 변경마다 발생하는 비용이나 decoder 재사용 분기 비용이라는
+  증거는 없다.
+
+따라서 03의 1.377배 합산치는 이 두 지연의 영향을 받았다. 그 두 step만
+정상 반복 시간으로 대체하면 같은 03 기준 약 **1.47배**지만, 이는 전체
+생성 속도 측정값이 아닌 추정이다. 확인된 지속 이득은 주로 global skip에서
+나온다. 이 진단에서 캐시 분기 오류는 발견되지 않았으므로 임의로 재사용
+규칙을 바꾸지 않는다. 다음 검사는 첫 사용 비용을 로딩/warmup과 분리하고
+선택형 beam-1 생성에서 완성 문장·EOS·전체 native validation 출력과
+실제 처리 시간을 비교하는 것이다. beam 4는 그 다음 별도 검증 대상이다.
+
 ## 기존 생성 경로
 
 `blt_hf/generation.py`는 생성할 때마다 `[BOS] source SEP generated_prefix`를

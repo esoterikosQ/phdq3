@@ -320,11 +320,9 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
 2배 목표만으로 적용을 배제한 이전 판단은 철회했다. 기본 no-cache는
 통합 backend가 아직 없기 때문에 유지 중이다. 상세 분석은 `cache/DESIGN.md`에 있다.
 
-다음은 사용자 실행용 **지연 원인 진단**이다. 같은 native 체크포인트와
-03 보고서의 두 접두부를 복원해 decoder on/off를 번갈아 3회씩 실행한다.
-patch 시작점 변경 위치, 모듈별 CUDA/호스트 시간, GC 시간을 새 JSON에
-기록한다. 기존 보고서 경로를 덮어쓰지 않는다. 공유 checkout의 다른
-작업이 모두 끝난 뒤 사용자만 Neuron에서 실행한다.
+아래는 job 915864에서 **완료한 지연 원인 진단 명령 이력**이다. 같은 native
+체크포인트와 03 보고서의 두 접두부를 복원해 decoder on/off를 번갈아
+3회씩 실행했다. 기존 보고서 경로로 재실행하지 않는다.
 
 ```bash
 cd /scratch/r984a02/phdq3
@@ -340,6 +338,13 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
   --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",DIAG_OUTPUT="$DIAG_OUTPUT",REPEATS=3 \
   scripts/diagnose_blt_cache_spikes.sh
 ```
+
+04 보고서에서 2290 step 3의 첫 decoder 재사용 지연은 약 569ms로 재현됐으나
+후속 on/off 실행은 약 26ms였다. 297 step 27은 patch 경계 변경 때문에
+재사용을 멈춘 것이 맞고, 반복 시 약 43ms로 263ms 지연은 재현되지 않았다.
+캐시 분기 오류는 발견되지 않았다. 다음 시험은 선택형 beam-1 완성 생성의
+출력 일치와 전체 native validation의 실제 처리 시간이며, 명령은 해당
+코드가 준비된 후 새 출력 경로로 작성한다. 상세 분석은 `cache/DESIGN.md`다.
 
 ### 기존 분리형 10-epoch 절차
 
