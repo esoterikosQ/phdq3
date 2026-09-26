@@ -118,6 +118,11 @@ GC·대규모 메모리 증가는 관측되지 않았고 정확한 첫 사용 �
 다음은 첫 사용 비용을 따로 보고 선택형 beam-1 완성 생성과 전체 native
 validation의 출력 일치·실제 시간을 측정하는 단계다.
 
+선택형 `global-prefix-greedy-v1`은 decoder KV를 끄고 global 재사용만
+연결했다. 먼저 길이별 12문장 완성 생성의 토큰·EOS·문자열과 시간부터
+기준 backend와 대조하고, 통과하면 전체 native validation을 비교한다.
+beam 4와 decoder KV는 이 경로의 검증 범위가 아니다.
+
 ## 단계 2: 빔 4·배치·재개
 
 1. 빔 4에서 부모 빔 선택 시 entropy, patch, encoder/global/decoder 상태를

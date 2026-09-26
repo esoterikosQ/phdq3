@@ -1,5 +1,15 @@
 # 일자별 작업 내역
 
+## 2026-09-26 — 선택형 global 캐시 생성 연결
+
+- 실용 생성 속도 개선을 위해 `global-prefix-greedy-v1`을 beam1/batch1에
+  연결했다. decoder KV는 지속적인 추가 이득이 관측되지 않아 사용하지 않는다.
+- 기존 HF no-cache가 기본이며 새 backend는 eval manifest와 실행 파일
+  hash로 격리된다. 학습·4-beam은 변경하지 않았다.
+- native validation 길이별 12문장 완성 생성의 token/EOS/문자열·시간을
+  양쪽에서 측정하는 Neuron 스크립트를 준비했다. 사용자 실행 결과를 받은
+  뒤 전체 validation 비교를 진행한다.
+
 ## 2026-09-26 — Neuron A100 캐시 지연 진단 915864 결과
 
 - 사용자 동기화 커밋 `0b91fdf`의 04 보고서와 SLURM 로그 수신. exit 0,

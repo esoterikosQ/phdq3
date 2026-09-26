@@ -1,5 +1,5 @@
 import unittest
-from blt_hf.generation import GenerationConfig, decode_generated, group_prompts
+from blt_hf.generation import GenerationConfig, decode_generated, group_prompts, GLOBAL_PREFIX_BACKEND
 
 class GenerationContracts(unittest.TestCase):
     def test_exact_length_groups_preserve_original_indices(self):
@@ -23,6 +23,9 @@ class GenerationContracts(unittest.TestCase):
     def test_cache_and_padding_are_not_silently_enabled(self):
         with self.assertRaises(ValueError): GenerationConfig(use_cache=True)
         with self.assertRaises(ValueError): GenerationConfig(num_beams=0)
+        with self.assertRaises(ValueError): GenerationConfig(backend=GLOBAL_PREFIX_BACKEND, num_beams=4)
+        with self.assertRaises(ValueError): GenerationConfig(backend=GLOBAL_PREFIX_BACKEND, batch_size=2)
+        with self.assertRaises(ValueError): GenerationConfig(backend='unknown')
 
 import importlib.util
 @unittest.skipUnless(importlib.util.find_spec('torch'), 'prepared HF environment required')
@@ -41,3 +44,18 @@ class ActualGenerationTests(unittest.TestCase):
             together=generate_batch(model,ByteTokenizer(),sources,cfg)
             single=[generate_batch(model,ByteTokenizer(),[source],GenerationConfig(num_beams=beams,max_new_bytes=4))[0] for source in sources]
             self.assertEqual(together,single)
+
+    def test_global_prefix_greedy_matches_hf_complete_generation(self):
+        import torch
+        from test_hf_model import ModelTests
+        from test_hf_data_adapter import ByteTokenizer
+        from blt_hf.patched.modeling_blt import BltForCausalLM
+        from blt_hf.generation import generate_batch
+        torch.manual_seed(29)
+        model=BltForCausalLM(ModelTests().config('osc')).eval()
+        sources=['a', 'abc', '가나다']
+        reference=generate_batch(model,ByteTokenizer(),sources,
+                                 GenerationConfig(max_new_bytes=8))
+        cached=generate_batch(model,ByteTokenizer(),sources,
+                              GenerationConfig(max_new_bytes=8,backend=GLOBAL_PREFIX_BACKEND))
+        self.assertEqual(cached,reference)

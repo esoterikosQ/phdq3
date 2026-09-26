@@ -317,8 +317,9 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
 384/384 다음 ID가 일치했지만, forward 합계는 16.405→11.917초(1.377배)로
 02의 1.463배보다 낮았다. EOS 생성 사례가 없고 전체 validation·beam4·GLEU
 검사도 아니다. 두 큰 지연의 원인은 이 보고서만으로 특정할 수 없으므로
-2배 목표만으로 적용을 배제한 이전 판단은 철회했다. 기본 no-cache는
-통합 backend가 아직 없기 때문에 유지 중이다. 상세 분석은 `cache/DESIGN.md`에 있다.
+2배 목표만으로 적용을 배제한 이전 판단은 철회했다. 당시에는 통합 backend가
+없었고, 현재는 아래 선택형 global 경로를 준비했다. 상세 분석은
+`cache/DESIGN.md`에 있다.
 
 아래는 job 915864에서 **완료한 지연 원인 진단 명령 이력**이다. 같은 native
 체크포인트와 03 보고서의 두 접두부를 복원해 decoder on/off를 번갈아
@@ -343,8 +344,39 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
 후속 on/off 실행은 약 26ms였다. 297 step 27은 patch 경계 변경 때문에
 재사용을 멈춘 것이 맞고, 반복 시 약 43ms로 263ms 지연은 재현되지 않았다.
 캐시 분기 오류는 발견되지 않았다. 다음 시험은 선택형 beam-1 완성 생성의
-출력 일치와 전체 native validation의 실제 처리 시간이며, 명령은 해당
-코드가 준비된 후 새 출력 경로로 작성한다. 상세 분석은 `cache/DESIGN.md`다.
+출력 일치와 전체 native validation의 실제 처리 시간이다. 상세 분석은
+`cache/DESIGN.md`다.
+
+### P3a 선택형 global 캐시 완성 생성 시험
+
+`global-prefix-greedy-v1`은 **decoder KV를 끄고** global 재사용만 사용하는
+beam 1·batch 1 생성 backend다. 기존 HF no-cache가 기본이며 학습과
+beam 4에는 적용하지 않는다. 먼저 같은 native checkpoint와 validation
+길이별 12문장을 양쪽에서 끝까지 생성해 byte ID·EOS·UTF-8·완성 문장과
+시간을 비교한다. 아래 명령은 사용자만 Neuron에서, 공유 checkout의 다른
+작업이 종료된 뒤 실행한다. 보고서가 `complete_output_parity=passed`인지
+확인하기 전에는 전체 validation의 결과 동일성을 주장하지 않는다.
+
+```bash
+cd /scratch/r984a02/phdq3
+git status --short --branch
+git pull --ff-only origin main
+conda activate phdq_blt_hf
+export CKPT_PATH=outputs/blt_hf/native/native-main-01/step-00001155-24b756e2
+export BENCH_OUTPUT=blt_hf_checks/results/p3a_native_complete_global_05.json
+test -f "$CKPT_PATH/model.safetensors"
+test ! -e "$BENCH_OUTPUT"
+sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
+  --time=01:55:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",BENCH_OUTPUT="$BENCH_OUTPUT",SAMPLES=12,MAX_NEW_BYTES=768 \
+  scripts/bench_blt_cache_complete.sh
+```
+
+완성 생성 시험을 통과한 다음 전체 split 비교에는 `scripts/eval_blt_hf.sh`에
+`GENERATION_BACKEND=global-prefix-greedy-v1`, `BLT_NUM_BEAMS=1`, `BATCH_SIZE=1`,
+`SPLIT=val`을 전달하고 **새 `EVAL_DIR`**을 쓴다. 기준 backend도 동일
+checkpoint·split·길이 설정으로 별도 `EVAL_DIR`에서 생성해 전수 대조한다.
+이 전체 비교의 제출 명령은 05 결과를 확인한 뒤 구체적인 경로로 작성한다.
 
 ### 기존 분리형 10-epoch 절차
 

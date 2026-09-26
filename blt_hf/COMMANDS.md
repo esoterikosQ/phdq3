@@ -33,7 +33,9 @@ batch 1·빔 1 전용이다. 에이전트는 Neuron에 접속·전송·제출하
 진단 명령은 `NEURON.md`의 P3a 절에 실행 이력으로 남긴다. 기존 보고서를
 덮어쓰지 않는다. 03은 다음 ID 384/384 일치·forward 1.377배였다.
 완료한 두 지연의 반복 진단 명령은 `NEURON.md`에 이력으로 남긴다. 적용을 배제한 이전
-판단은 철회했고, no-cache가 기본인 것은 아직 통합 backend가 없기 때문이다.
+판단은 철회했다. 선택형 `global-prefix-greedy-v1` backend와 완성 생성 05
+시험 명령은 `NEURON.md`의 P3a 절을 따른다. decoder KV는 이 backend에서
+꺼져 있고 기존 no-cache가 기본이다.
 
 ## 2026-09-26 — P3a 패치 경계 인과성 검사
 

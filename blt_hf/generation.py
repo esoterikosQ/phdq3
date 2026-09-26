@@ -1,6 +1,9 @@
-"""Deterministic no-cache HF generation in exact-length, unpadded batches."""
+"""Deterministic HF generation and optional batch-1 global-prefix reuse."""
 from dataclasses import asdict, dataclass
 from .data_adapter import encode_prompt
+
+HF_BACKEND = 'hf-generate-exact-length-unpadded-v1'
+GLOBAL_PREFIX_BACKEND = 'global-prefix-greedy-v1'
 
 @dataclass(frozen=True)
 class GenerationConfig:
@@ -10,12 +13,17 @@ class GenerationConfig:
     length_penalty: float = 1.
     batch_size: int = 1
     use_cache: bool = False
+    backend: str = HF_BACKEND
 
     def __post_init__(self):
         if self.use_cache or min(self.max_sequence_bytes, self.max_new_bytes, self.num_beams, self.batch_size) < 1:
-            raise ValueError('Positive sizes and no-cache generation required')
+            raise ValueError('Positive sizes and HF use_cache=False required')
         if self.length_penalty < 0:
             raise ValueError('Nonnegative length penalty required')
+        if self.backend not in (HF_BACKEND, GLOBAL_PREFIX_BACKEND):
+            raise ValueError(f'Unknown generation backend: {self.backend}')
+        if self.backend == GLOBAL_PREFIX_BACKEND and (self.num_beams != 1 or self.batch_size != 1):
+            raise ValueError('Global-prefix backend requires beam 1 and unpadded batch 1')
 
     def to_dict(self):
         return asdict(self)
@@ -56,6 +64,25 @@ def generate_batch(model, tokenizer, sources, cfg):
     results = [None] * len(sources)
     device = next(model.parameters()).device
     model.eval()
+    if cfg.backend == GLOBAL_PREFIX_BACKEND:
+        from .cache.global_reuse import GlobalPrefixReuse
+        with torch.inference_mode():
+            for index, prompt in enumerate(prompts):
+                ids = list(prompt)
+                generated = []
+                reuse = GlobalPrefixReuse(model, reuse_decoder=False)
+                for _ in range(cfg.max_new_bytes):
+                    tokens = torch.tensor([ids], dtype=torch.long, device=device)
+                    output, _, _, _ = reuse.run(tokens)
+                    logits = output.logits[0, -1].float().clone()
+                    logits[[0, 1, 3]] = -float('inf')
+                    next_id = int(logits.argmax())
+                    generated.append(next_id)
+                    if next_id == 2:
+                        break
+                    ids.append(next_id)
+                results[index] = decode_generated(generated)
+        return results
     for indices in group_prompts(prompts, cfg.batch_size):
         ids = torch.tensor([prompts[i] for i in indices], device=device)
         with torch.inference_mode():

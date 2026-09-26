@@ -175,7 +175,20 @@ validation 생성, EOS, beam 4, GLEU 및 최종 문자열 동일성은 아직 �
 선택형 beam-1 생성에서 완성 문장·EOS·전체 native validation 출력과
 실제 처리 시간을 비교하는 것이다. beam 4는 그 다음 별도 검증 대상이다.
 
-## 기존 생성 경로
+## 선택형 완성 생성 경로
+
+`generation.py`에 `global-prefix-greedy-v1`을 beam 1·batch 1 전용으로
+연결했다. 각 문장의 첫 입력부터 완성/EOS/바이트 예산까지
+`GlobalPrefixReuse(reuse_decoder=False)`를 쓰며, 기존 byte ID 억제
+(`0,1,3`)와 `decode_generated` 정책을 공유한다. **decoder KV는 사용하지
+않는다.** 기존 `hf-generate-exact-length-unpadded-v1`이 기본이다.
+`eval.py`는 backend를 실행 identity에 넣고 `EVAL_DIR`을 분리한다. 캐시
+코드 hash도 평가 identity에 포함한다. 현재 통합 경로가 실제 full 생성에서
+기준과 같은 ID·EOS·UTF-8을 내는지는 Neuron 실측 전이므로, 먼저
+`bench_complete_generation.py`로 native validation 길이별 12문장을 끝까지
+양쪽에서 생성한다. 이 검사가 통과한 후 전체 native validation을 비교한다.
+
+## 기준 생성 경로
 
 `blt_hf/generation.py`는 생성할 때마다 `[BOS] source SEP generated_prefix`를
 `BltForCausalLM.generate(use_cache=False)`에 준다. `BltModel.forward()`는 매번

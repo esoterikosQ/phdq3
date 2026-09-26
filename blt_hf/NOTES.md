@@ -90,6 +90,17 @@ decoder on/off 모두 약 26ms였다. GC는 없고 대규모 GPU 메모리 증�
 변경하지 않고, 이후 선택형 완성 생성·전체 native validation 출력/속도를
 비교한다. 2배 목표 미달만으로 적용을 배제하지 않는다.
 
+## 2026-09-26 — global 전용 캐시를 선택형 beam-1 생성에 연결
+
+실제 생성 속도 개선을 위해 `GlobalPrefixReuse(reuse_decoder=False)`를
+`generation.py`의 별도 backend `global-prefix-greedy-v1`에 연결했다.
+decoder KV는 첫 사용 비용 이후 지속 이득이 관측되지 않아 이 경로에서
+사용하지 않는다. batch 1·beam 1로 제한하고 byte 억제 및 decode 정책을
+기준 생성과 공유한다. `eval.py`의 CLI·manifest와 평가 실행 파일 hash에
+cache 코드를 포함시켰다. 기존 no-cache backend가 기본이며 4-beam 및
+학습 중 validation은 바꾸지 않았다. Neuron에서 완성 생성 parity와 속도가
+확인되기 전까지 새 backend의 동등성을 주장하지 않는다.
+
 ## 2026-09-17 — FP32 학습 정책 폐기, BF16 레거시 조건 복구
 
 변환 artifact B는 원본과 동일한 BF16이지만 초기 학습 코드가 근거 없이 main을 FP32로

@@ -24,5 +24,6 @@ run_job srun --ntasks=1 python -m blt_hf.eval --dataset "$DATASET_TYPE" --split 
   --checkpoint "$CKPT_PATH" --output-dir "$EVAL_DIR" \
   --shard-id "${SHARD_ID:-0}" --shard-count "${SHARD_COUNT:-1}" \
   --num-beams "${BLT_NUM_BEAMS:-1}" --batch-size "${BATCH_SIZE:-1}" \
+  --generation-backend "${GENERATION_BACKEND:-hf-generate-exact-length-unpadded-v1}" \
   --max-new-bytes "${MAX_NEW_BYTES:-768}" --length-penalty "${LENGTH_PENALTY:-1}" \
   --max-seconds "${MAX_SECONDS:-6300}"
