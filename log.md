@@ -1,5 +1,19 @@
 # 일자별 작업 내역
 
+## 2026-09-26 — P3a 단계 0 실측 및 global/decoder 재사용 시제품
+
+- itcerdo의 실제 BF16 1B 추론 검사에서 접두부 확장 시 한영 혼합 입력의
+  patch 경계가 5/36개 지점에서 변경됐다. 닫힌 global/decoder activation도
+  길이에 따라 달라졌으며 동일 길이 반복 실행은 비트 단위 일치했다.
+- 매 step 전체 entropy patcher를 유지하고 경계 일치 구간만 구조적으로
+  재사용하는 실험용 global/decoder 시제품을 작성했다. 합성 greedy 96 step의
+  다음 바이트 ID는 기준과 같았고 평균 시간 개선은 1.35~1.50배 범위였다.
+  2배 채택 기준과 fine-tuned A100/full validation parity는 아직 미달·미검증.
+- 현재 학습/평가 기본 경로는 바꾸지 않는다. 사용자가 Neuron에서 실행할
+  fine-tuned A100 probe 스크립트와 `blt_hf/NEURON.md` 명령만 준비했다.
+  최종 EOS 보호 반영 1B 보고서도 96/96 ID 일치, 평균 1.49~1.56배 개선.
+  Neuron 미접속·미제출.
+
 ## 2026-09-26 — P3a 증분 생성 작업 착수 승인
 
 - 사용자가 `plan/P3a_generation_cache_20260925.md`의 단계별 실행안과

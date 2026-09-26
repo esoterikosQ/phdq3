@@ -242,6 +242,34 @@ sbatch --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",BENCH_OUTPUT=bl
 identity가 달라지므로 이 옵션으로 재개하지 않는다. cache 경로는 OSC에서
 명시적으로 거부하며 별도 구현·검증 전에는 켜지 않는다.
 
+### P3a 증분 생성 시제품 진단 (2026-09-26, A100 1GPU)
+
+실행 중인 작업이 끝난 뒤 새 Git 코드를 반영한다. 현재 시제품은
+`blt_hf/cache/global_reuse.py`의 **batch 1·beam 1 전용 진단**이며 학습,
+`eval.py`, 통합 validation의 기본 생성 경로를 변경하지 않는다. itcerdo의
+사전학습 1B에서는 96 step의 다음 byte ID가 같았으나 native fine-tuned
+checkpoint에서의 동등성·속도는 아직 측정되지 않았다.
+
+```bash
+cd /scratch/r984a02/phdq3
+conda activate phdq_blt_hf
+export CKPT_PATH=outputs/blt_hf/native/native-main-01/best.json
+export BENCH_OUTPUT=blt_hf_checks/results/p3a_native_cache_probe_01.json
+test -f "$CKPT_PATH"
+test ! -e "$BENCH_OUTPUT"
+sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
+  --time=00:30:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",BENCH_OUTPUT="$BENCH_OUTPUT",DATASET_TYPE=native,SAMPLES=12,STEPS=32,REUSE_DECODER=0 \
+  scripts/bench_blt_cache.sh
+```
+
+`probe_token_parity=passed`와 각 사례의 `mismatches=0`, `global_skips`,
+`timing_excluding_initial`을 확인한다. 이 검사는 native validation에서
+문장 길이별로 뽑은 12개 입력의 최대 32 step만 비교한다. 통과해도 전체
+validation이나 beam 4의 결과 동일성은 보증하지 않으며, 시제품을 본 평가에
+사용하지 않는다. 실패해도 JSON 보고서는 남고 job은 nonzero로 종료한다.
+재검사할 때는 새 `BENCH_OUTPUT` 경로를 지정한다. Neuron 제출은 사용자만 한다.
+
 ### 기존 분리형 10-epoch 절차
 
 새 사이클은 2026-09-18의 3-epoch run과 다른 RUN_ID를 쓴다. 기존

@@ -1,5 +1,37 @@
 # P1 명령 및 현재 실행 범위
 
+## 2026-09-26 — P3a 캐시 시제품 검사
+
+itcerdo의 추론 전용 단계 0·1 보고서는
+`blt_hf_checks/results/p3a_patch_causality_20260926_v2.json`,
+`p3a_state_stability_repeat_20260926.json`,
+`p3a_forward_profile_20260926.json`,
+`p3a_reuse_sensitivity_20260926.json`,
+`p3a_global_skip_bench_20260926.json`,
+`p3a_global_decoder_nocopy_20260926.json`이다. 같은 출력 경로로 재실행하지
+않는다. 해석과 제약은 `blt_hf/cache/DESIGN.md`에 있다.
+
+Neuron의 **현재 실행 중인 작업이 모두 끝난 뒤**, 새 코드를 반영하고 사용자가
+A100 1GPU에서 실제 native fine-tuned checkpoint의 짧은 parity/속도 probe를
+실행할 수 있다. 아래는 기존 native checkpoint의 `best.json`을 사용한
+예시이며 `BENCH_OUTPUT`은 아직 없는 새 경로여야 한다. 이 probe는 학습이나
+본 평가 backend를 변경하지 않는다.
+
+```bash
+cd /scratch/r984a02/phdq3
+CKPT_PATH=outputs/blt_hf/native/native-main-01/best.json
+BENCH_OUTPUT=blt_hf_checks/results/p3a_native_cache_probe_01.json
+sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
+  --time=00:30:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",BENCH_OUTPUT="$BENCH_OUTPUT",DATASET_TYPE=native,SAMPLES=12,STEPS=32,REUSE_DECODER=0 \
+  scripts/bench_blt_cache.sh
+```
+
+결과의 `probe_token_parity`, 각 문장의 `mismatches`, `global_skips`,
+`timing_excluding_initial`을 본다. `probe_token_parity=passed`는 선택된
+문장·step에만 해당하며 전체 validation 동등성을 뜻하지 않는다. 이 시제품은
+batch 1·빔 1 전용이다. 에이전트는 Neuron에 접속·전송·제출하지 않는다.
+
 ## 2026-09-26 — P3a 패치 경계 인과성 검사
 
 단계 0 실행안은 `plan/P3a_generation_cache_20260925.md`, 상태 수명 가설은

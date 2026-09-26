@@ -7,28 +7,9 @@ import argparse
 import json
 from pathlib import Path
 
+from blt_hf.cache.frontier import patch_starts
 
-def patch_starts(lengths, *, input_length):
-    """Recover patch starts, accounting for BLT's virtual next-token slot."""
-    if input_length < 2 or not lengths:
-        raise ValueError('Expected at least two input bytes and nonempty patch lengths')
-    lengths = [int(value) for value in lengths]
-    if any(value < 0 for value in lengths):
-        raise ValueError('Negative patch length')
-    positive = [value for value in lengths if value > 0]
-    if lengths != positive + [0] * (len(lengths) - len(positive)):
-        raise ValueError('Patch padding must follow all positive lengths')
-    if sum(positive) != input_length + 1:
-        raise ValueError('Patch lengths must include exactly one virtual next-token slot')
-    starts = []
-    offset = 0
-    for length in positive:
-        starts.append(offset)
-        offset += length
-    return starts
-
-
-def compare_prefix(*, full_entropies, full_lengths, prefix_entropies, prefix_lengths):
+def compare_prefix(*, full_entropies, full_lengths, prefix_entropies, prefix_lengths, threshold=None):
     """Compare observed prefix boundaries to the corresponding full-input boundaries."""
     total = len(full_entropies)
     prefix = len(prefix_entropies)
@@ -39,9 +20,19 @@ def compare_prefix(*, full_entropies, full_lengths, prefix_entropies, prefix_len
     expected = [position for position in full_starts if position <= prefix]
     differences = [abs(float(left) - float(right))
                    for left, right in zip(full_entropies[:prefix], prefix_entropies)]
+    changed = sorted(set(prefix_starts) ^ set(expected))
+    boundary_values = [
+        {'start': start, 'entropy_index': start - 1,
+         'full_entropy': float(full_entropies[start - 1]),
+         'prefix_entropy': float(prefix_entropies[start - 1]),
+         'threshold': threshold}
+        for start in changed if 0 < start <= prefix
+    ]
     return {'prefix_length': prefix, 'prefix_starts': prefix_starts,
             'full_starts_through_prefix': expected,
             'starts_stable': prefix_starts == expected,
+            'changed_start_positions': changed,
+            'changed_boundary_entropies': boundary_values,
             'max_abs_entropy_difference': max(differences),
             'first_entropy_difference': next((index for index, value in enumerate(differences) if value != 0), None)}
 
@@ -132,7 +123,8 @@ def main():
                 observations.append(compare_prefix(full_entropies=full_entropy,
                                                    full_lengths=full_lengths,
                                                    prefix_entropies=entropy,
-                                                   prefix_lengths=lengths))
+                                                   prefix_lengths=lengths,
+                                                   threshold=threshold))
             failures = [observation for observation in observations if not observation['starts_stable']]
             cases.append({'name': name, 'input_length': len(token_ids),
                           'input_ids_sha256': sha256_json(token_ids),

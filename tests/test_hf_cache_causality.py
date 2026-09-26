@@ -2,6 +2,7 @@
 import unittest
 
 from blt_hf_checks.check_patch_causality import compare_prefix, patch_starts
+from blt_hf.cache.frontier import shared_closed_patch_count
 
 
 class PatchCausalityTests(unittest.TestCase):
@@ -34,6 +35,16 @@ class PatchCausalityTests(unittest.TestCase):
         self.assertFalse(result['starts_stable'])
         self.assertEqual(result['prefix_starts'], [0, 1, 2, 3])
         self.assertEqual(result['full_starts_through_prefix'], [0, 1, 2])
+        self.assertEqual(result['changed_start_positions'], [3])
+        self.assertEqual(result['changed_boundary_entropies'][0]['entropy_index'], 2)
+
+    def test_structural_frontier_excludes_open_or_changed_patch(self):
+        self.assertEqual(shared_closed_patch_count([0, 5, 10], [0, 5, 10, 14]), 2)
+        self.assertEqual(shared_closed_patch_count([0, 5, 10], [0, 5, 11]), 1)
+        self.assertEqual(shared_closed_patch_count([0, 5, 10], [0, 6, 10]), 0)
+        self.assertEqual(shared_closed_patch_count([0], [0, 5]), 0)
+        with self.assertRaises(ValueError):
+            shared_closed_patch_count([0, 5, 5], [0, 5, 6])
 
 
 if __name__ == '__main__':

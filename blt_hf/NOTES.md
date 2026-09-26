@@ -1,5 +1,36 @@
 # P1 구현·판정 기록
 
+## 2026-09-26 — P3a 캐시 단계 0·실험용 단계 1
+
+실행 정본은 `plan/P3a_generation_cache_20260925.md`, 세부 측정과 보고서 경로는
+`cache/DESIGN.md`다. itcerdo의 실제 변환 1B, BF16/eager/OSC에서
+학습·가중치 변경 없이 검사했다. `patched/modeling_blt.py`와 site-packages는
+편집하지 않았고, 원본 데이터·Neuron 작업도 건드리지 않았다.
+
+- 512바이트 window/EOS를 포함한 다섯 fixture에서 한영 혼합 입력만
+  36개 중 5개 접두부의 patch 경계가 바뀌었다. 전체 patcher를 매 step
+  돌리는 것이 현재 no-cache 경계와 맞는다.
+- 닫힌 patch의 global과 decoder 과거 activation은 입력 길이를 늘리면
+  15/15 비교에서 달라졌다. 같은 길이로 다시 실행하면 entropy·encoder·
+  global·decoder·logits 모두 15/15 비트 단위 일치했다.
+- global 출력 교체 민감도 96 step, global 계산 생략 시제품 96 step,
+  global+decoder 재사용 시제품 96 step의 다음 바이트 ID 불일치는 각각
+  0개였다. logits 수치는 달라지므로 모델 상태의 정확한 동질성을 주장하지
+  않는다. 사전학습 5090 합성 입력의 평균 속도 개선은 global 생략
+  1.35~1.49배, decoder 병행 1.43~1.50배였다. 5090 공유 GPU의 절대 시간은
+  실행 사이 크게 변했다.
+- 최종 EOS 보호를 반영한 `p3a_global_final_20260926.json`도 96/96 다음
+  byte ID 일치, 평균 개선 1.49~1.56배였다. 작은 OSC 모델의 연속 접두부·
+  EOS·reset 테스트 5개를 itcerdo에서 통과했다.
+- `cache/global_reuse.py`는 기존 HF generate/eval에 연결하지 않은 진단
+  시제품이다. 무패딩 batch1/beam1의 연속 접두부만 지원한다. 매 step 전체
+  patcher·local encoder를 재계산하고 경계 변동 시 global/decoder 꼬리를
+  무효화한다. 실제 fine-tuned native 체크포인트, A100, validation 문장,
+  beam4 및 전체 split의 토큰 동일성과 2배 속도 목표는 아직 미검증이다.
+
+현재 no-cache 학습·평가는 그대로 유지한다. 사용자가 실행할 A100 1GPU
+probe 스크립트는 `scripts/bench_blt_cache.sh`이며 명령은 COMMANDS.md에 있다.
+
 ## 2026-09-17 — FP32 학습 정책 폐기, BF16 레거시 조건 복구
 
 변환 artifact B는 원본과 동일한 BF16이지만 초기 학습 코드가 근거 없이 main을 FP32로

@@ -26,13 +26,12 @@
   global transformer에 이전 patch 상태를 전달하지 않는다. 단순 플래그
   변경으로는 증분 생성이 되지 않는다.
 - 실제 1B 설정은 엔트로피 임계값 1.335442066192627, `monotonicity=false`,
-  `threshold_add=null`, `max_patch_length=null`이다. 공식 패처는 임계값
-  방식의 패치 경계를 순차적으로 결정할 수 있다고 설명한다. 이 설정에서
-  확정된 시작점이 새 바이트 때문에 바뀌지 않는다는 **수학적 기대**가 있다.
-- 그 기대가 현재 OSC forward 전체에 적용되는지는 아직 검증하지 않았다.
-  특히 마지막 미완성 patch의 pooling/cross-attention/global 표현, decoder가
-  참조한 patch 표현과 과거 상태, EOS 구간, `include_next_token=True`의
-  가상 다음 바이트 슬롯을 확인해야 한다.
+  `threshold_add=null`, `max_patch_length=null`이다. 공식 패처의 인과적
+  경계 결정은 수학적 구조 설명이며, 현재 BF16 구현의 **수치적 경계 불변성은
+  성립하지 않았다**. 아래 단계 0 실측을 따른다.
+- 실제 1B에서 닫힌 patch의 global/decoder 상태도 입력 길이에 따라 달라졌다.
+  같은 길이의 재실행은 비트 단위로 동일했다. 따라서 구조적으로 닫힌 patch와
+  수치적으로 그대로 재사용 가능한 activation을 구분한다.
 - 기존 native 통합 validation 빔 1은 epoch당 약 41분(4 GPU 분담)이었다.
   이는 속도 비교 기준의 *관측값*이지만, 새 backend 비교는 동일한 체크포인트,
   샘플, GPU 수, dtype, 빔, 길이 제한에서 별도로 측정한다.
@@ -53,31 +52,42 @@
    patch가 열려 있는 경우와 막 닫히는 경우, 511/512/513바이트, EOS,
    긴 한글 문장을 포함한다. 작은 CPU 모델과 실제 1B 모델을 구분해 기록한다.
 3. 결과를 `blt_hf/cache/DESIGN.md`에 상태 수명표로 정리한다. **확정된
-   patch보다 앞쪽의 값이 바뀌면** 그 값은 캐시하지 않는다. 필요한 재계산
-   시작점을 실제 출력 의존성으로 결정한다. `global`이 새 patch에서만
-   갱신된다는 기존 P3a 가정도 이 단계에서 검증한다.
+   patch보다 앞쪽의 값이 바뀌면** 그 값은 무조건 재사용하지 않는다. 필요한
+   재계산 시작점을 실제 출력 의존성으로 결정한다. `global`이 새 patch에서만
+   갱신된다는 기존 P3a 가정은 실제 BF16 계산에서는 기각됐다.
+
+2026-09-26 itcerdo 실측: 한영 혼합 입력의 36개 접두부 중 5개에서 기존
+patch 시작점이 달라졌다. 15개 activation 비교에서 닫힌 global patch와
+decoder 출력은 모두 바뀌었다. 같은 길이의 반복 forward에서는 비교한
+entropy/encoder/global/decoder/logits가 모두 비트 단위로 동일했다.
+반복 한글 입력의 64~512바이트 forward 프로파일에서 patcher 약 3.8~4.9ms,
+global 약 7.3~7.8ms였지만 이는 5090·사전학습 모델·합성 입력이며 A100
+파인튜닝 체크포인트의 생성 처리량을 예측하는 수치는 아니다. 보고서와
+해석은 `blt_hf/cache/DESIGN.md`에 있다.
 
 작은 모델·정적 테스트는 로컬에서, 실제 1B의 짧은 forward 확인은 itcerdo에서
 수행할 수 있다. A100 성능 job은 사용자에게 실행 명령과 예상 산출물을 전달한다.
 
-판정: 안정된 접두부가 존재하면 단계 1로 간다. 없다면 정확한 캐시라는
-표현을 쓰지 않고, 제한된 구간 재계산·다른 생성 최적화로 설계를 수정해
-사용자에게 원인과 예상 이득을 보고한다. 출력 차이를 숨긴 채 진행하지 않는다.
+판정: 구조적으로 닫힌 접두부는 존재하지만 수치적 상태 불변성은 거짓이다.
+따라서 단계 1은 **실험용 backend**로만 진행한다. 기존 생성의 출력 동일성과
+실측 속도 모두 통과하기 전에는 평가·체크포인트 선택 경로에 연결하지 않는다.
 
 ## 단계 1: 단건·빔 1 증분 backend
 
-1. `blt_hf/cache/`에 명시적 `GenerationState`를 만든다: 입력 바이트와
-   위치, entropy에 필요한 상태, 확정된 patch 경계와 표현, 마지막 미완성
-   patch, global attention 상태, decoder 상태, EOS/문서 구간을 담는다.
-2. entropy는 인과적 상태 재사용을 우선한다. 처음에는 검증된 512바이트
-   창 재계산도 허용한다. 이는 전체 prefix 재계산을 없애는 중간 구현이며,
-   프로파일에서 entropy가 병목이면 KV 상태로 추가 최적화한다.
-3. 마지막 patch와 그에 의존하는 상태만 재계산한다. 확정 patch의
-   encoder/global 상태는 유지한다. decoder 과거 상태가 마지막 patch의
-   잠정적 global 표현을 참조했다면 영향을 받는 지점부터 무효화·재계산한다.
-   `past_key_values`를 무조건 켜지 않고 각 구성요소의 position/mask와
-   cache 길이를 명시한다.
-4. 우선 `incremental_generate`를 기존 HF `generate`와 분리해 빔 1·batch 1
+1. 먼저 실제 생성 경로의 연속 step에서 이전 닫힌 global/decoder 상태를
+   교체 주입하는 민감도 실험을 한다. 출력 ID가 달라지는 조건과 top-1
+   마진을 기록한다. 이 검사는 속도 개선을 주장하지 않는다.
+2. `blt_hf/cache/`에 명시적 `GenerationState`를 만든다: 입력 바이트와
+   위치, 현재 전체 patch 경계, 구조적으로 닫힌 patch, 재사용 후보인
+   encoder/global/decoder 상태, EOS/문서 구간을 담는다.
+3. **첫 구현은 매 step 전체 entropy patcher를 실행한다.** 현재 BF16
+   경계가 과거 위치에서도 바뀔 수 있으므로 창 제한이나 patcher KV 재사용은
+   별도 동등성 확인 전에는 허용하지 않는다. 이전·현재 시작점을 비교해
+   공통된 닫힌 patch 앞부분만 구조적 후보로 남긴다. 숫자가 달라지는
+   activation은 후보라 해도 출력 동일성 검증 없이 사용하지 않는다.
+4. `past_key_values`를 무조건 켜지 않는다. local/global/decoder의 position,
+   mask, cache 길이, patch 변경 시 무효화 지점을 명시하고 검증한다.
+5. 우선 `incremental_generate`를 기존 HF `generate`와 분리해 빔 1·batch 1
    로 구현한다. 기존 `decode_generated`와 EOS/길이 정책을 공유한다.
 
 판정: 고정 fixture의 **매 바이트** entropy 경계, 다음 바이트 logits,
