@@ -9,6 +9,9 @@
 - native validation 길이별 12문장 완성 생성의 token/EOS/문자열·시간을
   양쪽에서 측정하는 Neuron 스크립트를 준비했다. 사용자 실행 결과를 받은
   뒤 전체 validation 비교를 진행한다.
+- itcerdo의 분리 checkout·기존 `phdq_blt_hf` 환경에서 작은 OSC BLT의
+  HF↔global 캐시 완성 생성 및 cache reset 포함 6개 테스트 통과. 임시
+  checkout 정리; Neuron 미접속·미제출.
 
 ## 2026-09-26 — Neuron A100 캐시 지연 진단 915864 결과
 

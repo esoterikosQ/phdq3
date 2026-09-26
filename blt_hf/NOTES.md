@@ -100,6 +100,12 @@ decoder KV는 첫 사용 비용 이후 지속 이득이 관측되지 않아 이 
 cache 코드를 포함시켰다. 기존 no-cache backend가 기본이며 4-beam 및
 학습 중 validation은 바꾸지 않았다. Neuron에서 완성 생성 parity와 속도가
 확인되기 전까지 새 backend의 동등성을 주장하지 않는다.
+itcerdo의 분리 checkout에서 기존 `phdq_blt_hf` 환경으로
+`PYTHONPATH=.:tests python -m unittest tests.test_hf_generation_runtime
+tests.test_hf_cache_reuse`를 실행해 작은 실제 OSC BLT 모델의 완성 생성
+HF↔global 캐시 결과와 cache reset을 포함한 6개 테스트가 통과했다. 분리
+checkout은 정리했고 기존 itcerdo 작업 파일은 변경하지 않았다. 이 테스트는
+fine-tuned A100 전체 생성 검증을 대신하지 않는다.
 
 ## 2026-09-17 — FP32 학습 정책 폐기, BF16 레거시 조건 복구
 
