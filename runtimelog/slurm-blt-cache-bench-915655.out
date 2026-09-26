@@ -1,0 +1,235 @@
+==========================================
+SLURM_JOB_ID = 915655
+SLURM_NODELIST = gpu36
+==========================================
+Job ID: 915655
+Node: gpu36
+Start Time: 2026-09-26T11:01:51+09:00
+Submit Dir: /scratch/r984a02/phdq3
+Partition: amd_a100nv_8
+CUDA_VISIBLE_DEVICES: 0
+CPUs per task: 8
+{
+  "schema_version": 1,
+  "created_at": "2026-09-26T02:01:54.584717+00:00",
+  "hostname": "gpu36",
+  "platform": "Linux-5.14.0-427.13.1.el9_4.x86_64-x86_64-with-glibc2.34",
+  "python": "3.11.16",
+  "python_executable": "/home01/r984a02/.conda/envs/phdq_blt_hf/bin/python",
+  "scope": "gpu_runtime",
+  "torch": "2.11.0+cu128",
+  "transformers": "5.16.1",
+  "xformers": null,
+  "safetensors": "0.8.0",
+  "huggingface_hub": "1.31.0",
+  "devices": [
+    {
+      "index": 0,
+      "name": "NVIDIA A100-SXM4-80GB",
+      "capability": [
+        8,
+        0
+      ],
+      "total_memory": 85094825984,
+      "bf16_supported": true,
+      "bf16_smoke": true
+    }
+  ],
+  "errors": [],
+  "nvidia_smi": [
+    "NVIDIA A100-SXM4-80GB, 580.105.08, 81920 MiB"
+  ],
+  "cuda_runtime": "12.8",
+  "blt_import": true,
+  "cuda_available": true,
+  "cuda_smoke": true,
+  "loaded_libcudart": [
+    "/scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/nvidia/cuda_runtime/lib/libcudart.so.12"
+  ],
+  "status": "pass"
+}
+{
+  "schema_version": 1,
+  "created_at": "2026-09-26T02:03:11.070396+00:00",
+  "check": "raw_utf8_lengths_and_m2_source_alignment",
+  "model_executed": false,
+  "tokenizer_executed": false,
+  "status": "pass",
+  "max_allowed": 2048,
+  "splits": {
+    "native/train": {
+      "rows": 12292,
+      "blank_lines": 0,
+      "tsv_sha256": "a1080e12f528212f25858b1c0093f497d9ffa62f5717848088c4010bad2ea871",
+      "max_sequence_bytes": 398,
+      "max_prompt_bytes": 207,
+      "max_target_bytes": 190,
+      "over_1024": 0,
+      "over_limit": 0
+    },
+    "native/val": {
+      "rows": 2634,
+      "blank_lines": 0,
+      "tsv_sha256": "002645a47593a88735fe7b13fdc7c9fe2e4c1a92191f90ec7fb95449758ecd98",
+      "max_sequence_bytes": 401,
+      "max_prompt_bytes": 209,
+      "max_target_bytes": 191,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "native",
+        "split": "val",
+        "sample_count": 2634,
+        "source_hash": "e63fe872699d99b0ccec7dc04e98fb9bfde1f6b6c7119d90a9070daec279a4c3",
+        "target_hash": "4c13345e12a1b4cd8097edd3b3cbb05fb0e71cef3d3e9f21c237ef9536461feb",
+        "m2_hash": "17558a819658a14031ed8d36032b2f33f2f0094f50da695e818c488037fabb8a",
+        "tsv_hash": "002645a47593a88735fe7b13fdc7c9fe2e4c1a92191f90ec7fb95449758ecd98",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "native/test": {
+      "rows": 2634,
+      "blank_lines": 0,
+      "tsv_sha256": "6c2d6e1551fdd12dd51b764b0daa3de57befedca47c21ed07fb5538d7c33ccc8",
+      "max_sequence_bytes": 399,
+      "max_prompt_bytes": 208,
+      "max_target_bytes": 190,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "native",
+        "split": "test",
+        "sample_count": 2634,
+        "source_hash": "37ec4cb176690066bd411d4dee23001ee77a3cf7825f28b2555390db349ba1c7",
+        "target_hash": "c1b96b70deb626920be67f05d1b371bd16b38ccc9abd941a3f98bd11776d3563",
+        "m2_hash": "a4579825f6fc5e9ee7fbb1ae722cf260518b9305a07f5191ba423bc0f8b0a04c",
+        "tsv_hash": "6c2d6e1551fdd12dd51b764b0daa3de57befedca47c21ed07fb5538d7c33ccc8",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "korean_learner/train": {
+      "rows": 19898,
+      "blank_lines": 0,
+      "tsv_sha256": "163ab6419d259f477b5ab3c913dca6068dd1beaace2f4858d5416ac41bbe1888",
+      "max_sequence_bytes": 1380,
+      "max_prompt_bytes": 694,
+      "max_target_bytes": 685,
+      "over_1024": 4,
+      "over_limit": 0
+    },
+    "korean_learner/val": {
+      "rows": 4264,
+      "blank_lines": 0,
+      "tsv_sha256": "c5b62d189af42807a6dd0679f2a43b5d07dfaae282aeef812724f90a19fc1e1b",
+      "max_sequence_bytes": 845,
+      "max_prompt_bytes": 430,
+      "max_target_bytes": 414,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "korean_learner",
+        "split": "val",
+        "sample_count": 4264,
+        "source_hash": "46384ab2684f369e36aa0fc787b0447796d3760ff7ebfcca2d8e973e93222a08",
+        "target_hash": "25cbe312b4d391f7a32b75100f6c8c2daa0eb6cd9de241775062eef69b17ea14",
+        "m2_hash": "26aa7b334b71ae3d6e0b06acd45cc81cc219d75ad1ff2b573f496b30284b839c",
+        "tsv_hash": "c5b62d189af42807a6dd0679f2a43b5d07dfaae282aeef812724f90a19fc1e1b",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "korean_learner/test": {
+      "rows": 4265,
+      "blank_lines": 0,
+      "tsv_sha256": "cb49c2806cedd8b71d1b5dbbc31ef5c74f0aca3a6ab6dc92a94c9e5ffe52044d",
+      "max_sequence_bytes": 633,
+      "max_prompt_bytes": 324,
+      "max_target_bytes": 320,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "korean_learner",
+        "split": "test",
+        "sample_count": 4265,
+        "source_hash": "4438468750166634cce0e4b03e72f7b82f45e352e7de230e9492c5a9cc4bb1c5",
+        "target_hash": "93878d24629be44430507a067a2ab645e2bf4fc65dc0cd0ba1177c2ff9640933",
+        "m2_hash": "4be33bbc4adf618da33074b9a97525c4d24c08162b9df44db60e69424f51ec01",
+        "tsv_hash": "cb49c2806cedd8b71d1b5dbbc31ef5c74f0aca3a6ab6dc92a94c9e5ffe52044d",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "union/train": {
+      "rows": 108882,
+      "blank_lines": 1,
+      "tsv_sha256": "90a55cac5d37cd3557f6f958b973b6f6a037872c87edade462ac05324843a54a",
+      "max_sequence_bytes": 1380,
+      "max_prompt_bytes": 694,
+      "max_target_bytes": 685,
+      "over_1024": 5,
+      "over_limit": 0
+    },
+    "union/val": {
+      "rows": 23332,
+      "blank_lines": 1,
+      "tsv_sha256": "22b90eee85aa2edd5557cd3009893dd1b1dcff22584b7f96e713878fcbeb5f8b",
+      "max_sequence_bytes": 931,
+      "max_prompt_bytes": 470,
+      "max_target_bytes": 460,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "union",
+        "split": "val",
+        "sample_count": 23332,
+        "source_hash": "a0063540f10386703cf635a5c77922af237d45357202cc5da5420f2c4ebb5a7b",
+        "target_hash": "864380fdab4b860b906a6836f9bb6a61230c40f071332fc1abcae2c4fb990d45",
+        "m2_hash": "22e1cdeed3702fe905b429c872f188b19b70c52e949c3eed1a8b4df5a90def20",
+        "tsv_hash": "22b90eee85aa2edd5557cd3009893dd1b1dcff22584b7f96e713878fcbeb5f8b",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "union/test": {
+      "rows": 23333,
+      "blank_lines": 1,
+      "tsv_sha256": "65b1bd0039ae58c136ee44ebbb6876ee69a5353bb8c00046ec235e7e79592f28",
+      "max_sequence_bytes": 886,
+      "max_prompt_bytes": 451,
+      "max_target_bytes": 434,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "union",
+        "split": "test",
+        "sample_count": 23333,
+        "source_hash": "eb476f3f20ea1abdd1fbb42e0ca006672a744e353bcd836d470569d7ea9e2ea7",
+        "target_hash": "fb2c7f1b332c75a69a4677a09a3f48134469cf40d9cf7f7cb4906696dbd0a176",
+        "m2_hash": "e79ae3c01c211bb58c2a0213f6b9e39bed8d9e4eb2011d7e7ae22a33c1042db7",
+        "tsv_hash": "65b1bd0039ae58c136ee44ebbb6876ee69a5353bb8c00046ec235e7e79592f28",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    }
+  },
+  "total": {
+    "rows": 201534,
+    "max_sequence_bytes": 1380,
+    "max_prompt_bytes": 694,
+    "max_target_bytes": 685,
+    "over_1024": 9,
+    "over_limit": 0
+  }
+}
+{"case": "2290:/scratch/r984a02/phdq3/data/Preprocessed/native/native_val.txt:2291", "steps": 32, "mismatches": 0, "timing": {"reference_total_ms": 1305.6266860961914, "reuse_total_ms": 828.027645111084, "reference_mean_ms": 42.11698987407069, "reuse_mean_ms": 26.71056919713174, "reference_median_ms": 41.884735107421875, "reuse_median_ms": 25.26483154296875}}
+{"case": "279:/scratch/r984a02/phdq3/data/Preprocessed/native/native_val.txt:280", "steps": 32, "mismatches": 0, "timing": {"reference_total_ms": 1296.1009521484375, "reuse_total_ms": 865.0015087127686, "reference_mean_ms": 41.809708133820564, "reuse_mean_ms": 27.903274474605436, "reference_median_ms": 41.76323318481445, "reuse_median_ms": 25.179231643676758}}
+{"case": "1076:/scratch/r984a02/phdq3/data/Preprocessed/native/native_val.txt:1077", "steps": 32, "mismatches": 0, "timing": {"reference_total_ms": 1294.2625923156738, "reuse_total_ms": 814.6087970733643, "reference_mean_ms": 41.750406203731416, "reuse_mean_ms": 26.277703131398848, "reference_median_ms": 41.72953414916992, "reuse_median_ms": 25.137983322143555}}
+{"case": "1953:/scratch/r984a02/phdq3/data/Preprocessed/native/native_val.txt:1954", "steps": 32, "mismatches": 0, "timing": {"reference_total_ms": 1298.591682434082, "reuse_total_ms": 872.405595779419, "reference_mean_ms": 41.89005427206716, "reuse_mean_ms": 28.14211599288448, "reference_median_ms": 41.84553527832031, "reuse_median_ms": 25.220096588134766}}
+{"case": "297:/scratch/r984a02/phdq3/data/Preprocessed/native/native_val.txt:298", "steps": 32, "mismatches": 0, "timing": {"reference_total_ms": 1302.8728981018066, "reuse_total_ms": 1138.722333908081, "reference_mean_ms": 42.028158003284084, "reuse_mean_ms": 36.73297851316391, "reference_median_ms": 41.924896240234375, "reuse_median_ms": 42.02601623535156}}
+{"case": "898:/scratch/r984a02/phdq3/data/Preprocessed/native/native_val.txt:899", "steps": 32, "mismatches": 0, "timing": {"reference_total_ms": 1304.650650024414, "reuse_total_ms": 837.9411811828613, "reference_mean_ms": 42.085504839497226, "reuse_mean_ms": 27.030360683318108, "reference_median_ms": 41.95132827758789, "reuse_median_ms": 25.337343215942383}}
+{"case": "1710:/scratch/r984a02/phdq3/data/Preprocessed/native/native_val.txt:1711", "steps": 32, "mismatches": 0, "timing": {"reference_total_ms": 1308.1794471740723, "reuse_total_ms": 800.6028842926025, "reference_mean_ms": 42.199337005615234, "reuse_mean_ms": 25.82589949330976, "reference_median_ms": 42.091712951660156, "reuse_median_ms": 25.236480712890625}}
+{"case": "644:/scratch/r984a02/phdq3/data/Preprocessed/native/native_val.txt:645", "steps": 32, "mismatches": 0, "timing": {"reference_total_ms": 1307.0899200439453, "reuse_total_ms": 853.8586540222168, "reference_mean_ms": 42.16419096915953, "reuse_mean_ms": 27.543827549103767, "reference_median_ms": 41.994014739990234, "reuse_median_ms": 25.22809600830078}}
+{"case": "1128:/scratch/r984a02/phdq3/data/Preprocessed/native/native_val.txt:1129", "steps": 32, "mismatches": 0, "timing": {"reference_total_ms": 1304.3911666870117, "reuse_total_ms": 852.2221794128418, "reference_mean_ms": 42.07713440925844, "reuse_mean_ms": 27.491038045575543, "reference_median_ms": 42.068511962890625, "reuse_median_ms": 25.193439483642578}}
+{"case": "1086:/scratch/r984a02/phdq3/data/Preprocessed/native/native_val.txt:1087", "steps": 32, "mismatches": 0, "timing": {"reference_total_ms": 1312.3058547973633, "reuse_total_ms": 1130.2155227661133, "reference_mean_ms": 42.3324469289472, "reuse_mean_ms": 36.45856525051978, "reference_median_ms": 42.104129791259766, "reuse_median_ms": 42.320289611816406}}
+{"case": "2349:/scratch/r984a02/phdq3/data/Preprocessed/native/native_val.txt:2350", "steps": 32, "mismatches": 0, "timing": {"reference_total_ms": 1311.246166229248, "reuse_total_ms": 854.2680320739746, "reference_mean_ms": 42.298263426749934, "reuse_mean_ms": 27.55703329270886, "reference_median_ms": 42.09699249267578, "reuse_median_ms": 25.28704071044922}}
+{"case": "1743:/scratch/r984a02/phdq3/data/Preprocessed/native/native_val.txt:1744", "steps": 32, "mismatches": 0, "timing": {"reference_total_ms": 1313.7510299682617, "reuse_total_ms": 853.4632911682129, "reference_mean_ms": 42.37906548284715, "reuse_mean_ms": 27.53107390865203, "reference_median_ms": 42.14179229736328, "reuse_median_ms": 25.238176345825195}}
+{"status": "complete", "probe_token_parity": "passed", "output": "/scratch/r984a02/phdq3/blt_hf_checks/results/p3a_native_cache_probe_02.json"}
+End Time: 2026-09-26T11:04:19+09:00
+Elapsed Seconds: 148
+Exit Code: 0
