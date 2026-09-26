@@ -1,0 +1,133 @@
+# P3a: BLT 증분 생성·접두부 재사용 실행안 (2026-09-26 확정)
+
+작성일: 2026-09-25. 이 문서는 현재 BF16/eager/OSC 모델의 **생성 시간 단축**을
+위한 실행안이다. 사용자의 이번 요청에 따라 기존
+`P3_조건부_후속_프로젝트_계획.md`의 P1 완료·처리량 트리거를 기다리지 않고
+설계 검토를 시작한다. 2026-09-26 사용자 승인으로 이 실행안을 확정하고
+단계 0부터 착수한다. 기존 P3a의 P1 완료·처리량 트리거는 이 작업에 적용하지
+않으며, 단계별 correctness·성능 판정은 유지한다.
+
+## 목표와 변경 범위
+
+- 동일한 파인튜닝 체크포인트와 데이터로 생성할 때, 매 바이트마다 전체 접두부를
+  다시 계산하는 비용을 줄인다. 우선 native validation 빔 1, 이후 빔 4와
+  learner/lang8/union으로 확장한다.
+- 가중치, 학습 손실, 제공 데이터, GLEU/M2 채점 규칙을 바꾸지 않는다. 기존
+  no-cache 생성은 기준 구현이자 즉시 사용 가능한 fallback으로 보존한다.
+- 출력 동일성이 입증된 경우에만 새 backend를 본 평가나 epoch별 GLEU 선택에
+  사용한다. 비교 중에는 기존 결과 디렉터리를 재사용하지 않는다.
+- 에이전트는 Neuron에 접속·전송·제출하지 않는다. 로컬에서 코드와 명령을
+  준비하고, 실제 A100 작업은 사용자가 실행한다.
+
+## 현재 확인된 사실과 미확인 전제
+
+- `blt_hf/generation.py`는 `use_cache=False`로 전체 접두부를 전달한다.
+  `blt_hf/attention.py`는 OSC 캐시 입력을 거부한다. `modeling_blt.py`는
+  global transformer에 이전 patch 상태를 전달하지 않는다. 단순 플래그
+  변경으로는 증분 생성이 되지 않는다.
+- 실제 1B 설정은 엔트로피 임계값 1.335442066192627, `monotonicity=false`,
+  `threshold_add=null`, `max_patch_length=null`이다. 공식 패처는 임계값
+  방식의 패치 경계를 순차적으로 결정할 수 있다고 설명한다. 이 설정에서
+  확정된 시작점이 새 바이트 때문에 바뀌지 않는다는 **수학적 기대**가 있다.
+- 그 기대가 현재 OSC forward 전체에 적용되는지는 아직 검증하지 않았다.
+  특히 마지막 미완성 patch의 pooling/cross-attention/global 표현, decoder가
+  참조한 patch 표현과 과거 상태, EOS 구간, `include_next_token=True`의
+  가상 다음 바이트 슬롯을 확인해야 한다.
+- 기존 native 통합 validation 빔 1은 epoch당 약 41분(4 GPU 분담)이었다.
+  이는 속도 비교 기준의 *관측값*이지만, 새 backend 비교는 동일한 체크포인트,
+  샘플, GPU 수, dtype, 빔, 길이 제한에서 별도로 측정한다.
+- 근거 소스: [Meta의 threshold 기반 패처](https://github.com/facebookresearch/blt/blob/main/bytelatent/data/patcher.py),
+  [Meta의 no-cache 생성](https://github.com/facebookresearch/blt/blob/main/bytelatent/generate_blt.py),
+  저장소의 `blt_hf/patched/modeling_blt.py` 및
+  `blt_hf_checks/results/p1_neuron_code_v2_20260916.json`.
+
+## 단계 0: 기준선·재사용 경계 확인
+
+1. 고정된 native 체크포인트와 문장 ID 목록을 사용해 A100에서 빔 1·4,
+   batch 1·4의 생성 시간, 생성 바이트 수, peak memory를 기록한다. 준비된
+   `blt_hf_checks/bench_generation.py`를 활용한다. 단계별 프로파일은
+   entropy/patcher, local encoder, global transformer, local decoder로 나눈다.
+2. `check_patch_causality.py`를 작성해 한 문장의 전체 입력과 모든 접두부를
+   각각 실행한다. 각 단계에서 확정된 patch 시작점, entropy, patch ID,
+   encoder/global/decoder가 참조하는 범위를 비교한다. 임계값 근처,
+   patch가 열려 있는 경우와 막 닫히는 경우, 511/512/513바이트, EOS,
+   긴 한글 문장을 포함한다. 작은 CPU 모델과 실제 1B 모델을 구분해 기록한다.
+3. 결과를 `blt_hf/cache/DESIGN.md`에 상태 수명표로 정리한다. **확정된
+   patch보다 앞쪽의 값이 바뀌면** 그 값은 캐시하지 않는다. 필요한 재계산
+   시작점을 실제 출력 의존성으로 결정한다. `global`이 새 patch에서만
+   갱신된다는 기존 P3a 가정도 이 단계에서 검증한다.
+
+작은 모델·정적 테스트는 로컬에서, 실제 1B의 짧은 forward 확인은 itcerdo에서
+수행할 수 있다. A100 성능 job은 사용자에게 실행 명령과 예상 산출물을 전달한다.
+
+판정: 안정된 접두부가 존재하면 단계 1로 간다. 없다면 정확한 캐시라는
+표현을 쓰지 않고, 제한된 구간 재계산·다른 생성 최적화로 설계를 수정해
+사용자에게 원인과 예상 이득을 보고한다. 출력 차이를 숨긴 채 진행하지 않는다.
+
+## 단계 1: 단건·빔 1 증분 backend
+
+1. `blt_hf/cache/`에 명시적 `GenerationState`를 만든다: 입력 바이트와
+   위치, entropy에 필요한 상태, 확정된 patch 경계와 표현, 마지막 미완성
+   patch, global attention 상태, decoder 상태, EOS/문서 구간을 담는다.
+2. entropy는 인과적 상태 재사용을 우선한다. 처음에는 검증된 512바이트
+   창 재계산도 허용한다. 이는 전체 prefix 재계산을 없애는 중간 구현이며,
+   프로파일에서 entropy가 병목이면 KV 상태로 추가 최적화한다.
+3. 마지막 patch와 그에 의존하는 상태만 재계산한다. 확정 patch의
+   encoder/global 상태는 유지한다. decoder 과거 상태가 마지막 patch의
+   잠정적 global 표현을 참조했다면 영향을 받는 지점부터 무효화·재계산한다.
+   `past_key_values`를 무조건 켜지 않고 각 구성요소의 position/mask와
+   cache 길이를 명시한다.
+4. 우선 `incremental_generate`를 기존 HF `generate`와 분리해 빔 1·batch 1
+   로 구현한다. 기존 `decode_generated`와 EOS/길이 정책을 공유한다.
+
+판정: 고정 fixture의 **매 바이트** entropy 경계, 다음 바이트 logits,
+출력 token ID를 no-cache와 비교한다. BF16 logits 허용오차는 반복 no-cache
+실측의 수치 변동을 보고 정하며, 첫 불일치 위치와 top-1 격차를 기록한다.
+최종 token ID와 EOS 상태가 불일치하면 이 backend는 본 평가에 사용하지 않는다.
+
+## 단계 2: 빔 4·배치·재개
+
+1. 빔 4에서 부모 빔 선택 시 entropy, patch, encoder/global/decoder 상태를
+   함께 재정렬한다. 먼저 단순 `index_select`를 사용한다.
+2. 서로 다른 patch 확정 시점과 EOS를 갖는 배치 1·4를 지원한다. 동일 길이
+   묶음은 패딩 회피를 위해 유지하되, 속도 이득을 가정하지 않는다.
+3. 검증 문장은 짧음/김, 한글 3바이트 경계, 복사 출력, 조기 EOS,
+   생성 예산 소진, patch 경계 직전·직후, EOS 구간을 포함한다.
+4. 중단·재개 때 cache 자체를 저장할 필요는 없다. 기존 평가의 원자적
+   문장/배치 기록을 사용하고, 미완료 단위는 새로 생성한다.
+
+판정: 동일 모델·입력·생성 조건에서 빔 1·4와 batch 1·4의 token ID,
+최종 UTF-8, EOS/budget 상태가 기준 경로와 일치해야 한다. native 전체
+validation에서도 mismatch를 전수 보고한다.
+
+## 단계 3: 성능 판정·운영 통합
+
+1. 동일 A100 자원과 같은 문장 목록에서 no-cache 대비 문장/초,
+   생성 바이트/초, p50/p95 문장 시간, peak GPU memory를 측정한다.
+   초기 로딩·warmup과 순수 생성 시간을 분리한다. 41분짜리 기존 통합
+   validation과 비교할 때는 동일한 4 GPU 분담 조건으로 재실행한다.
+2. 기본 전환의 목표는 **전체 native validation 생성 시간이 최소 2배
+   단축**되고 출력이 동일하며 메모리와 6시간 job 한도를 지키는 것이다.
+   이 목표는 보장된 예상치가 아니라 채택 기준이다. 미달이면 backend를
+   실험용으로 남기고 병목 보고서를 작성해 다음 최적화 여부를 결정한다.
+3. `generation_backend`에 별도 버전을 부여하고 eval manifest/fingerprint,
+   validation 보고서, checkpoint 선택 기록에 반영한다. 새 `EVAL_DIR`과
+   새 학습 `RUN_ID`에만 적용한다. 이미 실행 중인 Neuron 작업이 있을 때
+   공유 checkout의 코드를 갱신하지 않는다.
+4. 검증 완료 전에는 현재 학습·생성·평가 기본값을 변경하지 않는다.
+   full-split test GLEU/M2 채점 규칙은 그대로 둔다. 필요하면 기존
+   체크포인트의 validation만 새 backend로 재생성해 비교한다.
+
+## 구현·검증 산출물
+
+- 코드: `blt_hf/cache/`, `blt_hf/generation.py`의 선택형 backend,
+  평가·통합 validation의 backend 인자 및 manifest 반영.
+- 테스트: prefix 경계 안정성, 구성요소별 step 비교, 빔 상태 재정렬,
+  batch 불변성, 중단 후 재개, 전체 native validation token ID 비교.
+- 증거: 기준선/캐시 benchmark JSON, parity JSON, 성능 판정 기록,
+  `blt_hf/NOTES.md`의 수정 diff·재현 명령. HF 원본이나 site-packages는
+  직접 편집하지 않는다.
+
+이 실행안은 확정되었으며 단계 0 결과에 따라 재사용 가능한 상태 범위를
+기술적으로 수정할 수 있다. 설계 변경과 그 근거는 `blt_hf/cache/DESIGN.md`에
+기록한다.

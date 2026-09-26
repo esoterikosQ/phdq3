@@ -1,5 +1,24 @@
 # P1 명령 및 현재 실행 범위
 
+## 2026-09-26 — P3a 패치 경계 인과성 검사
+
+단계 0 실행안은 `plan/P3a_generation_cache_20260925.md`, 상태 수명 가설은
+`blt_hf/cache/DESIGN.md`에 기록한다. 실제 1B의 짧은 forward 검사만
+itcerdo에서 수행한다. 기존 보고서 경로를 재사용하지 않는다.
+
+```bash
+ssh itcerdo
+cd /home/itcmaster/projects/phdq3
+conda activate phdq_blt_hf
+python -m unittest tests.test_hf_cache_causality -v
+python -m blt_hf_checks.check_patch_causality \
+  --output blt_hf_checks/results/p3a_patch_causality_20260926.json
+```
+
+보고서의 `status`, `boundary_failures`, `max_abs_entropy_difference`를 확인한
+뒤에만 encoder/global/decoder 상태 재사용 범위를 정한다. 이 명령은 학습이나
+Neuron job을 제출하지 않는다.
+
 ## 2026-09-24 — native 2-epoch 통합 GLEU 시험
 
 Neuron에서는 사용자가 `NEURON.md`의 "native 2-epoch 통합 GLEU 시험" 명령을

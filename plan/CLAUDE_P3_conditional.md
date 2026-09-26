@@ -1,5 +1,11 @@
 # CLAUDE.md — P3: 조건부 후속 프로젝트 (P3a / P3b / P3c)
 
+> **2026-09-26 P3a 착수 판정:** 사용자 승인과 `log.md` 기록에 따라
+> `P3a_generation_cache_20260925.md`의 단계 0부터 진행한다. 아래의
+> P3a 기존 cache_probe/benchmark 선행 트리거와 P1·P2 우선순위 보류는
+> 이번 승인 범위에 적용하지 않는다. 패치 인과성, 출력 비교, Neuron 미접속은
+> 유지한다. P3b/P3c 게이트는 계속 적용한다.
+
 > 배치 위치: 착수 확정 시 각 하위 프로젝트 디렉토리로 분리 배치한다:
 >   P3a → `PHDQ2/blt_hf/cache/CLAUDE.md`
 >   P3b → `PHDQ2/cpp/m2scorer/CLAUDE.md`

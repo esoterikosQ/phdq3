@@ -1,5 +1,15 @@
 # 일자별 작업 내역
 
+## 2026-09-26 — P3a 증분 생성 작업 착수 승인
+
+- 사용자가 `plan/P3a_generation_cache_20260925.md`의 단계별 실행안과
+  native validation 생성 시간 2배 개선 채택 기준을 승인했다.
+- 기존 P3a의 P1 종료·cache probe·batch 처리량 트리거를 이 착수에서는
+  사용자 결정으로 대체한다. 단계 0에서 실제 OSC 패치 경계의 접두부 안정성과
+  encoder/global/decoder 상태의 재사용 범위를 확인한다.
+- 구현은 기존 BF16/eager/no-cache 학습·평가를 보존하는 선택형 backend로
+  진행한다. Neuron 실행은 사용자가 담당한다.
+
 ## 2026-09-16 — Neuron 제출 구조를 직접 sbatch 방식으로 교정
 
 - 실제 사용 이력이 있는 BART job script를 기준으로 train/eval/score 맨 앞에
