@@ -203,6 +203,18 @@ HF/global backend 각각 별도 `EVAL_DIR`에 생성한 뒤, 불변 batch/완료
 생성 시간 합계·p50/p95를 비교하는 것이다. 이 단계는 M2/GLEU 채점과
 분리한다. 현재 decoder KV는 계속 꺼져 있다.
 
+사용자 916171 비교에서는 두 평가의 동일 checkpoint·split·코드와 2,634건
+완료 파일이 검증됐다. 2,602건은 완성 출력이 같고 **32건(1.21%)**은
+token ID·문자열이 달랐다. EOS·UTF-8 상태는 동일했다. 생성 시간은 기준
+9,074.297초→global 캐시 6,620.644초(**1.371배**). 12문장 예비 검사의
+출력 일치는 전체 split에 일반화되지 않았다. `global_reuse.py`는 patch
+시작점이 그대로일 때 이전 global hidden을 반환하므로 이 분기가 유력한
+원인이지만, 저장된 최종 출력만으로 직접 원인을 확정할 수 없다.
+`diagnose_cache_divergence.py`는 32개 행의 첫 토큰 분기까지 같은 접두부를
+재생하고 그 순간 재사용 여부와 full forward의 기준 ID 회복 여부를 기록한다.
+결과를 확인하기 전에는 캐시 적용 범위를 변경하거나 출력 동등성을 주장하지
+않는다.
+
 ## 기준 생성 경로
 
 `blt_hf/generation.py`는 생성할 때마다 `[BOS] source SEP generated_prefix`를

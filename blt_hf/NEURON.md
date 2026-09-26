@@ -419,6 +419,33 @@ sbatch -p cpu --cpus-per-task=4 --time=01:00:00 \
   scripts/compare_blt_cache_eval.sh
 ```
 
+916171 전수 비교는 2,634건 중 32건의 token ID·문자열 불일치로 의도된
+exit 1을 반환했다. 입력/체크포인트/설정/완료 파일은 일치했고, 생성 시간
+합계는 기준 9,074.297초→global 캐시 6,620.644초(1.371배)였다. 이
+보고서는 덮어쓰지 않는다. 아래 진단은 **32개 불일치 행의 첫 분기까지**
+기준 접두부를 재생하고 그 지점의 캐시 추론, global 재계산, HF식 마스크
+전달 결과를 기록한다. `global_skip_changes_greedy_choice`는 동일 접두부의
+재생과 기준 ID 재현이 모두 확인된 경우에만 붙인다. 진단 결과의 exit 0은
+분석 완료를 뜻하며 캐시 출력 동일성을 뜻하지 않는다. 사용자가 Neuron의
+공유 checkout에서 실행 중인 작업을 마친 후 새 코드를 받는다.
+
+```bash
+cd /scratch/r984a02/phdq3
+git status --short --branch
+git pull --ff-only origin main
+conda activate phdq_blt_hf
+export CKPT_PATH=outputs/blt_hf/native/native-main-01/step-00001155-24b756e2
+export COMPARE_REPORT=blt_hf_checks/results/p3a_native_full_global_06.json
+export DIAG_OUTPUT=blt_hf_checks/results/p3a_native_divergence_diag_07.json
+test -f "$CKPT_PATH/model.safetensors"
+test -f "$COMPARE_REPORT"
+test ! -e "$DIAG_OUTPUT"
+sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=4 \
+  --time=01:00:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",COMPARE_REPORT="$COMPARE_REPORT",DIAG_OUTPUT="$DIAG_OUTPUT" \
+  scripts/diagnose_blt_cache_divergence.sh
+```
+
 ### 기존 분리형 10-epoch 절차
 
 새 사이클은 2026-09-18의 3-epoch run과 다른 RUN_ID를 쓴다. 기존
