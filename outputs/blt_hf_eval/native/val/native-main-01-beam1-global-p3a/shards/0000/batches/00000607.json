@@ -1,0 +1,48 @@
+{
+  "fingerprint": "07f00e7c21468e775714ad10ab5f300e1d450c1e5ea6f61b2cb0caed9ecf92be",
+  "records": [
+    {
+      "index": 607,
+      "source": "철수가 축구는 잘 한다.",
+      "text": "철수가 축구는 잘한다.",
+      "raw_text": "철수가 축구는 잘한다.",
+      "token_ids": [
+        240,
+        182,
+        164,
+        240,
+        140,
+        156,
+        238,
+        180,
+        132,
+        36,
+        240,
+        186,
+        153,
+        238,
+        185,
+        176,
+        239,
+        142,
+        152,
+        36,
+        240,
+        162,
+        156,
+        241,
+        153,
+        160,
+        239,
+        143,
+        168,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 0.8678121836856008
+}

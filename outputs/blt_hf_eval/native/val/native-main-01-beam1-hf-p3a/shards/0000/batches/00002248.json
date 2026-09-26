@@ -1,0 +1,42 @@
+{
+  "fingerprint": "42da3028ac9646b1abc22778456984a991072652c51e52c76efe84e4592bbae4",
+  "records": [
+    {
+      "index": 2248,
+      "source": "사전을 읽어 봐써요.",
+      "text": "사전을 읽어 봐요.",
+      "raw_text": "사전을 읽어 봐요.",
+      "token_ids": [
+        240,
+        134,
+        176,
+        240,
+        164,
+        136,
+        240,
+        161,
+        136,
+        36,
+        240,
+        161,
+        193,
+        240,
+        154,
+        184,
+        36,
+        239,
+        184,
+        148,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.0825764248147607
+}

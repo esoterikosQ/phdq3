@@ -1,0 +1,49 @@
+{
+  "fingerprint": "07f00e7c21468e775714ad10ab5f300e1d450c1e5ea6f61b2cb0caed9ecf92be",
+  "records": [
+    {
+      "index": 1551,
+      "source": "하나 밖에 못 받아써요.",
+      "text": "하나 밖에 못 받아써요.",
+      "raw_text": "하나 밖에 못 받아써요.",
+      "token_ids": [
+        241,
+        153,
+        156,
+        239,
+        134,
+        156,
+        36,
+        239,
+        180,
+        154,
+        240,
+        155,
+        148,
+        36,
+        239,
+        174,
+        191,
+        36,
+        239,
+        180,
+        159,
+        240,
+        153,
+        136,
+        240,
+        145,
+        172,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 0.8842126298695803
+}

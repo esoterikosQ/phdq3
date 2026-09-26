@@ -1,0 +1,48 @@
+{
+  "fingerprint": "07f00e7c21468e775714ad10ab5f300e1d450c1e5ea6f61b2cb0caed9ecf92be",
+  "records": [
+    {
+      "index": 1294,
+      "source": "저것은 내 컴퓨터에요.",
+      "text": "저것은 내 컴퓨터예요.",
+      "raw_text": "저것은 내 컴퓨터예요.",
+      "token_ids": [
+        240,
+        164,
+        132,
+        238,
+        182,
+        135,
+        240,
+        161,
+        132,
+        36,
+        239,
+        134,
+        184,
+        36,
+        240,
+        191,
+        184,
+        241,
+        151,
+        172,
+        241,
+        136,
+        180,
+        240,
+        156,
+        140,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 0.8895504041574895
+}

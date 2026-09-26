@@ -1,0 +1,46 @@
+{
+  "fingerprint": "07f00e7c21468e775714ad10ab5f300e1d450c1e5ea6f61b2cb0caed9ecf92be",
+  "records": [
+    {
+      "index": 1619,
+      "source": "아니요. 키가 작으세여.",
+      "text": "아니요. 키가 작은요.",
+      "raw_text": "아니요. 키가 작은요.",
+      "token_ids": [
+        240,
+        153,
+        136,
+        239,
+        143,
+        140,
+        240,
+        158,
+        152,
+        50,
+        36,
+        241,
+        134,
+        168,
+        238,
+        180,
+        132,
+        36,
+        240,
+        162,
+        149,
+        240,
+        161,
+        132,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 0.8765086778439581
+}

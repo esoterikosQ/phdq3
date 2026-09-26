@@ -1,0 +1,42 @@
+{
+  "fingerprint": "07f00e7c21468e775714ad10ab5f300e1d450c1e5ea6f61b2cb0caed9ecf92be",
+  "records": [
+    {
+      "index": 1183,
+      "source": "먹을 것이 있어여.",
+      "text": "먹을 것이 있어요.",
+      "raw_text": "먹을 것이 있어요.",
+      "token_ids": [
+        239,
+        172,
+        189,
+        240,
+        161,
+        136,
+        36,
+        238,
+        182,
+        135,
+        240,
+        161,
+        184,
+        36,
+        240,
+        162,
+        140,
+        240,
+        154,
+        184,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 0.6845347248017788
+}

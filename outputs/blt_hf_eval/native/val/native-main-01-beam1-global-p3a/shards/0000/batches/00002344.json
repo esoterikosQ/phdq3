@@ -1,0 +1,42 @@
+{
+  "fingerprint": "07f00e7c21468e775714ad10ab5f300e1d450c1e5ea6f61b2cb0caed9ecf92be",
+  "records": [
+    {
+      "index": 2344,
+      "source": "거의 다 마셔가요.",
+      "text": "거의 다 마셨어요.",
+      "raw_text": "거의 다 마셨어요.",
+      "token_ids": [
+        238,
+        181,
+        180,
+        240,
+        161,
+        156,
+        36,
+        239,
+        143,
+        168,
+        36,
+        239,
+        171,
+        140,
+        240,
+        137,
+        172,
+        240,
+        154,
+        184,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 0.751538934186101
+}

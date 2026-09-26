@@ -1,0 +1,45 @@
+{
+  "fingerprint": "07f00e7c21468e775714ad10ab5f300e1d450c1e5ea6f61b2cb0caed9ecf92be",
+  "records": [
+    {
+      "index": 732,
+      "source": "창문을 열지 마세여.",
+      "text": "창문을 열지 마세요.",
+      "raw_text": "창문을 열지 마세요.",
+      "token_ids": [
+        240,
+        180,
+        193,
+        239,
+        176,
+        188,
+        240,
+        161,
+        136,
+        36,
+        240,
+        155,
+        184,
+        240,
+        171,
+        132,
+        36,
+        239,
+        171,
+        140,
+        240,
+        136,
+        188,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 0.7596706016920507
+}

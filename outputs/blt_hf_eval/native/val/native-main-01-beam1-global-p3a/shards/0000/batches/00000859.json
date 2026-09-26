@@ -1,0 +1,49 @@
+{
+  "fingerprint": "07f00e7c21468e775714ad10ab5f300e1d450c1e5ea6f61b2cb0caed9ecf92be",
+  "records": [
+    {
+      "index": 859,
+      "source": "한시에 점심을 먹어여.",
+      "text": "한 시에 점심을 먹어요.",
+      "raw_text": "한 시에 점심을 먹어요.",
+      "token_ids": [
+        241,
+        153,
+        160,
+        36,
+        240,
+        143,
+        160,
+        240,
+        155,
+        148,
+        36,
+        240,
+        164,
+        148,
+        240,
+        143,
+        176,
+        240,
+        161,
+        136,
+        36,
+        239,
+        172,
+        189,
+        240,
+        154,
+        184,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 0.8948104046285152
+}

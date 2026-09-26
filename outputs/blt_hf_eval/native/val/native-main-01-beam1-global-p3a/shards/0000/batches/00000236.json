@@ -1,0 +1,39 @@
+{
+  "fingerprint": "07f00e7c21468e775714ad10ab5f300e1d450c1e5ea6f61b2cb0caed9ecf92be",
+  "records": [
+    {
+      "index": 236,
+      "source": "좁을 수 있어여.",
+      "text": "좁을 수 있어요.",
+      "raw_text": "좁을 수 있어요.",
+      "token_ids": [
+        240,
+        166,
+        133,
+        240,
+        161,
+        136,
+        36,
+        240,
+        140,
+        156,
+        36,
+        240,
+        162,
+        140,
+        240,
+        154,
+        184,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 0.6098447199910879
+}

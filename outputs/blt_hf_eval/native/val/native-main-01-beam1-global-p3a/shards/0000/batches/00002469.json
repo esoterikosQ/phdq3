@@ -1,0 +1,46 @@
+{
+  "fingerprint": "07f00e7c21468e775714ad10ab5f300e1d450c1e5ea6f61b2cb0caed9ecf92be",
+  "records": [
+    {
+      "index": 2469,
+      "source": "이 음악을 듣지말까?",
+      "text": "이 음악을 듣지 말까?",
+      "raw_text": "이 음악을 듣지 말까?",
+      "token_ids": [
+        240,
+        161,
+        184,
+        36,
+        240,
+        161,
+        144,
+        240,
+        153,
+        137,
+        240,
+        161,
+        136,
+        36,
+        239,
+        151,
+        167,
+        240,
+        171,
+        132,
+        36,
+        239,
+        171,
+        148,
+        238,
+        189,
+        144,
+        67
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 0.7884062877856195
+}
