@@ -45,8 +45,10 @@ step의 값으로 바꿨다. 사전학습 1B의 한국어·혼합·긴 입력에
 `cache/global_reuse.py`는 매 step **전체 entropy patcher와 local encoder**를
 유지한다. 시작점이 그대로이고 patch가 둘 이상이면 decoder가 현재 열린
 patch의 global 출력을 마지막 byte에서 참조하지 않는 특성을 이용해 global
-forward를 건너뛴다. 새 시작점이 생기면 공통으로 닫힌 patch의 KV만 남기고
-global tail을 재계산한다. 선택형 decoder KV 재사용은 경계가 그대로인 step에만
+forward를 건너뛴다. 첫 A100 실측 당시에는 새 시작점이 생기면 공통으로 닫힌
+patch의 KV만 남기고 global tail을 재계산했다. 이후 재계산 구간의 비용을
+확인해 **새 경계에서는 global 전체를 기준 경로처럼 재계산**하도록 고쳤다.
+선택형 decoder KV 재사용은 경계가 그대로인 step에만
 적용하고, 경계가 바뀌면 decoder 전체를 다시 계산한다. 이 구현은 batch 1,
 빔 1, 연속 접두부, `eval()`과 `inference_mode()`로 제한된 **진단 시제품**이다.
 module.forward를 한 실행 동안만 교체하므로 병렬 호출·학습·HF `generate`
@@ -70,11 +72,30 @@ global/decoder 재사용 27/27/21 step, 평균 시간 개선 1.50/1.56/1.49배�
 보고서 필드(`probe_token_parity`, `peak_allocated_bytes`, 합산 속도)를
 확인한 짧은 실행이며 32-step 속도 비교를 대신하지 않는다.
 
-다음 판정은 실제 fine-tuned checkpoint와 native validation의 대표 문장을
-A100에서 같은 job 내 기준 경로와 시제품으로 비교하는 것이다. 준비된
-`scripts/bench_blt_cache.sh`는 사용자가 Neuron에서만 실행한다. mismatch가
-나오거나 전체 validation 2배 개선이 없으면 기존 no-cache 평가 경로를
-유지한다. 이 작은 probe 결과를 근거로 GLEU 선택 backend를 바꾸지 않는다.
+## A100 native 체크포인트 검사와 다음 판정
+
+사용자가 Neuron A100 1GPU job `915640`을 실행했고, 보고서를 GitHub에서
+받았다. `p3a_native_cache_probe_01.json`은 native `native-main-01`의
+`step-00001155-24b756e2`(model SHA256 `cc8466be...7454ab28`)와 제공된
+native validation TSV를 사용했다. GPU 환경 검사 통과, job 종료 코드 0,
+소요 208초, peak allocated 9.33GB였다. 12개 길이별 문장에서 각 32 step,
+총 384개 다음 byte ID가 모두 일치했지만 EOS가 나온 사례는 없었다.
+보고서의 코드 SHA256은 이 수정 전 시제품 `2d81faa0...4fc1411014`와
+일치하므로 당시 실행 코드를 식별할 수 있다.
+
+초기 step을 제외한 전체 forward 측정은 기준 16.346초, 시제품 11.917초로
+**1.372배**였다. 372개 측정 step 중 299개에서 global을 건너뛰었고,
+이때 평균 43.94→26.59ms(1.65배)였다. 재계산한 73개에서는
+43.92→54.35ms(0.81배)로 느렸다. 특히 한 사례는 32개 중 10개만
+건너뛰어 전체 시제품 시간이 기준보다 길었다(0.86배). 현재 채택 기준인
+native validation 전체 생성 2배 단축과 beam 4 parity는 입증되지 않았다.
+
+비싼 KV 꼬리 재계산을 제거하고 경계 변경 step을 기준 global full forward로
+되돌렸다. 작은 OSC 테스트와 itcerdo 1B의 합성 greedy 96 step은 다음 ID
+불일치 0개였다(`p3a_boundary_fallback_20260926.json`). 이것은 **수정 후
+A100 속도·fine-tuned parity 증거가 아니다**. 사용자는 새 코드가 반영된 뒤
+새 출력 경로로 같은 A100 probe를 다시 실행해야 한다. 그 결과도 2배에
+미달하면 시제품을 본 평가나 GLEU checkpoint 선택에 연결하지 않는다.
 
 ## 기존 생성 경로
 

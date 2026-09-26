@@ -26,7 +26,7 @@ class _LayerKV:
 
 
 class GlobalPrefixReuse:
-    """Keep structurally closed global KV and optionally decoder byte KV."""
+    """Reuse the global result only while patch starts stay unchanged."""
 
     def __init__(self, model, *, reuse_decoder=False):
         self.model = model
@@ -37,7 +37,6 @@ class GlobalPrefixReuse:
         self.previous_ids = None
         self.starts = None
         self.global_hidden = None
-        self.kv = None
         self.decoder_kv = None
 
     def run(self, input_ids):
@@ -64,31 +63,20 @@ class GlobalPrefixReuse:
             starts = captured['starts']
             count = (shared_closed_patch_count(self.starts, starts)
                      if self.starts is not None else 0)
-            if current_ids[-1] == 2:  # EOS can change the segment mask.
-                count = 0
             # The decoder uses the preceding patch's global output. If no new
             # boundary appeared, the current open patch is not queried for the
             # last byte; retaining its old value avoids the entire global pass.
             if current_ids[-1] != 2 and starts == self.starts and len(starts) > 1:
                 captured['global_hidden'] = self.global_hidden
-                captured['kv'] = self.kv
                 captured['reused_closed_patches'] = count
                 captured['skipped_global'] = True
                 return self.global_hidden
-            cache = _LayerKV(self.kv, count)
-            if count:
-                tail = original_forward(
-                    inputs_embeds=kwargs['inputs_embeds'][:, count:],
-                    attention_mask=kwargs['attention_mask'][:, :, count:, :],
-                    position_ids=kwargs['position_ids'][:, count:],
-                    past_key_values=cache,
-                )
-                result = torch.cat((self.global_hidden[:, :count], tail), dim=1)
-            else:
-                result = original_forward(**kwargs, past_key_values=cache)
+            # A new boundary can change an earlier BF16 patch decision. Full
+            # global recomputation is both cheaper and closer to the reference
+            # than rebuilding a short tail with old patch KV on these steps.
+            result = original_forward(**kwargs)
             captured['global_hidden'] = result.detach()
-            captured['kv'] = cache.layers
-            captured['reused_closed_patches'] = count
+            captured['reused_closed_patches'] = 0
             captured['skipped_global'] = False
             return result
 
@@ -131,7 +119,6 @@ class GlobalPrefixReuse:
         self.previous_ids = current_ids
         self.starts = captured['starts']
         self.global_hidden = captured['global_hidden']
-        self.kv = captured['kv']
         if self.reuse_decoder:
             self.decoder_kv = captured['decoder_kv']
         return (output, captured['reused_closed_patches'], captured['skipped_global'],

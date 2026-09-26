@@ -1,5 +1,15 @@
 # 일자별 작업 내역
 
+## 2026-09-26 — Neuron A100 캐시 probe 915640 결과 확인
+
+- 사용자 동기화 커밋 `ae8f45c`의 A100 native probe와 SLURM 로그를 수신.
+  12문장 × 32 step에서 다음 byte ID 불일치 0, job exit 0, GPU peak 9.33GB.
+  forward 합계는 기준 16.346초, 시제품 11.917초로 1.372배 개선.
+- global 생략 299 step은 1.65배 빠르지만 재계산 73 step은 0.81배로 느림.
+  전체 validation·EOS·beam4와 2배 채택 기준은 미충족/미검증.
+- 경계 변경 step의 KV tail 경로를 제거하고 global full forward로 되돌려
+  작은 OSC 및 itcerdo 합성 1B 검사를 통과. A100 재측정은 사용자 실행 대기.
+
 ## 2026-09-26 — P3a 단계 0 실측 및 global/decoder 재사용 시제품
 
 - itcerdo의 실제 BF16 1B 추론 검사에서 접두부 확장 시 한영 혼합 입력의

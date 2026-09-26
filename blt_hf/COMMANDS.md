@@ -31,6 +31,8 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
 `timing_excluding_initial`을 본다. `probe_token_parity=passed`는 선택된
 문장·step에만 해당하며 전체 validation 동등성을 뜻하지 않는다. 이 시제품은
 batch 1·빔 1 전용이다. 에이전트는 Neuron에 접속·전송·제출하지 않는다.
+첫 `01.json` 결과와 경계 변경 fallback 수정 후 `02.json` 재검사 명령은
+`NEURON.md`의 P3a 절을 따른다. `01.json`을 덮어쓰지 않는다.
 
 ## 2026-09-26 — P3a 패치 경계 인과성 검사
 

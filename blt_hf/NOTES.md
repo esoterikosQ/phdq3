@@ -31,6 +31,21 @@
 현재 no-cache 학습·평가는 그대로 유지한다. 사용자가 실행할 A100 1GPU
 probe 스크립트는 `scripts/bench_blt_cache.sh`이며 명령은 COMMANDS.md에 있다.
 
+## 2026-09-26 — Neuron A100 캐시 probe 915640 분석
+
+사용자가 GitHub에 동기화한 `p3a_native_cache_probe_01.json`과 SLURM 로그를
+확인했다. native fine-tuned step-00001155, A100-SXM4-80GB, BF16,
+환경 검사 통과, exit 0, 208초. validation 12문장 × 32 step의 다음 byte ID는
+384/384 같았다. 초기 step을 제외한 forward 측정 합계는 기준 16.346초,
+시제품 11.917초로 1.372배다. GPU peak allocated 9.33GB.
+
+global skip 299개에서는 43.94→26.59ms지만, 경계 변경 등 재계산 73개에서는
+43.92→54.35ms로 역전됐다. 한 문장은 skip 10/32개라 전체 0.86배였다.
+전체 생성·EOS·beam4 검사는 아직 아니다. 2배 채택 기준을 통과하지 않았고
+현재 평가 backend를 변경하지 않는다. 재계산 구간의 KV tail 경로를 제거하고
+기준 global full forward로 되돌려 작은 OSC와 itcerdo 1B 테스트를 통과했다.
+이 수정 후 Neuron A100 측정은 사용자 재실행이 필요하다.
+
 ## 2026-09-17 — FP32 학습 정책 폐기, BF16 레거시 조건 복구
 
 변환 artifact B는 원본과 동일한 BF16이지만 초기 학습 코드가 근거 없이 main을 FP32로

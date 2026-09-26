@@ -15,6 +15,7 @@ class GlobalReuseTests(unittest.TestCase):
         model = BltForCausalLM(ModelTests().config('osc')).eval()
         cached = GlobalPrefixReuse(model, reuse_decoder=True)
         ids = [1, 15, 25, 35, 45, 55, 65, 75]
+        prior_starts = None
         with torch.inference_mode():
             for length in range(2, len(ids) + 1):
                 tokens = torch.tensor([ids[:length]])
@@ -24,6 +25,10 @@ class GlobalReuseTests(unittest.TestCase):
                 self.assertTrue(torch.isfinite(candidate.logits).all())
                 self.assertEqual(int(candidate.logits[:, -1].argmax()),
                                  int(reference.argmax()), f'next ID changed at prefix {length}')
+                if prior_starts is not None and cached.starts != prior_starts:
+                    torch.testing.assert_close(candidate.logits[:, -1], reference,
+                                               rtol=0, atol=0)
+                prior_starts = list(cached.starts)
             _, _, skipped, decoder_reused = cached.run(torch.tensor([ids + [2]]))
             self.assertFalse(skipped)
             self.assertFalse(decoder_reused)

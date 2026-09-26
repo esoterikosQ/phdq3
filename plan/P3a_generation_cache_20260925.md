@@ -95,6 +95,13 @@ global 약 7.3~7.8ms였지만 이는 5090·사전학습 모델·합성 입력이
 실측의 수치 변동을 보고 정하며, 첫 불일치 위치와 top-1 격차를 기록한다.
 최종 token ID와 EOS 상태가 불일치하면 이 backend는 본 평가에 사용하지 않는다.
 
+첫 A100 native 체크포인트 probe(915640)는 12문장 × 32 step의 다음 ID가
+384/384 같았으나 forward 시간은 1.372배 개선에 그쳤다. EOS·beam4·전체
+validation은 아직 검사하지 않았다. 특히 경계 변경 step이 기준보다 느려
+KV tail 경로를 제거하고 전체 global 재계산으로 수정했다. 수정 후 A100
+재검사가 필요하며, 이 부분 검사를 단계 1 완료나 단계 3 채택으로 간주하지
+않는다. 상세 측정은 `blt_hf/cache/DESIGN.md`에 있다.
+
 ## 단계 2: 빔 4·배치·재개
 
 1. 빔 4에서 부모 빔 선택 시 entropy, patch, encoder/global/decoder 상태를

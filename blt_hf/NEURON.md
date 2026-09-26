@@ -270,6 +270,27 @@ validation이나 beam 4의 결과 동일성은 보증하지 않으며, 시제품
 사용하지 않는다. 실패해도 JSON 보고서는 남고 job은 nonzero로 종료한다.
 재검사할 때는 새 `BENCH_OUTPUT` 경로를 지정한다. Neuron 제출은 사용자만 한다.
 
+915640의 첫 probe는 `probe_token_parity=passed`(384/384)였지만 측정 forward
+속도는 1.372배였다. 경계 변경에서 KV 꼬리 계산이 느린 문제를 고쳐 해당
+step은 기준 global full forward를 사용한다. **이 수정이 포함된 Git commit을
+받은 뒤, 공유 checkout을 쓰는 다른 job이 없을 때에만** 아래처럼 새 보고서로
+재검사한다. 기존 `01.json`은 덮어쓰지 않는다.
+
+```bash
+cd /scratch/r984a02/phdq3
+git status --short --branch
+git pull --ff-only origin main
+conda activate phdq_blt_hf
+export CKPT_PATH=outputs/blt_hf/native/native-main-01/best.json
+export BENCH_OUTPUT=blt_hf_checks/results/p3a_native_cache_probe_02.json
+test -f "$CKPT_PATH"
+test ! -e "$BENCH_OUTPUT"
+sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
+  --time=00:30:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",BENCH_OUTPUT="$BENCH_OUTPUT",DATASET_TYPE=native,SAMPLES=12,STEPS=32,REUSE_DECODER=0 \
+  scripts/bench_blt_cache.sh
+```
+
 ### 기존 분리형 10-epoch 절차
 
 새 사이클은 2026-09-18의 3-epoch run과 다른 RUN_ID를 쓴다. 기존
