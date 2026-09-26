@@ -247,8 +247,10 @@ identity가 달라지므로 이 옵션으로 재개하지 않는다. cache 경�
 실행 중인 작업이 끝난 뒤 새 Git 코드를 반영한다. 현재 시제품은
 `blt_hf/cache/global_reuse.py`의 **batch 1·beam 1 전용 진단**이며 학습,
 `eval.py`, 통합 validation의 기본 생성 경로를 변경하지 않는다. itcerdo의
-사전학습 1B에서는 96 step의 다음 byte ID가 같았으나 native fine-tuned
-checkpoint에서의 동등성·속도는 아직 측정되지 않았다.
+사전학습 1B에서 96 step, Neuron native fine-tuned checkpoint에서
+12문장 × 32 step의 다음 byte ID가 일치했다. 이는 완성 문장이나 beam 4의
+동등성은 아니다. 아래 `01.json`, `02.json` 명령은 실행 이력이며 기존
+보고서 경로로 **재실행하지 않는다**.
 
 ```bash
 cd /scratch/r984a02/phdq3
@@ -272,9 +274,8 @@ validation이나 beam 4의 결과 동일성은 보증하지 않으며, 시제품
 
 915640의 첫 probe는 `probe_token_parity=passed`(384/384)였지만 측정 forward
 속도는 1.372배였다. 경계 변경에서 KV 꼬리 계산이 느린 문제를 고쳐 해당
-step은 기준 global full forward를 사용한다. **이 수정이 포함된 Git commit을
-받은 뒤, 공유 checkout을 쓰는 다른 job이 없을 때에만** 아래처럼 새 보고서로
-재검사한다. 기존 `01.json`은 덮어쓰지 않는다.
+step은 기준 global full forward를 사용한다. 다음 `02.json` 명령은 915655에서
+이미 실행됐다. 기존 `01.json`/`02.json`을 덮어쓰지 않는다.
 
 ```bash
 cd /scratch/r984a02/phdq3
@@ -288,6 +289,28 @@ test ! -e "$BENCH_OUTPUT"
 sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
   --time=00:30:00 --comment="field=nlp;appl=pytorch" \
   --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",BENCH_OUTPUT="$BENCH_OUTPUT",DATASET_TYPE=native,SAMPLES=12,STEPS=32,REUSE_DECODER=0 \
+  scripts/bench_blt_cache.sh
+```
+
+915655의 수정 probe도 384/384 다음 ID가 일치했고 forward 합계는
+15.659→10.701초, **1.463배**였다. global 재계산 step의 느린 문제가
+거의 사라졌지만 2배 목표는 아직 미달이다. 다음 제한적 진단은 같은
+checkpoint·12문장·32 step에서 decoder KV 재사용을 켜는 것이다.
+**공유 checkout을 쓰는 다른 job이 모두 끝난 뒤** 사용자만 아래 명령을
+실행한다. 이 검사도 본 평가 backend를 바꾸지 않는다.
+
+```bash
+cd /scratch/r984a02/phdq3
+git status --short --branch
+git pull --ff-only origin main
+conda activate phdq_blt_hf
+export CKPT_PATH=outputs/blt_hf/native/native-main-01/best.json
+export BENCH_OUTPUT=blt_hf_checks/results/p3a_native_cache_probe_03_decoder.json
+test -f "$CKPT_PATH"
+test ! -e "$BENCH_OUTPUT"
+sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
+  --time=00:30:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",BENCH_OUTPUT="$BENCH_OUTPUT",DATASET_TYPE=native,SAMPLES=12,STEPS=32,REUSE_DECODER=1 \
   scripts/bench_blt_cache.sh
 ```
 

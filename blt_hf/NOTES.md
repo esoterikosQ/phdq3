@@ -44,7 +44,19 @@ global skip 299개에서는 43.94→26.59ms지만, 경계 변경 등 재계산 7
 전체 생성·EOS·beam4 검사는 아직 아니다. 2배 채택 기준을 통과하지 않았고
 현재 평가 backend를 변경하지 않는다. 재계산 구간의 KV tail 경로를 제거하고
 기준 global full forward로 되돌려 작은 OSC와 itcerdo 1B 테스트를 통과했다.
-이 수정 후 Neuron A100 측정은 사용자 재실행이 필요하다.
+당시 이 수정 후 Neuron A100 재측정이 필요했으며, 결과는 다음 절에 기록했다.
+
+## 2026-09-26 — Neuron A100 수정 probe 915655 분석
+
+동일한 native checkpoint·validation TSV·12개 sample·환경에서 코드 hash만
+경계 변경 fallback 수정본으로 바뀌었다. job exit 0, 148초, GPU peak
+9.289GB. 다음 byte ID 384/384 일치, EOS 사례 0. 초기 step을 제외한
+forward 합계는 기준 15.659초, 수정본 10.701초로 1.463배 개선이다.
+global 생략 299 step은 42.08→25.43ms, 재계산 73 step은
+42.17→42.44ms로 이전의 큰 역전이 사라졌다. 한 문장도 기준보다 느리지
+않았지만 2배 채택 기준은 여전히 미달. 전체 문장 완성·beam4·GLEU
+평가에 시제품을 투입하지 않는다. 다음 제한적 probe는 같은 조건에서
+`REUSE_DECODER=1`을 비교하는 것이다.
 
 ## 2026-09-17 — FP32 학습 정책 폐기, BF16 레거시 조건 복구
 

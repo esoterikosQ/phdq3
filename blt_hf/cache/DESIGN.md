@@ -93,9 +93,30 @@ native validation 전체 생성 2배 단축과 beam 4 parity는 입증되지 않
 비싼 KV 꼬리 재계산을 제거하고 경계 변경 step을 기준 global full forward로
 되돌렸다. 작은 OSC 테스트와 itcerdo 1B의 합성 greedy 96 step은 다음 ID
 불일치 0개였다(`p3a_boundary_fallback_20260926.json`). 이것은 **수정 후
-A100 속도·fine-tuned parity 증거가 아니다**. 사용자는 새 코드가 반영된 뒤
-새 출력 경로로 같은 A100 probe를 다시 실행해야 한다. 그 결과도 2배에
-미달하면 시제품을 본 평가나 GLEU checkpoint 선택에 연결하지 않는다.
+A100 속도·fine-tuned parity 증거가 아니다**.
+
+사용자의 수정 후 A100 job `915655` 결과는
+`p3a_native_cache_probe_02.json`이다. 01과 checkpoint model SHA256,
+native validation TSV SHA256, 12개 sample ID, model/bench 코드 hash,
+A100·torch·transformers 버전이 같다. `reuse_code_sha256`만 수정본
+`dd54916c...9019813`으로 바뀌었다. job 종료 코드 0, 소요 148초,
+peak allocated 9.289GB. 12×32=384개 다음 byte ID 불일치 0개,
+EOS 생성 0개, global skip 299개로 01과 같다.
+
+첫 step을 제외한 전체 forward는 기준 15.659초, 수정본 10.701초로
+**1.463배**다. global skip 299개에서는 평균 42.08→25.43ms(1.65배),
+나머지 73개에서는 42.17→42.44ms(0.994배)였다. 01에서 가장 느렸던
+문장도 0.86배에서 1.14배로 개선됐다. 경계 변경의 추가 비용은 제거됐지만
+**전체 native validation 생성 2배**의 채택 기준은 아직 통과하지 않았다.
+이 job 시간 148초에는 환경·데이터 검사와 체크포인트 로딩이 포함되므로
+forward 합계와 혼동하지 않는다. 전체 생성, EOS, beam 4, GLEU 결과도
+이 32-step probe로는 확인되지 않는다. 본 평가 backend는 no-cache로 유지한다.
+
+다음 유한한 실험은 동일 checkpoint·문장·step에서 선택형 decoder KV 재사용을
+켜고(`REUSE_DECODER=1`) 다음 byte parity와 처리 시간을 확인하는 것이다.
+itcerdo 합성 입력에서는 큰 추가 이득이 없었으므로 2배 달성을 전제하지
+않는다. A100 probe에서 이득이 없으면 local encoder/patcher 비용과
+beam 4를 별도로 프로파일링한 뒤 더 깊은 캐시 구현의 가치를 판단한다.
 
 ## 기존 생성 경로
 

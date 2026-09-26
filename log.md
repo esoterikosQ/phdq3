@@ -1,5 +1,14 @@
 # 일자별 작업 내역
 
+## 2026-09-26 — Neuron A100 수정 캐시 probe 915655 결과
+
+- 사용자 동기화 커밋 `e0ed93b` 수신. 동일 checkpoint/data/sample/env의
+  수정 시제품에서 다음 byte 384/384 일치, exit 0, peak 9.289GB.
+- forward 합계 기준 15.659초→시제품 10.701초(1.463배). 재계산 73 step의
+  역전은 평균 42.17→42.44ms로 거의 제거. 2배 채택 기준은 미달.
+- 기존 no-cache 평가 유지. 다음 진단은 선택형 decoder KV를 같은 12문장·
+  32 step에 적용해 추가 이득과 token parity를 본다. Neuron 작업은 사용자 실행.
+
 ## 2026-09-26 — Neuron A100 캐시 probe 915640 결과 확인
 
 - 사용자 동기화 커밋 `ae8f45c`의 A100 native probe와 SLURM 로그를 수신.
