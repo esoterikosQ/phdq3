@@ -56,7 +56,21 @@ global 생략 299 step은 42.08→25.43ms, 재계산 73 step은
 42.17→42.44ms로 이전의 큰 역전이 사라졌다. 한 문장도 기준보다 느리지
 않았지만 2배 채택 기준은 여전히 미달. 전체 문장 완성·beam4·GLEU
 평가에 시제품을 투입하지 않는다. 다음 제한적 probe는 같은 조건에서
-`REUSE_DECODER=1`을 비교하는 것이다.
+`REUSE_DECODER=1`을 비교하는 것이었으며, 결과는 다음 절에 기록했다.
+
+## 2026-09-26 — Neuron A100 decoder 재사용 probe 915710 분석
+
+사용자가 동기화한 `p3a_native_cache_probe_03_decoder.json`을 확인했다.
+02와 checkpoint·validation TSV·12개 sample·model/reuse/bench 코드 hash와
+환경이 같고, decoder 재사용 옵션만 켰다. job exit 0, GPU peak 9.303GB,
+다음 byte ID 384/384 일치, global skip/decoder reuse 각 299 step, EOS 0개다.
+forward 합계는 기준 16.405초, 시제품 11.917초(1.377배)로 02의 1.463배보다
+낮다. 재사용 구간 299 step은 평균 44.07→28.17ms, 비재사용 73 step은
+44.21→47.85ms였다. 두 step에 578.85ms와 263.19ms의 지연이 기록됐는데
+후자는 decoder를 재사용하지 않은 step이므로 decoder 결함으로 단정하지
+않는다. 이 지연을 제외해도 약 1.47배로, decoder의 확실한 추가 이득이나
+2배 목표 달성은 확인되지 않았다. 전체 생성·EOS·beam4·GLEU는 미검증이다.
+기본 no-cache 평가 경로와 2배 채택 기준을 유지한다.
 
 ## 2026-09-17 — FP32 학습 정책 폐기, BF16 레거시 조건 복구
 

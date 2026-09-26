@@ -103,6 +103,12 @@ KV tail 경로를 제거하고 전체 global 재계산으로 수정했다. 수�
 역전은 거의 사라졌지만 2배 목표는 미달이다. 이 부분 검사를 단계 1 완료나
 단계 3 채택으로 간주하지 않는다. 상세 측정은 `blt_hf/cache/DESIGN.md`에 있다.
 
+선택형 decoder KV 재사용을 켠 세 번째 A100 검사(915710)는 같은 384/384
+다음 ID가 일치했으나 forward 개선이 1.377배로 떨어졌고, 두 step에 큰
+지연이 있었다. 원인은 미확정이며 decoder 자체의 결함으로 단정하지 않는다.
+EOS·전체 생성·beam4는 계속 미검증이다. 2배 채택 기준과 기본 no-cache
+경로를 유지하고, 추가 구현 전에 patcher/local encoder 비용을 분석한다.
+
 ## 단계 2: 빔 4·배치·재개
 
 1. 빔 4에서 부모 빔 선택 시 entropy, patch, encoder/global/decoder 상태를

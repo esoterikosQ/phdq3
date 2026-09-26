@@ -112,11 +112,30 @@ EOS 생성 0개, global skip 299개로 01과 같다.
 forward 합계와 혼동하지 않는다. 전체 생성, EOS, beam 4, GLEU 결과도
 이 32-step probe로는 확인되지 않는다. 본 평가 backend는 no-cache로 유지한다.
 
-다음 유한한 실험은 동일 checkpoint·문장·step에서 선택형 decoder KV 재사용을
-켜고(`REUSE_DECODER=1`) 다음 byte parity와 처리 시간을 확인하는 것이다.
-itcerdo 합성 입력에서는 큰 추가 이득이 없었으므로 2배 달성을 전제하지
-않는다. A100 probe에서 이득이 없으면 local encoder/patcher 비용과
-beam 4를 별도로 프로파일링한 뒤 더 깊은 캐시 구현의 가치를 판단한다.
+사용자의 세 번째 A100 job `915710`은 같은 checkpoint·TSV·12개 sample,
+같은 model/reuse/bench 코드 hash에서 `REUSE_DECODER=1`만 켠
+`p3a_native_cache_probe_03_decoder.json`이다. 환경 검사와 job이 통과했고
+종료 코드 0, 소요 189초, peak allocated 9.303GB였다. 다음 byte ID는
+384/384 일치했으나 EOS 생성은 0개다. 측정 372 step 중 global skip 299개와
+decoder 재사용 299개가 대응한다.
+
+첫 step을 제외한 forward 합계는 기준 16.405초, 시제품 11.917초로
+**1.377배**였다. decoder를 끈 02의 1.463배보다 낮다. global skip step은
+평균 44.07→28.17ms, 재계산 73 step은 44.21→47.85ms였다. 03에는
+sample 2290의 step 3(재사용 중 578.85ms)과 sample 297의 step 27
+(재사용하지 않은 step에서 263.19ms)이라는 큰 지연이 있다. 지연 원인은
+로그만으로 확정할 수 없고, 두 실행의 기준 시간도 다르므로 decoder KV가
+그 자체로 항상 느리다고 결론 내리지 않는다. 다만 이 실행에서 **추가 속도
+이득은 확인되지 않았고**, 지연 두 건을 제외해도 약 1.47배로 2배 목표에는
+미달한다. 02/03의 job 전체 시간은 로딩·검사를 포함하므로 생성 속도로
+해석하지 않는다.
+
+따라서 12×32 짧은 probe의 ID 일치는 제한적 증거다. 전체 native validation
+생성, EOS, beam 4, GLEU 및 최종 문자열 동일성은 아직 미검증이며 본 평가
+backend는 no-cache로 유지한다. 같은 조건의 짧은 probe를 반복하기보다
+patcher/local encoder의 잔여 비용과 긴 생성·beam 4 경로를 먼저 분석해
+추가 구현의 가치를 결정한다. 채택 기준인 전체 native validation 생성 2배
+단축은 바꾸지 않는다.
 
 ## 기존 생성 경로
 

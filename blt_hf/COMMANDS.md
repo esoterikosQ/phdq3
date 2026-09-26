@@ -11,11 +11,9 @@ itcerdo의 추론 전용 단계 0·1 보고서는
 `p3a_global_decoder_nocopy_20260926.json`이다. 같은 출력 경로로 재실행하지
 않는다. 해석과 제약은 `blt_hf/cache/DESIGN.md`에 있다.
 
-Neuron의 **현재 실행 중인 작업이 모두 끝난 뒤**, 새 코드를 반영하고 사용자가
-A100 1GPU에서 실제 native fine-tuned checkpoint의 짧은 parity/속도 probe를
-실행할 수 있다. 아래는 기존 native checkpoint의 `best.json`을 사용한
-예시이며 `BENCH_OUTPUT`은 아직 없는 새 경로여야 한다. 이 probe는 학습이나
-본 평가 backend를 변경하지 않는다.
+아래는 사용자가 Neuron A100 1GPU에서 실행을 완료한 첫 native probe의
+명령 이력이다. `BENCH_OUTPUT`의 기존 경로로 재실행하지 않는다. 이 probe는
+학습이나 본 평가 backend를 변경하지 않았다.
 
 ```bash
 cd /scratch/r984a02/phdq3
@@ -31,8 +29,10 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
 `timing_excluding_initial`을 본다. `probe_token_parity=passed`는 선택된
 문장·step에만 해당하며 전체 validation 동등성을 뜻하지 않는다. 이 시제품은
 batch 1·빔 1 전용이다. 에이전트는 Neuron에 접속·전송·제출하지 않는다.
-완료된 `01.json`/`02.json` 결과와 선택형 decoder KV의 `03_decoder.json`
-진단 명령은 `NEURON.md`의 P3a 절을 따른다. 기존 보고서를 덮어쓰지 않는다.
+완료된 `01.json`/`02.json` 및 선택형 decoder KV의 `03_decoder.json`
+진단 명령은 `NEURON.md`의 P3a 절에 실행 이력으로 남긴다. 기존 보고서를
+덮어쓰지 않는다. 03은 다음 ID 384/384 일치·forward 1.377배였고, 2배
+채택 기준에 미달했다. 본 평가의 no-cache 경로는 그대로다.
 
 ## 2026-09-26 — P3a 패치 경계 인과성 검사
 

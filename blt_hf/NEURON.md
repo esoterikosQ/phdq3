@@ -249,7 +249,7 @@ identity가 달라지므로 이 옵션으로 재개하지 않는다. cache 경�
 `eval.py`, 통합 validation의 기본 생성 경로를 변경하지 않는다. itcerdo의
 사전학습 1B에서 96 step, Neuron native fine-tuned checkpoint에서
 12문장 × 32 step의 다음 byte ID가 일치했다. 이는 완성 문장이나 beam 4의
-동등성은 아니다. 아래 `01.json`, `02.json` 명령은 실행 이력이며 기존
+동등성은 아니다. 아래 `01.json`, `02.json`, `03_decoder.json` 명령은 실행 이력이며 기존
 보고서 경로로 **재실행하지 않는다**.
 
 ```bash
@@ -294,10 +294,9 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
 
 915655의 수정 probe도 384/384 다음 ID가 일치했고 forward 합계는
 15.659→10.701초, **1.463배**였다. global 재계산 step의 느린 문제가
-거의 사라졌지만 2배 목표는 아직 미달이다. 다음 제한적 진단은 같은
-checkpoint·12문장·32 step에서 decoder KV 재사용을 켜는 것이다.
-**공유 checkout을 쓰는 다른 job이 모두 끝난 뒤** 사용자만 아래 명령을
-실행한다. 이 검사도 본 평가 backend를 바꾸지 않는다.
+거의 사라졌지만 2배 목표는 아직 미달이다. 선택형 decoder KV 진단도
+915710에서 이미 실행됐다. 아래 명령은 재현을 위한 이력이며 같은 보고서
+경로로 다시 제출하지 않는다. 이 검사도 본 평가 backend를 바꾸지 않았다.
 
 ```bash
 cd /scratch/r984a02/phdq3
@@ -313,6 +312,12 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=8 \
   --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",BENCH_OUTPUT="$BENCH_OUTPUT",DATASET_TYPE=native,SAMPLES=12,STEPS=32,REUSE_DECODER=1 \
   scripts/bench_blt_cache.sh
 ```
+
+915710은 같은 checkpoint·데이터·12문장과 코드에서 decoder 재사용을 켜
+384/384 다음 ID가 일치했지만, forward 합계는 16.405→11.917초(1.377배)로
+02의 1.463배보다 낮았다. EOS 생성 사례가 없고 전체 validation·beam4·GLEU
+검사도 아니다. 추가 속도 이득과 2배 채택 기준은 확인되지 않아 no-cache
+본 평가를 유지한다. 상세 판정은 `cache/DESIGN.md`에 있다.
 
 ### 기존 분리형 10-epoch 절차
 

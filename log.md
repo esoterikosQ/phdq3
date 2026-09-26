@@ -1,5 +1,16 @@
 # 일자별 작업 내역
 
+## 2026-09-26 — Neuron A100 decoder 재사용 probe 915710 결과
+
+- 사용자 동기화 커밋 `e20b43a`의 결과·SLURM 로그를 확인했다. 동일 native
+  checkpoint/data/sample/code에서 decoder KV만 켜 다음 ID 384/384 일치,
+  exit 0, GPU peak 9.303GB, EOS 사례 0개였다.
+- 첫 step을 제외한 forward 합계는 16.405→11.917초(1.377배)로, decoder를
+  끈 02의 1.463배보다 낮았다. 578.85ms·263.19ms의 지연 두 건은 원인
+  미확정이며 하나는 decoder 비재사용 step이었다.
+- 전체 validation·EOS·beam4 미검증, 2배 목표 미달. 본 평가 no-cache 유지;
+  patcher/local encoder 잔여 비용 분석 전 시제품을 채택하지 않는다.
+
 ## 2026-09-26 — Neuron A100 수정 캐시 probe 915655 결과
 
 - 사용자 동기화 커밋 `e0ed93b` 수신. 동일 checkpoint/data/sample/env의
