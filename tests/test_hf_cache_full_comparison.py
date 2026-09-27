@@ -21,7 +21,10 @@ class CacheFullComparisonContracts(unittest.TestCase):
                 'attn_implementation': 'eager', 'attention_mode': 'osc',
                 'inference_dtype': 'bfloat16', 'decode_policy': 'utf8',
                 'scorer_hash': 'scorer', 'shard_count': 1,
-                'code_hash': 'eval', 'use_cache': False,
+                'code_hash': 'eval',
+                'code_files': {'blt_hf/generation.py': 'generation-v1',
+                               'blt_hf/model.py': 'model-v1'},
+                'use_cache': False,
                 'prefix_reuse': backend in GLOBAL_PREFIX_BACKENDS,
                 'decoder_kv_reuse': False}
 
@@ -31,6 +34,15 @@ class CacheFullComparisonContracts(unittest.TestCase):
         validate_manifests(reference, candidate)
         validate_manifests(reference, self.manifest(GLOBAL_PREFIX_BACKEND_V2))
         validate_manifests(reference, self.manifest(GLOBAL_PREFIX_GUARDED_BACKEND))
+        new_generation = self.manifest(GLOBAL_PREFIX_GUARDED_BACKEND)
+        new_generation['code_hash'] = 'new-eval'
+        new_generation['code_files'] = dict(new_generation['code_files'],
+                                            **{'blt_hf/generation.py': 'generation-v2'})
+        validate_manifests(reference, new_generation)
+        changed_model = copy.deepcopy(new_generation)
+        changed_model['code_files']['blt_hf/model.py'] = 'model-v2'
+        with self.assertRaisesRegex(ValueError, 'non-generation code file'):
+            validate_manifests(reference, changed_model)
         wrong = dict(candidate, checkpoint_hash='other')
         with self.assertRaisesRegex(ValueError, 'checkpoint_hash'):
             validate_manifests(reference, wrong)

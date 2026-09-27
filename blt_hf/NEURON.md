@@ -532,6 +532,69 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=4 \
   scripts/bench_blt_cache_guarded_mismatches.sh
 ```
 
+916210의 10 시험은 exit 0, 기존 불일치 32건과 대조군 12건의 완성 출력이
+모두 HF 기준과 일치했다. 2,505회 global 재사용 후보 중 59회(2.4%)를
+full forward로 갱신했다. 44문장 생성 시간 합계는 09의 117.76초에서
+124.36초로 6.60초 증가했다. job 전체 시간 159→322초의 차이 중 큰 부분은
+생성 외 구간이다. 환경 보고서 생성 시각과 전체 데이터 보고서 생성 시각
+사이는 약 10→119초였지만, 이 간격은 CUDA 환경 검사·데이터 스캔·파일
+기록을 함께 포함하므로 개별 원인은 미확인이다. 첫 문장 55의 생성은
+3.90→11.29초로 늘었고 재계산 5회가 있었으나, 첫 추론 초기화와 노드
+상태의 영향을 구분할 계시가 없다. 이 지연은 별도 관측 사항으로 보존하고,
+캐시 채택 판단에는 아래 **전체 split 순수 생성 시간**을 사용한다.
+
+### guarded 전체 native validation 생성·비교 (A100 1GPU)
+
+동일한 native-main-01 불변 checkpoint와 2,634건 validation을 사용한다.
+기준 HF 결과는 이미 `native-main-01-beam1-hf-p3a`에 완료되어 있다.
+guarded 결과는 새 디렉터리에 저장한다. 실행 중인 공유 checkout 작업을
+모두 마친 뒤 pull한다. 이 실험은 생성·출력·시간 비교이며 M2 채점은 하지
+않는다. 1시간 55분 제한으로 exit 75가 나오면 **코드·설정을 바꾸지 않고**
+같은 `sbatch` 명령을 다시 제출한다. 저장된 문장은 재생성하지 않는다.
+
+```bash
+cd /scratch/r984a02/phdq3
+git status --short --branch
+git pull --ff-only origin main
+conda activate phdq_blt_hf
+export CKPT_PATH=outputs/blt_hf/native/native-main-01/step-00001155-24b756e2
+export HF_EVAL_DIR=outputs/blt_hf_eval/native/val/native-main-01-beam1-hf-p3a
+export CACHE_EVAL_DIR=outputs/blt_hf_eval/native/val/native-main-01-beam1-guarded-p3a
+test -f "$CKPT_PATH/model.safetensors"
+test -f "$HF_EVAL_DIR/shards/0000/complete.json"
+test ! -e "$CACHE_EVAL_DIR/run.json"
+sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=4 \
+  --time=01:55:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",EVAL_DIR="$CACHE_EVAL_DIR",DATASET_TYPE=native,SPLIT=val,BLT_NUM_BEAMS=1,BATCH_SIZE=1,SHARD_COUNT=1,SHARD_ID=0,GENERATION_BACKEND=global-prefix-guarded-greedy-v1 \
+  scripts/eval_blt_hf.sh
+```
+
+재개할 때는 위 `test ! -e "$CACHE_EVAL_DIR/run.json"`만 생략하고 같은
+`sbatch` 명령을 다시 제출한다. `complete.json`이 생긴 뒤에만 비교한다.
+기존 HF 실행과 새 캐시 실행의 공통 모델·데이터·scorer 코드는 같아야 한다.
+비교기는 세 생성 경로의 코드 버전 차이만 허용하고 각 실행의 지문과 모든
+batch 해시를 다시 확인한다.
+
+```bash
+cd /scratch/r984a02/phdq3
+conda activate phdq_blt_hf
+export HF_EVAL_DIR=outputs/blt_hf_eval/native/val/native-main-01-beam1-hf-p3a
+export CACHE_EVAL_DIR=outputs/blt_hf_eval/native/val/native-main-01-beam1-guarded-p3a
+export COMPARE_OUTPUT=blt_hf_checks/results/p3a_native_full_guarded_11.json
+test -f "$HF_EVAL_DIR/shards/0000/complete.json"
+test -f "$CACHE_EVAL_DIR/shards/0000/complete.json"
+test ! -e "$COMPARE_OUTPUT"
+sbatch -p cpu --cpus-per-task=4 --time=01:00:00 \
+  --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,REFERENCE_DIR="$HF_EVAL_DIR",CANDIDATE_DIR="$CACHE_EVAL_DIR",COMPARE_OUTPUT="$COMPARE_OUTPUT" \
+  scripts/compare_blt_cache_eval.sh
+```
+
+`p3a_native_full_guarded_11.json`의 2,634건 출력 일치·생성 시간·p50/p95·
+갱신 횟수를 확인한다. 속도 이득이 실사용에 유의미하면 별도 새 `RUN_ID`의
+학습→guarded 생성→전체 validation GLEU→best 선택에 backend를 연결한다.
+기존 학습 run이나 HF 기본 경로는 바꾸지 않는다.
+
 ### 기존 분리형 10-epoch 절차
 
 새 사이클은 2026-09-18의 3-epoch run과 다른 RUN_ID를 쓴다. 기존

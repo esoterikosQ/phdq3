@@ -6,8 +6,8 @@ import math
 from pathlib import Path
 
 from blt_hf.evaluation import collect_records
-from blt_hf.generation import HF_BACKEND, GLOBAL_PREFIX_BACKENDS
-from blt_hf.manifest import fingerprint, sha256_json, write_json
+from blt_hf.generation import HF_BACKEND, GLOBAL_PREFIX_BACKENDS, GLOBAL_PREFIX_GUARDED_BACKEND
+from blt_hf.manifest import fingerprint, sha256_file, sha256_json, write_json
 from blt_hf.runtime import ROOT, NEURON_ROOT, local_path, require_neuron_job
 
 
@@ -19,8 +19,11 @@ MATCH_FIELDS = (
     'training_run_id', 'training_checks', 'conversion_checks',
     'model_id', 'model_revision', 'transformers_version', 'torch_version',
     'attn_implementation', 'attention_mode', 'inference_dtype', 'decode_policy',
-    'scorer_hash', 'shard_count', 'code_hash', 'use_cache',
+    'scorer_hash', 'shard_count', 'use_cache',
 )
+GENERATION_CODE_PATHS = frozenset({
+    'blt_hf/generation.py', 'blt_hf/eval.py', 'blt_hf/cache/global_reuse.py',
+})
 OUTPUT_FIELDS = (
     'source', 'token_ids', 'eos_reached', 'budget_exhausted',
     'valid_utf8', 'valid_token_ids', 'raw_text', 'text',
@@ -41,6 +44,14 @@ def validate_manifests(reference, candidate):
             raise ValueError(f'Missing comparison field: {field}')
         if reference.get(field) != candidate.get(field):
             raise ValueError(f'Runs differ in {field}')
+    reference_files, candidate_files = reference.get('code_files'), candidate.get('code_files')
+    if not isinstance(reference_files, dict) or not isinstance(candidate_files, dict):
+        raise ValueError('Both runs must record code_files')
+    if reference_files.keys() != candidate_files.keys():
+        raise ValueError('Runs differ in code_files paths')
+    for path in reference_files:
+        if path not in GENERATION_CODE_PATHS and reference_files[path] != candidate_files[path]:
+            raise ValueError(f'Runs differ in non-generation code file: {path}')
     if (reference['dataset'], reference['split'], reference['num_beams'],
             reference['batch_size'], reference['use_cache']) != ('native', 'val', 1, 1, False):
         raise ValueError('Expected native validation, beam 1, batch 1, HF use_cache=False')
@@ -104,6 +115,9 @@ def main():
     reference_manifest = verified_manifest(reference_dir)
     candidate_manifest = verified_manifest(candidate_dir)
     validate_manifests(reference_manifest, candidate_manifest)
+    for path, expected in candidate_manifest['code_files'].items():
+        if sha256_file(ROOT / path) != expected:
+            raise ValueError(f'Candidate code file changed since generation: {path}')
     reference_records = collect_records(reference_dir, reference_manifest)
     candidate_records = collect_records(candidate_dir, candidate_manifest)
     mismatches = compare_records(reference_records, candidate_records)
@@ -118,6 +132,8 @@ def main():
         'reference_fingerprint': reference_manifest['fingerprint'],
         'candidate_fingerprint': candidate_manifest['fingerprint'],
         'checkpoint_hash': reference_manifest['checkpoint_hash'],
+        'reference_code_hash': reference_manifest['code_hash'],
+        'candidate_code_hash': candidate_manifest['code_hash'],
         'sample_count': len(reference_records),
         'mismatches': mismatches,
         'exact_output_parity': 'passed' if not mismatches else 'failed',
@@ -129,6 +145,9 @@ def main():
         'cached_sentence_p50_seconds': percentile(candidate_times, .50),
         'cached_sentence_p95_seconds': percentile(candidate_times, .95),
     }
+    if candidate_manifest['generation_backend'] == GLOBAL_PREFIX_GUARDED_BACKEND:
+        report['cache_preliminary_skips'] = sum(record['cache_preliminary_skips'] for record in candidate_records)
+        report['cache_guard_refreshes'] = sum(record['cache_guard_refreshes'] for record in candidate_records)
     write_json(output, report)
     print(json.dumps({key: report[key] for key in
                       ('status', 'sample_count', 'exact_output_parity', 'generation_speedup',
