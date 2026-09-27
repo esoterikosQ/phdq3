@@ -32,6 +32,10 @@ class GlobalReuseTests(unittest.TestCase):
             _, _, skipped, decoder_reused = cached.run(torch.tensor([ids + [2]]))
             self.assertFalse(skipped)
             self.assertFalse(decoder_reused)
+            single_logits, _, _, _ = cached.run(torch.tensor([ids + [2]]), logits_to_keep=1)
+            self.assertEqual(single_logits.logits.shape[1], 1)
+            with self.assertRaises(ValueError):
+                cached.run(torch.tensor([ids + [2]]), logits_to_keep=2)
             cached.run(torch.tensor([[1, 99, 98]]))
             self.assertEqual(cached.previous_ids, (1, 99, 98))
         with self.assertRaises(ValueError):

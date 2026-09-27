@@ -1,5 +1,6 @@
 import unittest
-from blt_hf.generation import GenerationConfig, decode_generated, group_prompts, GLOBAL_PREFIX_BACKEND
+from blt_hf.generation import (GenerationConfig, decode_generated, group_prompts,
+                               GLOBAL_PREFIX_BACKEND, GLOBAL_PREFIX_BACKEND_V2)
 
 class GenerationContracts(unittest.TestCase):
     def test_exact_length_groups_preserve_original_indices(self):
@@ -25,6 +26,8 @@ class GenerationContracts(unittest.TestCase):
         with self.assertRaises(ValueError): GenerationConfig(num_beams=0)
         with self.assertRaises(ValueError): GenerationConfig(backend=GLOBAL_PREFIX_BACKEND, num_beams=4)
         with self.assertRaises(ValueError): GenerationConfig(backend=GLOBAL_PREFIX_BACKEND, batch_size=2)
+        with self.assertRaises(ValueError): GenerationConfig(backend=GLOBAL_PREFIX_BACKEND_V2, num_beams=4)
+        with self.assertRaises(ValueError): GenerationConfig(backend=GLOBAL_PREFIX_BACKEND_V2, batch_size=2)
         with self.assertRaises(ValueError): GenerationConfig(backend='unknown')
 
 import importlib.util
@@ -59,3 +62,6 @@ class ActualGenerationTests(unittest.TestCase):
         cached=generate_batch(model,ByteTokenizer(),sources,
                               GenerationConfig(max_new_bytes=8,backend=GLOBAL_PREFIX_BACKEND))
         self.assertEqual(cached,reference)
+        cached_v2=generate_batch(model,ByteTokenizer(),sources,
+                                 GenerationConfig(max_new_bytes=8,backend=GLOBAL_PREFIX_BACKEND_V2))
+        self.assertEqual(cached_v2,reference)

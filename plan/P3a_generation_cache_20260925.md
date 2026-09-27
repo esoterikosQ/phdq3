@@ -142,6 +142,12 @@ A100 완성 생성 검사(915874)는 길이별 native 12문장 모두 token ID·
 차이를 08 진단에서 확인한 뒤, global 재사용 조건과 함께 수정할 범위를
 정한다.
 
+08(916207)에서 `logits_to_keep=1`의 full forward는 32/32 첫 분기의
+HF 기준 ID를 반복 재현했다. 기존 v1은 보존하고 projection만 수정한
+v2를 별도 backend로 만들었다. 09에서는 기존 불일치 32건+대조군 12건의
+완성 출력을 검증한다. global skip 때문에 남는 차이는 별도 정책·실험으로
+다루며 새 출력 identity를 사용한다.
+
 ## 단계 2: 빔 4·배치·재개
 
 1. 빔 4에서 부모 빔 선택 시 entropy, patch, encoder/global/decoder 상태를

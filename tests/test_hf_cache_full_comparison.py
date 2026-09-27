@@ -2,7 +2,7 @@ import copy
 import unittest
 
 from blt_hf_checks.compare_cache_eval import compare_records, validate_manifests
-from blt_hf.generation import HF_BACKEND, GLOBAL_PREFIX_BACKEND
+from blt_hf.generation import HF_BACKEND, GLOBAL_PREFIX_BACKEND, GLOBAL_PREFIX_BACKEND_V2, GLOBAL_PREFIX_BACKENDS
 
 
 class CacheFullComparisonContracts(unittest.TestCase):
@@ -21,13 +21,14 @@ class CacheFullComparisonContracts(unittest.TestCase):
                 'inference_dtype': 'bfloat16', 'decode_policy': 'utf8',
                 'scorer_hash': 'scorer', 'shard_count': 1,
                 'code_hash': 'eval', 'use_cache': False,
-                'prefix_reuse': backend == GLOBAL_PREFIX_BACKEND,
+                'prefix_reuse': backend in GLOBAL_PREFIX_BACKENDS,
                 'decoder_kv_reuse': False}
 
     def test_manifest_must_match_except_backend_and_reuse(self):
         reference = self.manifest(HF_BACKEND)
         candidate = self.manifest(GLOBAL_PREFIX_BACKEND)
         validate_manifests(reference, candidate)
+        validate_manifests(reference, self.manifest(GLOBAL_PREFIX_BACKEND_V2))
         wrong = dict(candidate, checkpoint_hash='other')
         with self.assertRaisesRegex(ValueError, 'checkpoint_hash'):
             validate_manifests(reference, wrong)

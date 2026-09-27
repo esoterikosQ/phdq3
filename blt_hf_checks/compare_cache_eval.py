@@ -6,7 +6,7 @@ import math
 from pathlib import Path
 
 from blt_hf.evaluation import collect_records
-from blt_hf.generation import HF_BACKEND, GLOBAL_PREFIX_BACKEND
+from blt_hf.generation import HF_BACKEND, GLOBAL_PREFIX_BACKENDS
 from blt_hf.manifest import fingerprint, sha256_json, write_json
 from blt_hf.runtime import ROOT, NEURON_ROOT, local_path, require_neuron_job
 
@@ -30,7 +30,7 @@ OUTPUT_FIELDS = (
 def validate_manifests(reference, candidate):
     if reference.get('generation_backend') != HF_BACKEND:
         raise ValueError('Reference must use the HF no-cache backend')
-    if candidate.get('generation_backend') != GLOBAL_PREFIX_BACKEND:
+    if candidate.get('generation_backend') not in GLOBAL_PREFIX_BACKENDS:
         raise ValueError('Candidate must use the global-prefix backend')
     if reference.get('prefix_reuse') is not False or candidate.get('prefix_reuse') is not True:
         raise ValueError('prefix_reuse identity does not match backend')

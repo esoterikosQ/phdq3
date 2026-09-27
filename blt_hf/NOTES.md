@@ -136,6 +136,16 @@ HF `generate`는 이 버전에서 `logits_to_keep=1`을 전달하고 v1 수동 �
 기본값 0을 사용한다. 해당 차이를 분리하는 08 진단을 추가했다. 07 보고서는
 변경하지 않는다.
 
+## 2026-09-27 — 08 logit 모양 확인·선택형 v2
+
+916207 A100 exit 0, 32/32의 저장된 HF 기준 ID를 `logits_to_keep=1`
+full forward가 반복해서 복구했다. v1의 15건은 수동 forward가 전체 길이
+logit을 계산한 차이, 17건은 global skip 효과다. 두 원인이 구분됐다.
+기존 v1을 보존하고 `global-prefix-greedy-v2`는 **마지막 위치 logit만**
+계산한다. patch/global/decoder 재사용 규칙과 checkpoint는 그대로다.
+09는 v1 불일치 32건+기존 대조군 12건을 재생한다. 이를 전체 split의
+동등성 또는 속도 확인으로 간주하지 않는다.
+
 ## 2026-09-17 — FP32 학습 정책 폐기, BF16 레거시 조건 복구
 
 변환 artifact B는 원본과 동일한 BF16이지만 초기 학습 코드가 근거 없이 main을 FP32로

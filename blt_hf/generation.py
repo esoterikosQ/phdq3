@@ -4,6 +4,8 @@ from .data_adapter import encode_prompt
 
 HF_BACKEND = 'hf-generate-exact-length-unpadded-v1'
 GLOBAL_PREFIX_BACKEND = 'global-prefix-greedy-v1'
+GLOBAL_PREFIX_BACKEND_V2 = 'global-prefix-greedy-v2'
+GLOBAL_PREFIX_BACKENDS = (GLOBAL_PREFIX_BACKEND, GLOBAL_PREFIX_BACKEND_V2)
 
 @dataclass(frozen=True)
 class GenerationConfig:
@@ -20,9 +22,9 @@ class GenerationConfig:
             raise ValueError('Positive sizes and HF use_cache=False required')
         if self.length_penalty < 0:
             raise ValueError('Nonnegative length penalty required')
-        if self.backend not in (HF_BACKEND, GLOBAL_PREFIX_BACKEND):
+        if self.backend not in (HF_BACKEND, *GLOBAL_PREFIX_BACKENDS):
             raise ValueError(f'Unknown generation backend: {self.backend}')
-        if self.backend == GLOBAL_PREFIX_BACKEND and (self.num_beams != 1 or self.batch_size != 1):
+        if self.backend in GLOBAL_PREFIX_BACKENDS and (self.num_beams != 1 or self.batch_size != 1):
             raise ValueError('Global-prefix backend requires beam 1 and unpadded batch 1')
 
     def to_dict(self):
@@ -64,7 +66,7 @@ def generate_batch(model, tokenizer, sources, cfg):
     results = [None] * len(sources)
     device = next(model.parameters()).device
     model.eval()
-    if cfg.backend == GLOBAL_PREFIX_BACKEND:
+    if cfg.backend in GLOBAL_PREFIX_BACKENDS:
         from .cache.global_reuse import GlobalPrefixReuse
         with torch.inference_mode():
             for index, prompt in enumerate(prompts):
@@ -73,7 +75,8 @@ def generate_batch(model, tokenizer, sources, cfg):
                 reuse = GlobalPrefixReuse(model, reuse_decoder=False)
                 for _ in range(cfg.max_new_bytes):
                     tokens = torch.tensor([ids], dtype=torch.long, device=device)
-                    output, _, _, _ = reuse.run(tokens)
+                    output, _, _, _ = reuse.run(
+                        tokens, logits_to_keep=1 if cfg.backend == GLOBAL_PREFIX_BACKEND_V2 else 0)
                     logits = output.logits[0, -1].float().clone()
                     logits[[0, 1, 3]] = -float('inf')
                     next_id = int(logits.argmax())

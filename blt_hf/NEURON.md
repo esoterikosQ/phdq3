@@ -469,6 +469,38 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=4 \
   scripts/diagnose_blt_cache_divergence.sh
 ```
 
+916207의 08 진단은 32/32 첫 분기를 재현했고, HF와 같은
+`logits_to_keep=1` full forward가 **32/32 기준 ID를 두 번 연속 복구**했다.
+따라서 15건의 full0↔HF 차이는 logit projection 모양으로 설명된다.
+17건은 이미 global skip이 greedy ID를 바꾼 것으로 확인됐으며, 두 요인이
+독립적으로 존재한다. 기존 v1 출력과 평가 코드는 보존한다.
+
+선택형 `global-prefix-greedy-v2`는 **logit projection만** HF와 같이 마지막
+위치 하나로 바꿨다. global skip 조건과 decoder KV off는 v1과 같다.
+새 backend의 효과를 먼저 v1 불일치 32건과 05의 길이별 대조군 12건을
+끝까지 생성해 검사한다. 09는 표본 진단이며 전체 validation parity나
+속도 판정이 아니다. 사용자가 Neuron의 공유 checkout에서 실행 중인
+작업이 끝난 뒤 새 코드를 받아 아래 명령을 제출한다.
+
+```bash
+cd /scratch/r984a02/phdq3
+git status --short --branch
+git pull --ff-only origin main
+conda activate phdq_blt_hf
+export CKPT_PATH=outputs/blt_hf/native/native-main-01/step-00001155-24b756e2
+export COMPARE_REPORT=blt_hf_checks/results/p3a_native_full_global_06.json
+export CONTROL_REPORT=blt_hf_checks/results/p3a_native_complete_global_05.json
+export BENCH_OUTPUT=blt_hf_checks/results/p3a_native_cache_v2_mismatch_09.json
+test -f "$CKPT_PATH/model.safetensors"
+test -f "$COMPARE_REPORT"
+test -f "$CONTROL_REPORT"
+test ! -e "$BENCH_OUTPUT"
+sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=4 \
+  --time=01:00:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",COMPARE_REPORT="$COMPARE_REPORT",CONTROL_REPORT="$CONTROL_REPORT",BENCH_OUTPUT="$BENCH_OUTPUT" \
+  scripts/bench_blt_cache_v2_mismatches.sh
+```
+
 ### 기존 분리형 10-epoch 절차
 
 새 사이클은 2026-09-18의 3-epoch run과 다른 RUN_ID를 쓴다. 기존

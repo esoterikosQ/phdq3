@@ -223,6 +223,15 @@ token ID·문자열이 달랐다. EOS·UTF-8 상태는 동일했다. 생성 시�
 기록해 나머지 15건을 분리한다. 새 backend나 재사용 조건 수정은 이 결과
 이후에 결정한다.
 
+08 A100 진단(916207)에서는 `logits_to_keep=1` full forward가 32/32
+저장된 HF 기준 ID를 두 번 연속 복구했다. 15건의 full0↔HF 차이는
+projected logit matrix 모양에 따른 수치 차이로 설명된다. 나머지 17건은
+global skip 자체가 ID를 바꾼다. 이에 v1을 보존하고 선택형
+`global-prefix-greedy-v2`에서 **logit projection만 1로 고정**했다.
+global skip은 그대로여서 v2의 전체 출력 동등성을 주장할 수 없다. 먼저
+기존 32개 불일치·12개 대조군의 완성 생성 09를 측정하고, 그 결과에 따라
+global 재사용 조건을 별도로 수정·검증한다.
+
 ## 기준 생성 경로
 
 `blt_hf/generation.py`는 생성할 때마다 `[BOS] source SEP generated_prefix`를

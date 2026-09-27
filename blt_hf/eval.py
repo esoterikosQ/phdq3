@@ -10,7 +10,8 @@ from .runtime import (ROOT, NEURON_ROOT, MODEL, CONVERSION, EVAL_RUNTIME_FILES,
                       exclusive_lock, atomic_json, StopRequest)
 from .manifest import sha256_file, sha256_json, split_identity, fingerprint, write_json
 from .data_adapter import dataset_split_path, read_tsv, encode_prompt
-from .generation import (GenerationConfig, generate_batch, HF_BACKEND, GLOBAL_PREFIX_BACKEND)
+from .generation import (GenerationConfig, generate_batch, HF_BACKEND,
+                         GLOBAL_PREFIX_BACKENDS)
 from .evaluation import shard_bounds, collect_records, publish_lines
 from .metrics import compute_gleu, compute_m2_with_checkpoints, scorer_identity
 
@@ -24,7 +25,7 @@ def parser():
     p.add_argument('--output-dir',required=True)
     p.add_argument('--shard-id',type=int,default=0);p.add_argument('--shard-count',type=int,default=1)
     p.add_argument('--num-beams',type=int,choices=[1,4],default=1)
-    p.add_argument('--generation-backend',choices=[HF_BACKEND,GLOBAL_PREFIX_BACKEND],default=HF_BACKEND)
+    p.add_argument('--generation-backend',choices=[HF_BACKEND,*GLOBAL_PREFIX_BACKENDS],default=HF_BACKEND)
     p.add_argument('--batch-size',type=int,default=1)
     p.add_argument('--max-new-bytes',type=int,default=768)
     p.add_argument('--length-penalty',type=float,default=1.)
@@ -72,7 +73,7 @@ def generate(args):
               'torch_version':torch.__version__,'attn_implementation':'eager','attention_mode':'osc',
               'model_config_hash':model_config_identity(config,loader_dtype="bfloat16"),'tokenizer_hash':tokenizer_identity(model_path),
               'generation_backend':cfg.backend,
-              'prefix_reuse':cfg.backend==GLOBAL_PREFIX_BACKEND,
+              'prefix_reuse':cfg.backend in GLOBAL_PREFIX_BACKENDS,
               'decoder_kv_reuse':False,
               'inference_dtype':'bfloat16','decode_policy':'utf8-replace-whitespace-collapse-v1',
               'scorer_hash':scorer_identity(),'shard_count':args.shard_count}

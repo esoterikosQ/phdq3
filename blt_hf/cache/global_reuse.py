@@ -1,8 +1,9 @@
 """Experimental batch-1 global patch prefix reuse for no-cache BLT forward.
 
 Entropy and local encoder still run on the full input. Global transformer and
-optionally local decoder can reuse state. This is a diagnostic backend, not an eval backend:
-BF16 hidden states change with input length and full-split token parity is unproven.
+optionally local decoder can reuse state. The optional v1/v2 evaluation paths
+are experimental: BF16 hidden states change with input length, and full-split
+token parity is unproven.
 """
 import torch
 
@@ -39,9 +40,11 @@ class GlobalPrefixReuse:
         self.global_hidden = None
         self.decoder_kv = None
 
-    def run(self, input_ids):
+    def run(self, input_ids, *, logits_to_keep=0):
         if self.model.training or torch.is_grad_enabled():
             raise ValueError('Global prefix reuse requires eval and inference_mode')
+        if logits_to_keep not in (0, 1):
+            raise ValueError('Only full or last-position logits are supported')
         if input_ids.ndim != 2 or input_ids.shape[0] != 1 or input_ids.shape[1] < 2:
             raise ValueError('Only unpadded batch-1 prefixes of at least two bytes are supported')
         current_ids = tuple(int(value) for value in input_ids[0].tolist())
@@ -107,7 +110,8 @@ class GlobalPrefixReuse:
         if self.reuse_decoder:
             decoder_module.forward = forward_decoder
         try:
-            output = self.model(input_ids=input_ids, use_cache=False)
+            output = self.model(input_ids=input_ids, use_cache=False,
+                                logits_to_keep=logits_to_keep)
         except Exception:
             self.reset()
             raise
