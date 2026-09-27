@@ -185,7 +185,9 @@ identity에서 재개해 2,634/2,634 완료·exit 0이었다. 로컬
 guarded를 beam 1·batch 1·GLEU 선택에만 허용한다. run manifest/code hash,
 epoch별 GLEU·cache refresh 보고서와 best 포인터에 backend를 기록한다.
 캐시 구현·가중치·학습 loss·GLEU scorer는 변경하지 않았다. 새 RUN_ID의
-2-epoch A100 4GPU 통합 시험 명령은 `NEURON.md`에 있다.
+최대 10-epoch A100 4GPU 본 학습·재개 명령은 `NEURON.md`에 있다. 모든 완료
+epoch의 전체 validation GLEU로 best를 고르며, 연속 3 epoch 미개선 시 중단한다.
+실제 완료 epoch와 중단 사유를 남긴다.
 
 ## 2026-09-17 — FP32 학습 정책 폐기, BF16 레거시 조건 복구
 

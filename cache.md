@@ -113,9 +113,12 @@ Neuron에서는 동일 A100·체크포인트·전체 native validation으로 HF 
 `--validation-generation-backend` 인자, run manifest/code hash,
 epoch별 전체 validation GLEU·best 선택 보고서를 연결한다. 현재 통합
 학습의 HF 기본값은 유지한다. 새 backend가 beam 1·batch 1 전용이면
-통합 학습도 그 조건으로 시작한다. 먼저 새 RUN_ID의 2-epoch 통합 시험을
-수행하고, 본 10-epoch 학습은 별도 RUN_ID와 처음부터 계산한 schedule로
-진행한다. 2-epoch run을 단순히 `EPOCHS=10`으로 늘려 재개하지 않는다.
+통합 학습도 그 조건으로 시작한다. 새 RUN_ID에서 처음부터 최대 10-epoch
+schedule로 학습하고, 매 epoch 전체 validation GLEU의 최고 checkpoint를
+선택한다. 연속 3 epoch 미개선이면 중단하는 규칙을 사전에 고정한다.
+시간 제한에 따른 재개는 같은
+코드·GPU 수·schedule을 유지한다. 기존 2-epoch run을 `EPOCHS=10`으로
+늘려 재개하지 않는다.
 
 ## 새 작업창에 넣을 첫 지시
 

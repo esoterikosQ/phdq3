@@ -28,6 +28,8 @@ def parser():
     p.add_argument('--lr', type=float, default=1e-5)
     p.add_argument('--warmup-ratio', type=float, default=.05)
     p.add_argument('--selection-metric', choices=['val_loss', 'val_gleu'], default='val_loss')
+    p.add_argument('--early-stopping-patience', type=int, default=0,
+                   help='Stop after this many complete epochs without a strictly higher validation GLEU; 0 disables')
     p.add_argument('--validation-beams', type=int, choices=[1, 4], default=1)
     p.add_argument('--validation-batch-size', type=int, default=1)
     p.add_argument('--validation-max-new-bytes', type=int, default=768)
@@ -67,7 +69,7 @@ def run(args):
         from .data_adapter import read_tsv
         from .generation import generate_batch
         from .integrated_validation import (
-            gleu_improved, order_predictions, score_validation_epoch, validation_groups,
+            gleu_early_stopping_update, order_predictions, score_validation_epoch, validation_groups,
         )
 
     rank, world, local_rank = (int(os.environ.get(k, d)) for k, d in
@@ -80,8 +82,10 @@ def run(args):
     if min(args.epochs, args.effective_batch, args.save_every, args.validation_batch_size,
            args.validation_max_new_bytes) < 1 or args.lr <= 0 or args.clip_grad_norm <= 0:
         raise ValueError('Invalid positive training setting')
-    if min(args.max_steps, args.max_seconds, args.weight_decay) < 0 or not 0 <= args.warmup_ratio < 1:
+    if min(args.max_steps, args.max_seconds, args.weight_decay, args.early_stopping_patience) < 0 or not 0 <= args.warmup_ratio < 1:
         raise ValueError('Negative training setting')
+    if args.early_stopping_patience and (args.mode != 'train' or args.selection_metric != 'val_gleu'):
+        raise ValueError('GLEU early stopping requires train mode and val_gleu selection')
     validation_cfg = validation_generation_config(args)
     if args.mode == 'overfit' and (world != 1 or args.overfit_steps < 1):
         raise ValueError('Overfit diagnostic requires one GPU and positive steps')
@@ -156,6 +160,7 @@ def run(args):
                         'total_steps': total_steps, 'warmup_ratio': args.warmup_ratio,
                         'warmup_steps': warmup, 'seed': args.seed,
                         'selection_metric': args.selection_metric,
+                        'early_stopping_patience': args.early_stopping_patience,
                         'validation_num_beams': args.validation_beams if args.selection_metric == 'val_gleu' else None,
                         'validation_batch_size': args.validation_batch_size if args.selection_metric == 'val_gleu' else None,
                         'validation_max_new_bytes': args.validation_max_new_bytes if args.selection_metric == 'val_gleu' else None,
@@ -181,6 +186,7 @@ def run(args):
             stage('manifest_verified',resume=bool(args.resume),code_hash=identity['code_hash'])
             state = {'epoch': 0, 'next_batch': 0, 'global_step': 0, 'best_val_loss': None,
                      'last_val_loss': None, 'best_val_gleu': None, 'last_val_gleu': None,
+                     'epochs_without_gleu_improvement': 0,
                      'last_training_loss': None, 'run_signature': signature,
                      'training_checks': 'not_run', 'evaluation_checks': 'not_run'}
             restore = None
@@ -204,9 +210,10 @@ def run(args):
                 restore = torch.load(cp/'training.pt', map_location='cpu', weights_only=True)
                 stage('optimizer_state_file_loaded',checkpoint=cp.name)
                 state.update({k: meta[k] for k in state})
-                if state['epoch'] >= epochs and (run_dir/'completed.json').exists():
+                if (run_dir/'completed.json').exists():
                     done = json.loads((run_dir/'completed.json').read_text())
-                    return 0 if done.get('overfit_passed', True) else 1
+                    if done.get('status') == 'complete' and (state['epoch'] >= epochs or done.get('stop_reason') == 'gleu_patience'):
+                        return 0 if done.get('overfit_passed', True) else 1
             model.to(device)
             stage('model_moved_to_device')
             groups = [{'params': [p for p in model.parameters() if p.requires_grad and p.ndim >= 2], 'weight_decay': args.weight_decay},
@@ -324,7 +331,11 @@ def run(args):
             invocation_steps = 0
             grad_report = None
             stage('training_loop_entered',global_step=state['global_step'],epoch=state['epoch'],next_batch=state['next_batch'])
+            stop_reason = ('gleu_patience' if args.early_stopping_patience and
+                           state['epochs_without_gleu_improvement'] >= args.early_stopping_patience and
+                           state['epoch'] < epochs else 'max_epochs')
             for epoch in range(state['epoch'], epochs):
+                if stop_reason == 'gleu_patience': break
                 epoch_started = time.monotonic()
                 batches = epoch_batches(count, batch_size, seed=args.seed, epoch=epoch)
                 start = state['next_batch'] if epoch == state['epoch'] else 0
@@ -408,8 +419,14 @@ def run(args):
                 loss_improved = val_loss is not None and (state['best_val_loss'] is None or val_loss < state['best_val_loss'])
                 if loss_improved: state['best_val_loss'] = val_loss
                 state['last_val_loss'] = val_loss
-                gleu_is_better = gleu_improved(val_gleu, state['best_val_gleu'])
-                if gleu_is_better: state['best_val_gleu'] = val_gleu
+                if args.mode == 'train' and args.selection_metric == 'val_gleu':
+                    gleu_is_better, stale_epochs, should_stop = gleu_early_stopping_update(
+                        val_gleu, state['best_val_gleu'],
+                        state['epochs_without_gleu_improvement'], args.early_stopping_patience)
+                    state['epochs_without_gleu_improvement'] = stale_epochs
+                    if gleu_is_better: state['best_val_gleu'] = val_gleu
+                else:
+                    gleu_is_better, should_stop = False, False
                 state['last_val_gleu'] = val_gleu
                 best = gleu_is_better if args.selection_metric == 'val_gleu' else loss_improved
                 state.update(epoch=epoch+1, next_batch=0)
@@ -425,8 +442,14 @@ def run(args):
                           selection_metric=args.selection_metric, best=best,
                           val_loss=val_loss, val_gleu=val_gleu,
                           elapsed_seconds=round(time.monotonic()-epoch_started, 2))
+                if should_stop and epoch + 1 < epochs:
+                    stop_reason = 'gleu_patience'
+                    stage('early_stopping', epoch=epoch+1, patience=args.early_stopping_patience,
+                          best_val_gleu=state['best_val_gleu'])
+                    break
             if rank == 0:
                 result = {**state, 'status': 'complete', 'mode': args.mode, 'gradient_norms': grad_report,
+                          'stop_reason': stop_reason, 'planned_epochs': epochs,
                           'peak_allocated_bytes': torch.cuda.max_memory_allocated(device)}
                 if args.mode == 'overfit':
                     result['final_training_loss'] = state['last_training_loss']
@@ -438,6 +461,8 @@ def run(args):
                                 {'status': 'complete', 'run_id': manifest['run_id'],
                                  'run_signature': signature, 'code_hash': identity['code_hash'],
                                  'dataset': args.dataset, 'epochs': epochs,
+                                 'completed_epochs': state['epoch'], 'stop_reason': stop_reason,
+                                 'early_stopping_patience': args.early_stopping_patience,
                                  'selection_metric': args.selection_metric,
                                  'validation_num_beams': args.validation_beams,
                                  'validation_max_new_bytes': args.validation_max_new_bytes,

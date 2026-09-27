@@ -9,8 +9,10 @@
 - 새 `--validation-generation-backend`를 통합 학습에 추가했다. 기본 HF는
   유지하고 guarded는 beam 1·batch 1·val GLEU 선택에만 허용한다. run
   manifest, epoch별 GLEU 및 best 포인터에 backend·갱신 횟수를 기록한다.
-- 새 native 2-epoch A100 4GPU run과 같은 설정의 재개 명령을 `NEURON.md`에
-  기록했다. Neuron 제출은 사용자가 맡는다.
+- 새 native 최대 10-epoch A100 4GPU 본 학습과 같은 설정의 재개 명령을
+  `NEURON.md`에 기록했다. 매 epoch 전체 validation GLEU로 best를 선택하고
+  연속 3 epoch 미개선이면 중단한다. 실제 완료 epoch와 중단 사유를 기록한다.
+  Neuron 제출은 사용자가 맡는다.
 
 ## 2026-09-27 — guarded 10 결과와 전체 native 비교 11 준비
 

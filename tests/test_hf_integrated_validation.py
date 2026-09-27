@@ -4,7 +4,8 @@ import unittest
 from pathlib import Path
 
 from blt_hf.integrated_validation import (
-    gleu_improved, order_predictions, score_validation_epoch, validation_groups,
+    gleu_early_stopping_update, gleu_improved, order_predictions,
+    score_validation_epoch, validation_groups,
 )
 from blt_hf.data_adapter import GecEncoding
 from blt_hf.generation import GLOBAL_PREFIX_GUARDED_BACKEND, HF_BACKEND
@@ -46,6 +47,26 @@ class IntegratedValidationContracts(unittest.TestCase):
         self.assertFalse(gleu_improved(39., 40.))
         self.assertFalse(gleu_improved(40., 40.))
         self.assertTrue(gleu_improved(41., 40.))
+
+    def test_early_stopping_counts_complete_ties_and_survives_resume(self):
+        args = train_parser().parse_args([
+            '--run-dir', 'outputs/blt_hf/native/new-run', '--epochs', '10',
+            '--selection-metric', 'val_gleu', '--early-stopping-patience', '3'])
+        self.assertEqual((args.epochs, args.early_stopping_patience), (10, 3))
+        best, stale = None, 0
+        for score, expected_stale, expected_stop in [
+            (52., 0, False), (52., 1, False), (51., 2, False),
+            (53., 0, False), (53., 1, False), (52., 2, False), (52., 3, True),
+        ]:
+            improved, stale, stop = gleu_early_stopping_update(
+                score, best, stale, args.early_stopping_patience)
+            if improved:
+                best = score
+            self.assertEqual((stale, stop), (expected_stale, expected_stop))
+            # The count and best score are the values restored from an epoch checkpoint.
+            stale, best = json.loads(json.dumps([stale, best]))
+        self.assertEqual(best, 53.)
+        self.assertEqual(gleu_early_stopping_update(52., 53., 2, 0), (False, 3, False))
 
     def test_four_rank_predictions_score_full_corpus_in_original_order(self):
         sources = ['I has a nice red apple today .', 'This is a short sentence .',

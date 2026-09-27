@@ -15,6 +15,15 @@ def gleu_improved(score, previous_best):
     return previous_best is None or score > previous_best
 
 
+def gleu_early_stopping_update(score, previous_best, stale_epochs, patience):
+    """Count complete validation epochs without a strictly better corpus GLEU."""
+    if score is None or stale_epochs < 0 or patience < 0:
+        raise ValueError('Invalid GLEU early-stopping input')
+    improved = gleu_improved(score, previous_best)
+    stale_epochs = 0 if improved else stale_epochs + 1
+    return improved, stale_epochs, patience > 0 and stale_epochs >= patience
+
+
 def validation_groups(encodings, *, rank, world_size, batch_size):
     """Group one rank's validation rows by exact prompt length, preserving row IDs."""
     if world_size < 1 or not 0 <= rank < world_size or batch_size < 1:

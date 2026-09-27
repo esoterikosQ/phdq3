@@ -607,10 +607,14 @@ p95는 6.47→5.48초다. guarded의 global 재사용 후보 150,352회 중
 1,792회 full refresh였다. 5090/다른 데이터셋/beam 4의 결과로 일반화하지
 않는다. 두 Neuron job의 준비·데이터 검사 시간은 순수 생성 합계에 없다.
 
-다음은 **새** native 2-epoch 통합 학습이다. 학습 역전파는 기존 byte
+다음은 **새** native 10-epoch 본 학습이다. 학습 역전파는 기존 byte
 target loss 그대로이며, 매 epoch 전체 validation의 beam-1 생성만
 `global-prefix-guarded-greedy-v1`으로 수행하고 corpus GLEU 최고 checkpoint를
-선택한다. 모델·scorer·기존 HF 기본값은 바꾸지 않았다. 캐시 개발 창이
+선택한다. 최대 10 epoch으로 schedule을 처음부터 고정하고, 전체 validation GLEU가
+엄격히 증가하지 않는 epoch가 연속 3회 나오면 그 epoch 뒤에 중단한다. 동점도
+미개선으로 센다. 최소 개선 폭은 두지 않으며 test 점수는 중단·선택에 쓰지 않는다.
+2-epoch 시험을 거쳐 연장하지 않는다. 모델·scorer·기존
+HF 기본값은 바꾸지 않았다. 캐시 개발 창이
 별도 worktree에서 작업 중이어도, 이 run이 시작되면 Neuron의 공유 checkout
 코드와 이 run의 GPU 수·설정을 완료 때까지 고정한다.
 
@@ -619,28 +623,31 @@ cd /scratch/r984a02/phdq3
 git status --short --branch
 git pull --ff-only origin main
 conda activate phdq_blt_hf
-test ! -e outputs/blt_hf/native/native-gleu2-guarded-b1-s0/run.json
+test ! -e outputs/blt_hf/native/native-gleu10-guarded-b1-s0/run.json
 sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
   --time=06:00:00 --comment="field=nlp;appl=pytorch" \
-  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=native-gleu2-guarded-b1-s0,DATASET_TYPE=native,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=2,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,VALIDATION_BATCH_SIZE=1,VALIDATION_GENERATION_BACKEND=global-prefix-guarded-greedy-v1 \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=native-gleu10-guarded-b1-s0,DATASET_TYPE=native,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,EARLY_STOPPING_PATIENCE=3,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,VALIDATION_BATCH_SIZE=1,VALIDATION_GENERATION_BACKEND=global-prefix-guarded-greedy-v1 \
   scripts/train_blt_hf.sh
 ```
 
-시간 제한으로 exit 75라면 같은 코드·설정·4 GPU로 아래 명령을 제출한다.
-`completed.json`의 `status=complete`와 `epoch=2`,
-`validation/epoch-0001/metrics.json` 및 `epoch-0002/metrics.json`의
-`generation_backend`, `gleu`, `cache_guard_refreshes`, 그리고
-`best_gleu.json`이 최종 확인 대상이다. 2-epoch 결과와 소요시간을 본 뒤
-새 `RUN_ID`의 10-epoch 본 학습을 따로 시작한다. 2-epoch checkpoint의
-`EPOCHS`만 10으로 바꿔 재개하지 않는다.
+6시간 제한으로 exit 75가 나면 같은 코드·설정·4 GPU로 아래 명령을 반복
+제출한다. 최대 10 epoch이 한 job에서 끝날 필요는 없다. 최종 확인 대상은
+`completed.json`의 `status=complete`, `planned_epochs=10`, 실제 `epoch`,
+`stop_reason=max_epochs|gleu_patience`, 완료한 각 epoch의
+`validation/epoch-XXXX/metrics.json`에 기록된 `generation_backend`, `gleu`,
+`cache_guard_refreshes`, 그리고 최고 GLEU checkpoint를 가리키는
+`best_gleu.json`이다. 기존 2-epoch checkpoint는 이 run에 재개하지 않는다.
+후속 learner·union·lang8 비교에도 최대 10 epoch, 같은 GLEU 개선·patience
+규칙과 seed를 적용하고 실제 완료 epoch를 함께 보고한다. guarded 생성 backend는
+해당 데이터셋에서 출력 일치·속도 검사를 마친 뒤에만 선택한다.
 
 ```bash
 cd /scratch/r984a02/phdq3
 conda activate phdq_blt_hf
-test -f outputs/blt_hf/native/native-gleu2-guarded-b1-s0/latest.json
+test -f outputs/blt_hf/native/native-gleu10-guarded-b1-s0/latest.json
 sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
   --time=06:00:00 --comment="field=nlp;appl=pytorch" \
-  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=native-gleu2-guarded-b1-s0,DATASET_TYPE=native,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=2,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,VALIDATION_BATCH_SIZE=1,VALIDATION_GENERATION_BACKEND=global-prefix-guarded-greedy-v1,RESUME=outputs/blt_hf/native/native-gleu2-guarded-b1-s0/latest.json \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=native-gleu10-guarded-b1-s0,DATASET_TYPE=native,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,EARLY_STOPPING_PATIENCE=3,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,VALIDATION_BATCH_SIZE=1,VALIDATION_GENERATION_BACKEND=global-prefix-guarded-greedy-v1,RESUME=outputs/blt_hf/native/native-gleu10-guarded-b1-s0/latest.json \
   scripts/train_blt_hf.sh
 ```
 
@@ -736,11 +743,14 @@ DDP는 optimizer 상태 할당 전에 gradient bucket view를 준비하는 2회�
 - optimizer·epoch 내 다음 배치·global step·rank별 RNG·실행 manifest를 복원한다.
   코드/데이터/모델/환경 설정/world size가 달라지면 같은 run의 resume를 거부한다.
 - 진짜 epoch가 끝난 뒤 전체 validation을 평가하며, 중단된 validation 부분 점수로
-  best를 갱신하지 않는다. `completed.json`이 있어야 모든 epoch 완료다.
+  best를 갱신하지 않는다. `completed.json`이 있어야 계획한 최대 epoch 또는
+  사전 지정된 early stopping 규칙에 따라 run이 완료된 것이다.
 
-최종 비교 checkpoint는 각 epoch checkpoint에 대해 전체 validation 생성·채점을 끝낸 뒤
-GLEU가 가장 높은 것을 선택한다. 모든 validation 조건은 같아야 하며 누락된 epoch가 있으면
-선택을 거부한다. 동률은 M2 F0.5, 그다음 이른 epoch 순서로 결정한다.
+아래 기존 분리형 run의 최종 비교 checkpoint는 각 epoch checkpoint에 대해 전체
+validation 생성·채점을 끝낸 뒤 GLEU가 가장 높은 것을 선택한다. 모든 validation
+조건은 같아야 하며 누락된 epoch가 있으면 선택을 거부한다. 동률은 M2 F0.5,
+그다음 이른 epoch 순서로 결정한다. 위 통합 run은 학습 중 GLEU로 best를 선택하며
+동률일 때 이른 epoch를 유지한다.
 
 ```bash
 python -m blt_hf.select_best \
