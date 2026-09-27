@@ -87,7 +87,9 @@ Transformers의 정식 BLT 구현(`BltForCausalLM`)과 직접 변환본 B 위에
   CUDA 마이그레이션은 별도 작업으로 분리한다.
 - **노드 역할** (SLURM은 neuron에만 존재):
   - gsm/yellowstone(mac): 코드 작성·정적 테스트·결과 취합. CUDA 미설치.
-  - itcerdo(5090, 일반 Linux): Phase A 구동·가중치·마스크 검사·시간 실측 전용.
+  - itcerdo(5090, 일반 Linux): Phase A 구동·가중치·마스크 검사와
+    2026-09-27 사용자 지시의 P3a 캐시 단건 BF16 추론·프로파일 전용.
+    캐시 작업공간·인계 규칙은 `cache.md`를 따른다.
     **일반 shell 명령만 사용 — srun/sbatch 금지. optimizer step·tiny overfit·
     파인튜닝·full tuning 일절 금지.** 여기서 검증한 작동 코드를 neuron에서
     학습에 사용한다.
