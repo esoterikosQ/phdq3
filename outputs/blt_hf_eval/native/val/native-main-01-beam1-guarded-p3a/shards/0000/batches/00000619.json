@@ -1,0 +1,44 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 619,
+      "source": "한 대 쳐보시든지.",
+      "text": "한 대 쳐보시든지.",
+      "raw_text": "한 대 쳐보시든지.",
+      "token_ids": [
+        241,
+        153,
+        160,
+        36,
+        239,
+        144,
+        132,
+        36,
+        240,
+        183,
+        148,
+        239,
+        183,
+        184,
+        240,
+        143,
+        160,
+        239,
+        151,
+        164,
+        240,
+        171,
+        132,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 22,
+      "cache_guard_refreshes": 1
+    }
+  ],
+  "seconds": 0.7566482201218605
+}

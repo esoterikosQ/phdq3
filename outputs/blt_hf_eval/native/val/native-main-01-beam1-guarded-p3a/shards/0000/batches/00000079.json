@@ -1,0 +1,47 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 79,
+      "source": "수영을 하지 모태요.",
+      "text": "수영을 하지 못해요.",
+      "raw_text": "수영을 하지 못해요.",
+      "token_ids": [
+        240,
+        140,
+        156,
+        240,
+        156,
+        133,
+        240,
+        161,
+        136,
+        36,
+        241,
+        153,
+        156,
+        240,
+        171,
+        132,
+        36,
+        239,
+        174,
+        191,
+        241,
+        153,
+        184,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 24,
+      "cache_guard_refreshes": 1
+    }
+  ],
+  "seconds": 0.8566930368542671
+}

@@ -1,0 +1,49 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 1630,
+      "source": "이 모든 게 내 탓이야.",
+      "text": "이 모든 게 내 탓이야.",
+      "raw_text": "이 모든 게 내 탓이야.",
+      "token_ids": [
+        240,
+        161,
+        184,
+        36,
+        239,
+        174,
+        172,
+        239,
+        151,
+        164,
+        36,
+        238,
+        182,
+        144,
+        36,
+        239,
+        134,
+        184,
+        36,
+        241,
+        135,
+        151,
+        240,
+        161,
+        184,
+        240,
+        153,
+        192,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 28,
+      "cache_guard_refreshes": 0
+    }
+  ],
+  "seconds": 0.8197979889810085
+}

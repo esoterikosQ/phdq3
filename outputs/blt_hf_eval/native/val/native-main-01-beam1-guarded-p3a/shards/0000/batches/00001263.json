@@ -1,0 +1,48 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 1263,
+      "source": "함박 웃음을 지을 것.",
+      "text": "함박 웃음을 지을 것.",
+      "raw_text": "함박 웃음을 지을 것.",
+      "token_ids": [
+        241,
+        153,
+        172,
+        239,
+        180,
+        153,
+        36,
+        240,
+        159,
+        135,
+        240,
+        161,
+        144,
+        240,
+        161,
+        136,
+        36,
+        240,
+        171,
+        132,
+        240,
+        161,
+        136,
+        36,
+        238,
+        182,
+        135,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 24,
+      "cache_guard_refreshes": 0
+    }
+  ],
+  "seconds": 0.8512423620559275
+}

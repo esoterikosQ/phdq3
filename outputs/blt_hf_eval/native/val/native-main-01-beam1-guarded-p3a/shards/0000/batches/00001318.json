@@ -1,0 +1,52 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 1318,
+      "source": "나는 한르을 날고 싶어.",
+      "text": "나는 한류를 날 고 싶어.",
+      "raw_text": "나는 한류를 날 고 싶어.",
+      "token_ids": [
+        239,
+        134,
+        156,
+        239,
+        142,
+        152,
+        36,
+        241,
+        153,
+        160,
+        239,
+        169,
+        156,
+        239,
+        169,
+        192,
+        36,
+        239,
+        134,
+        164,
+        36,
+        238,
+        183,
+        164,
+        36,
+        240,
+        143,
+        186,
+        240,
+        154,
+        184,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 24,
+      "cache_guard_refreshes": 2
+    }
+  ],
+  "seconds": 1.1064941613003612
+}

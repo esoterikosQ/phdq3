@@ -1,0 +1,51 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 1833,
+      "source": "저녁 7시 쯤에 올 걸요.",
+      "text": "저녁 7시 쯤에 올 걸 요.",
+      "raw_text": "저녁 7시 쯤에 올 걸 요.",
+      "token_ids": [
+        240,
+        164,
+        132,
+        239,
+        137,
+        133,
+        36,
+        59,
+        240,
+        143,
+        160,
+        36,
+        240,
+        179,
+        168,
+        240,
+        155,
+        148,
+        36,
+        240,
+        156,
+        176,
+        36,
+        238,
+        181,
+        188,
+        36,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 28,
+      "cache_guard_refreshes": 3
+    }
+  ],
+  "seconds": 1.0341483247466385
+}

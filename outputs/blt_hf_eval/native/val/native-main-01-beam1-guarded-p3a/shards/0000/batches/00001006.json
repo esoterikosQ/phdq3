@@ -1,0 +1,50 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 1006,
+      "source": "어머니가 집에 게세여.",
+      "text": "어머니가 집에 가세요.",
+      "raw_text": "어머니가 집에 가세요.",
+      "token_ids": [
+        240,
+        154,
+        184,
+        239,
+        172,
+        188,
+        239,
+        143,
+        140,
+        238,
+        180,
+        132,
+        36,
+        240,
+        171,
+        149,
+        240,
+        155,
+        148,
+        36,
+        238,
+        180,
+        132,
+        240,
+        136,
+        188,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 24,
+      "cache_guard_refreshes": 1
+    }
+  ],
+  "seconds": 0.9873226191848516
+}

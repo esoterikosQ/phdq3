@@ -1,0 +1,50 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 759,
+      "source": "영화는 산책을 하고 보자.",
+      "text": "영화는 산책하고 보자.",
+      "raw_text": "영화는 산책하고 보자.",
+      "token_ids": [
+        240,
+        156,
+        133,
+        241,
+        157,
+        152,
+        239,
+        142,
+        152,
+        36,
+        240,
+        134,
+        180,
+        240,
+        181,
+        137,
+        241,
+        153,
+        156,
+        238,
+        183,
+        164,
+        36,
+        239,
+        183,
+        184,
+        240,
+        162,
+        148,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 23,
+      "cache_guard_refreshes": 0
+    }
+  ],
+  "seconds": 0.9642667467705905
+}

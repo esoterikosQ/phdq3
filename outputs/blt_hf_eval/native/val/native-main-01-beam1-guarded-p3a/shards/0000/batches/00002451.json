@@ -1,0 +1,46 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 2451,
+      "source": "도서관에서 숙제 해.",
+      "text": "도서관에서 숙제해.",
+      "raw_text": "도서관에서 숙제해.",
+      "token_ids": [
+        239,
+        147,
+        136,
+        240,
+        136,
+        160,
+        238,
+        184,
+        132,
+        240,
+        155,
+        148,
+        240,
+        136,
+        160,
+        36,
+        240,
+        140,
+        157,
+        240,
+        164,
+        160,
+        241,
+        153,
+        184,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 22,
+      "cache_guard_refreshes": 0
+    }
+  ],
+  "seconds": 0.7772318697534502
+}

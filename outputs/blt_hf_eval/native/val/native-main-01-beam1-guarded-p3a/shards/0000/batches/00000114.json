@@ -1,0 +1,53 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 114,
+      "source": "오늘은 집까지 걸을래에여?",
+      "text": "오늘은 집까요걸을 래요?",
+      "raw_text": "오늘은 집까요걸을 래요?",
+      "token_ids": [
+        240,
+        156,
+        168,
+        239,
+        142,
+        156,
+        240,
+        161,
+        132,
+        36,
+        240,
+        171,
+        149,
+        238,
+        189,
+        144,
+        240,
+        158,
+        152,
+        238,
+        181,
+        188,
+        240,
+        161,
+        136,
+        36,
+        239,
+        162,
+        156,
+        240,
+        158,
+        152,
+        67
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 24,
+      "cache_guard_refreshes": 4
+    }
+  ],
+  "seconds": 1.2430424699559808
+}

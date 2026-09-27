@@ -1,0 +1,53 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 1182,
+      "source": "영화가 너무 무서웠어여.",
+      "text": "영화가 너무 무서웠어요.",
+      "raw_text": "영화가 너무 무서웠어요.",
+      "token_ids": [
+        240,
+        156,
+        133,
+        241,
+        157,
+        152,
+        238,
+        180,
+        132,
+        36,
+        239,
+        136,
+        140,
+        239,
+        176,
+        184,
+        36,
+        239,
+        176,
+        184,
+        240,
+        136,
+        160,
+        240,
+        159,
+        164,
+        240,
+        154,
+        184,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 30,
+      "cache_guard_refreshes": 0
+    }
+  ],
+  "seconds": 0.9680029060691595
+}

@@ -1,0 +1,48 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 2356,
+      "source": "우리 드라마 볼래에요?",
+      "text": "우리 드라마 볼 래요?",
+      "raw_text": "우리 드라마 볼 래요?",
+      "token_ids": [
+        240,
+        158,
+        180,
+        239,
+        170,
+        176,
+        36,
+        239,
+        151,
+        160,
+        239,
+        161,
+        192,
+        239,
+        171,
+        140,
+        36,
+        239,
+        183,
+        192,
+        36,
+        239,
+        162,
+        156,
+        240,
+        158,
+        152,
+        67
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 21,
+      "cache_guard_refreshes": 2
+    }
+  ],
+  "seconds": 0.9577703247778118
+}

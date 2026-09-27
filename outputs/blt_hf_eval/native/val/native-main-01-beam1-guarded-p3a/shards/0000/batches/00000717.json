@@ -1,0 +1,48 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 717,
+      "source": "무슨 운동을 조아해?",
+      "text": "무슨 운동을 조아 해?",
+      "raw_text": "무슨 운동을 조아 해?",
+      "token_ids": [
+        239,
+        176,
+        184,
+        240,
+        142,
+        172,
+        36,
+        240,
+        158,
+        184,
+        239,
+        147,
+        157,
+        240,
+        161,
+        136,
+        36,
+        240,
+        165,
+        180,
+        240,
+        153,
+        136,
+        36,
+        241,
+        153,
+        184,
+        67
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 26,
+      "cache_guard_refreshes": 1
+    }
+  ],
+  "seconds": 0.8643403858877718
+}

@@ -1,0 +1,50 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 1857,
+      "source": "할아버지 멀 주으세여.",
+      "text": "할아버지 멀 주위세요.",
+      "raw_text": "할아버지 멀 주위세요.",
+      "token_ids": [
+        241,
+        153,
+        164,
+        240,
+        153,
+        136,
+        239,
+        182,
+        136,
+        240,
+        171,
+        132,
+        36,
+        239,
+        173,
+        132,
+        36,
+        240,
+        167,
+        192,
+        240,
+        160,
+        136,
+        240,
+        136,
+        188,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 24,
+      "cache_guard_refreshes": 2
+    }
+  ],
+  "seconds": 1.0191687610931695
+}

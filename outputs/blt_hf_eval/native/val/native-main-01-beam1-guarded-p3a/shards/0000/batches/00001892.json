@@ -1,0 +1,48 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 1892,
+      "source": "김치담글 줄 알아요.",
+      "text": "김치 담글 줄 알아요.",
+      "raw_text": "김치 담글 줄 알아요.",
+      "token_ids": [
+        238,
+        189,
+        132,
+        240,
+        189,
+        156,
+        36,
+        239,
+        143,
+        184,
+        238,
+        188,
+        132,
+        36,
+        240,
+        168,
+        136,
+        36,
+        240,
+        153,
+        144,
+        240,
+        153,
+        136,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 19,
+      "cache_guard_refreshes": 1
+    }
+  ],
+  "seconds": 0.9762726672925055
+}

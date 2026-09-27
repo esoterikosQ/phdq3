@@ -1,0 +1,45 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 2087,
+      "source": "내 동생 참 기엽다.",
+      "text": "내 동생 참 기엽다.",
+      "raw_text": "내 동생 참 기엽다.",
+      "token_ids": [
+        239,
+        134,
+        184,
+        36,
+        239,
+        147,
+        157,
+        240,
+        135,
+        161,
+        36,
+        240,
+        180,
+        188,
+        36,
+        238,
+        188,
+        180,
+        240,
+        155,
+        193,
+        239,
+        143,
+        168,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 23,
+      "cache_guard_refreshes": 0
+    }
+  ],
+  "seconds": 0.7338175605982542
+}

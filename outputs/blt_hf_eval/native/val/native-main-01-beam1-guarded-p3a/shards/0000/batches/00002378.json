@@ -1,0 +1,53 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 2378,
+      "source": "인제 그만 일어나시지여.",
+      "text": "인제 그만 일어나시지요.",
+      "raw_text": "인제 그만 일어나시지요.",
+      "token_ids": [
+        240,
+        161,
+        188,
+        240,
+        164,
+        160,
+        36,
+        238,
+        187,
+        188,
+        239,
+        171,
+        144,
+        36,
+        240,
+        161,
+        192,
+        240,
+        154,
+        184,
+        239,
+        134,
+        156,
+        240,
+        143,
+        160,
+        240,
+        171,
+        132,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 30,
+      "cache_guard_refreshes": 1
+    }
+  ],
+  "seconds": 0.9871572661213577
+}

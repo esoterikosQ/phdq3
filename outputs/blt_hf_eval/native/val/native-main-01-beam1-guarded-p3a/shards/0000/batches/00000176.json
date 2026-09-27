@@ -1,0 +1,48 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 176,
+      "source": "오늘 바쁠 것 같아여.",
+      "text": "오늘 바쁠 것 같아요.",
+      "raw_text": "오늘 바쁠 것 같아요.",
+      "token_ids": [
+        240,
+        156,
+        168,
+        239,
+        142,
+        156,
+        36,
+        239,
+        180,
+        152,
+        240,
+        133,
+        164,
+        36,
+        238,
+        182,
+        135,
+        36,
+        238,
+        180,
+        157,
+        240,
+        153,
+        136,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 26,
+      "cache_guard_refreshes": 0
+    }
+  ],
+  "seconds": 0.8247876549139619
+}

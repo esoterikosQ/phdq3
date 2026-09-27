@@ -1,0 +1,43 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 2220,
+      "source": "불을 켜 드릴께요.",
+      "text": "불을 켜드릴게요.",
+      "raw_text": "불을 켜드릴게요.",
+      "token_ids": [
+        239,
+        186,
+        140,
+        240,
+        161,
+        136,
+        36,
+        240,
+        192,
+        160,
+        239,
+        151,
+        160,
+        239,
+        170,
+        184,
+        238,
+        182,
+        144,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 16,
+      "cache_guard_refreshes": 2
+    }
+  ],
+  "seconds": 0.8547064331360161
+}

@@ -1,0 +1,50 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 1133,
+      "source": "빵하고 라면을 샀어여.",
+      "text": "빵하고 라면을 샀어요.",
+      "raw_text": "빵하고 라면을 샀어요.",
+      "token_ids": [
+        239,
+        189,
+        185,
+        241,
+        153,
+        156,
+        238,
+        183,
+        164,
+        36,
+        239,
+        161,
+        192,
+        239,
+        173,
+        184,
+        240,
+        161,
+        136,
+        36,
+        240,
+        135,
+        132,
+        240,
+        154,
+        184,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 27,
+      "cache_guard_refreshes": 0
+    }
+  ],
+  "seconds": 0.8933900357224047
+}

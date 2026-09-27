@@ -1,0 +1,53 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 1299,
+      "source": "노래하고서 춤을 췄어여.",
+      "text": "노래하고서 춤을 췄어요.",
+      "raw_text": "노래하고서 춤을 췄어요.",
+      "token_ids": [
+        239,
+        137,
+        188,
+        239,
+        162,
+        156,
+        241,
+        153,
+        156,
+        238,
+        183,
+        164,
+        240,
+        136,
+        160,
+        36,
+        240,
+        186,
+        168,
+        240,
+        161,
+        136,
+        36,
+        240,
+        187,
+        136,
+        240,
+        154,
+        184,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 30,
+      "cache_guard_refreshes": 2
+    }
+  ],
+  "seconds": 1.0518508441746235
+}

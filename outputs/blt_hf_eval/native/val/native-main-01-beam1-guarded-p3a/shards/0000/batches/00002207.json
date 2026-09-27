@@ -1,0 +1,53 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 2207,
+      "source": "오후에 가치 운동할까요?",
+      "text": "오후에 가치 운동할까요?",
+      "raw_text": "오후에 가치 운동할까요?",
+      "token_ids": [
+        240,
+        156,
+        168,
+        241,
+        159,
+        136,
+        240,
+        155,
+        148,
+        36,
+        238,
+        180,
+        132,
+        240,
+        189,
+        156,
+        36,
+        240,
+        158,
+        184,
+        239,
+        147,
+        157,
+        241,
+        153,
+        164,
+        238,
+        189,
+        144,
+        240,
+        158,
+        152,
+        67
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 31,
+      "cache_guard_refreshes": 1
+    }
+  ],
+  "seconds": 0.986031053122133
+}

@@ -1,0 +1,538 @@
+==========================================
+SLURM_JOB_ID = 916259
+SLURM_NODELIST = gpu43
+==========================================
+Job ID: 916259
+Node: gpu43
+Start Time: 2026-09-27T13:26:28+09:00
+Submit Dir: /scratch/r984a02/phdq3
+Partition: amd_a100nv_8
+CUDA_VISIBLE_DEVICES: 0
+CPUs per task: 4
+{
+  "schema_version": 1,
+  "created_at": "2026-09-27T04:26:33.144198+00:00",
+  "hostname": "gpu43",
+  "platform": "Linux-5.14.0-427.13.1.el9_4.x86_64-x86_64-with-glibc2.34",
+  "python": "3.11.16",
+  "python_executable": "/home01/r984a02/.conda/envs/phdq_blt_hf/bin/python",
+  "scope": "gpu_runtime",
+  "torch": "2.11.0+cu128",
+  "transformers": "5.16.1",
+  "xformers": null,
+  "safetensors": "0.8.0",
+  "huggingface_hub": "1.31.0",
+  "devices": [
+    {
+      "index": 0,
+      "name": "NVIDIA A100-SXM4-80GB",
+      "capability": [
+        8,
+        0
+      ],
+      "total_memory": 85094825984,
+      "bf16_supported": true,
+      "bf16_smoke": true
+    }
+  ],
+  "errors": [],
+  "nvidia_smi": [
+    "NVIDIA A100-SXM4-80GB, 580.105.08, 81920 MiB"
+  ],
+  "cuda_runtime": "12.8",
+  "blt_import": true,
+  "cuda_available": true,
+  "cuda_smoke": true,
+  "loaded_libcudart": [
+    "/scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/nvidia/cuda_runtime/lib/libcudart.so.12"
+  ],
+  "status": "pass"
+}
+{
+  "schema_version": 1,
+  "created_at": "2026-09-27T04:28:40.474123+00:00",
+  "check": "raw_utf8_lengths_and_m2_source_alignment",
+  "model_executed": false,
+  "tokenizer_executed": false,
+  "status": "pass",
+  "max_allowed": 2048,
+  "splits": {
+    "native/train": {
+      "rows": 12292,
+      "blank_lines": 0,
+      "tsv_sha256": "a1080e12f528212f25858b1c0093f497d9ffa62f5717848088c4010bad2ea871",
+      "max_sequence_bytes": 398,
+      "max_prompt_bytes": 207,
+      "max_target_bytes": 190,
+      "over_1024": 0,
+      "over_limit": 0
+    },
+    "native/val": {
+      "rows": 2634,
+      "blank_lines": 0,
+      "tsv_sha256": "002645a47593a88735fe7b13fdc7c9fe2e4c1a92191f90ec7fb95449758ecd98",
+      "max_sequence_bytes": 401,
+      "max_prompt_bytes": 209,
+      "max_target_bytes": 191,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "native",
+        "split": "val",
+        "sample_count": 2634,
+        "source_hash": "e63fe872699d99b0ccec7dc04e98fb9bfde1f6b6c7119d90a9070daec279a4c3",
+        "target_hash": "4c13345e12a1b4cd8097edd3b3cbb05fb0e71cef3d3e9f21c237ef9536461feb",
+        "m2_hash": "17558a819658a14031ed8d36032b2f33f2f0094f50da695e818c488037fabb8a",
+        "tsv_hash": "002645a47593a88735fe7b13fdc7c9fe2e4c1a92191f90ec7fb95449758ecd98",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "native/test": {
+      "rows": 2634,
+      "blank_lines": 0,
+      "tsv_sha256": "6c2d6e1551fdd12dd51b764b0daa3de57befedca47c21ed07fb5538d7c33ccc8",
+      "max_sequence_bytes": 399,
+      "max_prompt_bytes": 208,
+      "max_target_bytes": 190,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "native",
+        "split": "test",
+        "sample_count": 2634,
+        "source_hash": "37ec4cb176690066bd411d4dee23001ee77a3cf7825f28b2555390db349ba1c7",
+        "target_hash": "c1b96b70deb626920be67f05d1b371bd16b38ccc9abd941a3f98bd11776d3563",
+        "m2_hash": "a4579825f6fc5e9ee7fbb1ae722cf260518b9305a07f5191ba423bc0f8b0a04c",
+        "tsv_hash": "6c2d6e1551fdd12dd51b764b0daa3de57befedca47c21ed07fb5538d7c33ccc8",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "korean_learner/train": {
+      "rows": 19898,
+      "blank_lines": 0,
+      "tsv_sha256": "163ab6419d259f477b5ab3c913dca6068dd1beaace2f4858d5416ac41bbe1888",
+      "max_sequence_bytes": 1380,
+      "max_prompt_bytes": 694,
+      "max_target_bytes": 685,
+      "over_1024": 4,
+      "over_limit": 0
+    },
+    "korean_learner/val": {
+      "rows": 4264,
+      "blank_lines": 0,
+      "tsv_sha256": "c5b62d189af42807a6dd0679f2a43b5d07dfaae282aeef812724f90a19fc1e1b",
+      "max_sequence_bytes": 845,
+      "max_prompt_bytes": 430,
+      "max_target_bytes": 414,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "korean_learner",
+        "split": "val",
+        "sample_count": 4264,
+        "source_hash": "46384ab2684f369e36aa0fc787b0447796d3760ff7ebfcca2d8e973e93222a08",
+        "target_hash": "25cbe312b4d391f7a32b75100f6c8c2daa0eb6cd9de241775062eef69b17ea14",
+        "m2_hash": "26aa7b334b71ae3d6e0b06acd45cc81cc219d75ad1ff2b573f496b30284b839c",
+        "tsv_hash": "c5b62d189af42807a6dd0679f2a43b5d07dfaae282aeef812724f90a19fc1e1b",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "korean_learner/test": {
+      "rows": 4265,
+      "blank_lines": 0,
+      "tsv_sha256": "cb49c2806cedd8b71d1b5dbbc31ef5c74f0aca3a6ab6dc92a94c9e5ffe52044d",
+      "max_sequence_bytes": 633,
+      "max_prompt_bytes": 324,
+      "max_target_bytes": 320,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "korean_learner",
+        "split": "test",
+        "sample_count": 4265,
+        "source_hash": "4438468750166634cce0e4b03e72f7b82f45e352e7de230e9492c5a9cc4bb1c5",
+        "target_hash": "93878d24629be44430507a067a2ab645e2bf4fc65dc0cd0ba1177c2ff9640933",
+        "m2_hash": "4be33bbc4adf618da33074b9a97525c4d24c08162b9df44db60e69424f51ec01",
+        "tsv_hash": "cb49c2806cedd8b71d1b5dbbc31ef5c74f0aca3a6ab6dc92a94c9e5ffe52044d",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "union/train": {
+      "rows": 108882,
+      "blank_lines": 1,
+      "tsv_sha256": "90a55cac5d37cd3557f6f958b973b6f6a037872c87edade462ac05324843a54a",
+      "max_sequence_bytes": 1380,
+      "max_prompt_bytes": 694,
+      "max_target_bytes": 685,
+      "over_1024": 5,
+      "over_limit": 0
+    },
+    "union/val": {
+      "rows": 23332,
+      "blank_lines": 1,
+      "tsv_sha256": "22b90eee85aa2edd5557cd3009893dd1b1dcff22584b7f96e713878fcbeb5f8b",
+      "max_sequence_bytes": 931,
+      "max_prompt_bytes": 470,
+      "max_target_bytes": 460,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "union",
+        "split": "val",
+        "sample_count": 23332,
+        "source_hash": "a0063540f10386703cf635a5c77922af237d45357202cc5da5420f2c4ebb5a7b",
+        "target_hash": "864380fdab4b860b906a6836f9bb6a61230c40f071332fc1abcae2c4fb990d45",
+        "m2_hash": "22e1cdeed3702fe905b429c872f188b19b70c52e949c3eed1a8b4df5a90def20",
+        "tsv_hash": "22b90eee85aa2edd5557cd3009893dd1b1dcff22584b7f96e713878fcbeb5f8b",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    },
+    "union/test": {
+      "rows": 23333,
+      "blank_lines": 1,
+      "tsv_sha256": "65b1bd0039ae58c136ee44ebbb6876ee69a5353bb8c00046ec235e7e79592f28",
+      "max_sequence_bytes": 886,
+      "max_prompt_bytes": 451,
+      "max_target_bytes": 434,
+      "over_1024": 0,
+      "over_limit": 0,
+      "evaluation_identity": {
+        "dataset": "union",
+        "split": "test",
+        "sample_count": 23333,
+        "source_hash": "eb476f3f20ea1abdd1fbb42e0ca006672a744e353bcd836d470569d7ea9e2ea7",
+        "target_hash": "fb2c7f1b332c75a69a4677a09a3f48134469cf40d9cf7f7cb4906696dbd0a176",
+        "m2_hash": "e79ae3c01c211bb58c2a0213f6b9e39bed8d9e4eb2011d7e7ae22a33c1042db7",
+        "tsv_hash": "65b1bd0039ae58c136ee44ebbb6876ee69a5353bb8c00046ec235e7e79592f28",
+        "reader": "utf8-universal-newlines-two-columns-blank-lines-skipped-v1"
+      }
+    }
+  },
+  "total": {
+    "rows": 201534,
+    "max_sequence_bytes": 1380,
+    "max_prompt_bytes": 694,
+    "max_target_bytes": 685,
+    "over_1024": 9,
+    "over_limit": 0
+  }
+}
+{"shard": 0, "completed": 2319, "total": 2634}
+{"shard": 0, "completed": 2320, "total": 2634}
+{"shard": 0, "completed": 2321, "total": 2634}
+{"shard": 0, "completed": 2322, "total": 2634}
+{"shard": 0, "completed": 2323, "total": 2634}
+{"shard": 0, "completed": 2324, "total": 2634}
+{"shard": 0, "completed": 2325, "total": 2634}
+{"shard": 0, "completed": 2326, "total": 2634}
+{"shard": 0, "completed": 2327, "total": 2634}
+{"shard": 0, "completed": 2328, "total": 2634}
+{"shard": 0, "completed": 2329, "total": 2634}
+{"shard": 0, "completed": 2330, "total": 2634}
+{"shard": 0, "completed": 2331, "total": 2634}
+{"shard": 0, "completed": 2332, "total": 2634}
+{"shard": 0, "completed": 2333, "total": 2634}
+{"shard": 0, "completed": 2334, "total": 2634}
+{"shard": 0, "completed": 2335, "total": 2634}
+{"shard": 0, "completed": 2336, "total": 2634}
+{"shard": 0, "completed": 2337, "total": 2634}
+{"shard": 0, "completed": 2338, "total": 2634}
+{"shard": 0, "completed": 2339, "total": 2634}
+{"shard": 0, "completed": 2340, "total": 2634}
+{"shard": 0, "completed": 2341, "total": 2634}
+{"shard": 0, "completed": 2342, "total": 2634}
+{"shard": 0, "completed": 2343, "total": 2634}
+{"shard": 0, "completed": 2344, "total": 2634}
+{"shard": 0, "completed": 2345, "total": 2634}
+{"shard": 0, "completed": 2346, "total": 2634}
+{"shard": 0, "completed": 2347, "total": 2634}
+{"shard": 0, "completed": 2348, "total": 2634}
+{"shard": 0, "completed": 2349, "total": 2634}
+{"shard": 0, "completed": 2350, "total": 2634}
+{"shard": 0, "completed": 2351, "total": 2634}
+{"shard": 0, "completed": 2352, "total": 2634}
+{"shard": 0, "completed": 2353, "total": 2634}
+{"shard": 0, "completed": 2354, "total": 2634}
+{"shard": 0, "completed": 2355, "total": 2634}
+{"shard": 0, "completed": 2356, "total": 2634}
+{"shard": 0, "completed": 2357, "total": 2634}
+{"shard": 0, "completed": 2358, "total": 2634}
+{"shard": 0, "completed": 2359, "total": 2634}
+{"shard": 0, "completed": 2360, "total": 2634}
+{"shard": 0, "completed": 2361, "total": 2634}
+{"shard": 0, "completed": 2362, "total": 2634}
+{"shard": 0, "completed": 2363, "total": 2634}
+{"shard": 0, "completed": 2364, "total": 2634}
+{"shard": 0, "completed": 2365, "total": 2634}
+{"shard": 0, "completed": 2366, "total": 2634}
+{"shard": 0, "completed": 2367, "total": 2634}
+{"shard": 0, "completed": 2368, "total": 2634}
+{"shard": 0, "completed": 2369, "total": 2634}
+{"shard": 0, "completed": 2370, "total": 2634}
+{"shard": 0, "completed": 2371, "total": 2634}
+{"shard": 0, "completed": 2372, "total": 2634}
+{"shard": 0, "completed": 2373, "total": 2634}
+{"shard": 0, "completed": 2374, "total": 2634}
+{"shard": 0, "completed": 2375, "total": 2634}
+{"shard": 0, "completed": 2376, "total": 2634}
+{"shard": 0, "completed": 2377, "total": 2634}
+{"shard": 0, "completed": 2378, "total": 2634}
+{"shard": 0, "completed": 2379, "total": 2634}
+{"shard": 0, "completed": 2380, "total": 2634}
+{"shard": 0, "completed": 2381, "total": 2634}
+{"shard": 0, "completed": 2382, "total": 2634}
+{"shard": 0, "completed": 2383, "total": 2634}
+{"shard": 0, "completed": 2384, "total": 2634}
+{"shard": 0, "completed": 2385, "total": 2634}
+{"shard": 0, "completed": 2386, "total": 2634}
+{"shard": 0, "completed": 2387, "total": 2634}
+{"shard": 0, "completed": 2388, "total": 2634}
+{"shard": 0, "completed": 2389, "total": 2634}
+{"shard": 0, "completed": 2390, "total": 2634}
+{"shard": 0, "completed": 2391, "total": 2634}
+{"shard": 0, "completed": 2392, "total": 2634}
+{"shard": 0, "completed": 2393, "total": 2634}
+{"shard": 0, "completed": 2394, "total": 2634}
+{"shard": 0, "completed": 2395, "total": 2634}
+{"shard": 0, "completed": 2396, "total": 2634}
+{"shard": 0, "completed": 2397, "total": 2634}
+{"shard": 0, "completed": 2398, "total": 2634}
+{"shard": 0, "completed": 2399, "total": 2634}
+{"shard": 0, "completed": 2400, "total": 2634}
+{"shard": 0, "completed": 2401, "total": 2634}
+{"shard": 0, "completed": 2402, "total": 2634}
+{"shard": 0, "completed": 2403, "total": 2634}
+{"shard": 0, "completed": 2404, "total": 2634}
+{"shard": 0, "completed": 2405, "total": 2634}
+{"shard": 0, "completed": 2406, "total": 2634}
+{"shard": 0, "completed": 2407, "total": 2634}
+{"shard": 0, "completed": 2408, "total": 2634}
+{"shard": 0, "completed": 2409, "total": 2634}
+{"shard": 0, "completed": 2410, "total": 2634}
+{"shard": 0, "completed": 2411, "total": 2634}
+{"shard": 0, "completed": 2412, "total": 2634}
+{"shard": 0, "completed": 2413, "total": 2634}
+{"shard": 0, "completed": 2414, "total": 2634}
+{"shard": 0, "completed": 2415, "total": 2634}
+{"shard": 0, "completed": 2416, "total": 2634}
+{"shard": 0, "completed": 2417, "total": 2634}
+{"shard": 0, "completed": 2418, "total": 2634}
+{"shard": 0, "completed": 2419, "total": 2634}
+{"shard": 0, "completed": 2420, "total": 2634}
+{"shard": 0, "completed": 2421, "total": 2634}
+{"shard": 0, "completed": 2422, "total": 2634}
+{"shard": 0, "completed": 2423, "total": 2634}
+{"shard": 0, "completed": 2424, "total": 2634}
+{"shard": 0, "completed": 2425, "total": 2634}
+{"shard": 0, "completed": 2426, "total": 2634}
+{"shard": 0, "completed": 2427, "total": 2634}
+{"shard": 0, "completed": 2428, "total": 2634}
+{"shard": 0, "completed": 2429, "total": 2634}
+{"shard": 0, "completed": 2430, "total": 2634}
+{"shard": 0, "completed": 2431, "total": 2634}
+{"shard": 0, "completed": 2432, "total": 2634}
+{"shard": 0, "completed": 2433, "total": 2634}
+{"shard": 0, "completed": 2434, "total": 2634}
+{"shard": 0, "completed": 2435, "total": 2634}
+{"shard": 0, "completed": 2436, "total": 2634}
+{"shard": 0, "completed": 2437, "total": 2634}
+{"shard": 0, "completed": 2438, "total": 2634}
+{"shard": 0, "completed": 2439, "total": 2634}
+{"shard": 0, "completed": 2440, "total": 2634}
+{"shard": 0, "completed": 2441, "total": 2634}
+{"shard": 0, "completed": 2442, "total": 2634}
+{"shard": 0, "completed": 2443, "total": 2634}
+{"shard": 0, "completed": 2444, "total": 2634}
+{"shard": 0, "completed": 2445, "total": 2634}
+{"shard": 0, "completed": 2446, "total": 2634}
+{"shard": 0, "completed": 2447, "total": 2634}
+{"shard": 0, "completed": 2448, "total": 2634}
+{"shard": 0, "completed": 2449, "total": 2634}
+{"shard": 0, "completed": 2450, "total": 2634}
+{"shard": 0, "completed": 2451, "total": 2634}
+{"shard": 0, "completed": 2452, "total": 2634}
+{"shard": 0, "completed": 2453, "total": 2634}
+{"shard": 0, "completed": 2454, "total": 2634}
+{"shard": 0, "completed": 2455, "total": 2634}
+{"shard": 0, "completed": 2456, "total": 2634}
+{"shard": 0, "completed": 2457, "total": 2634}
+{"shard": 0, "completed": 2458, "total": 2634}
+{"shard": 0, "completed": 2459, "total": 2634}
+{"shard": 0, "completed": 2460, "total": 2634}
+{"shard": 0, "completed": 2461, "total": 2634}
+{"shard": 0, "completed": 2462, "total": 2634}
+{"shard": 0, "completed": 2463, "total": 2634}
+{"shard": 0, "completed": 2464, "total": 2634}
+{"shard": 0, "completed": 2465, "total": 2634}
+{"shard": 0, "completed": 2466, "total": 2634}
+{"shard": 0, "completed": 2467, "total": 2634}
+{"shard": 0, "completed": 2468, "total": 2634}
+{"shard": 0, "completed": 2469, "total": 2634}
+{"shard": 0, "completed": 2470, "total": 2634}
+{"shard": 0, "completed": 2471, "total": 2634}
+{"shard": 0, "completed": 2472, "total": 2634}
+{"shard": 0, "completed": 2473, "total": 2634}
+{"shard": 0, "completed": 2474, "total": 2634}
+{"shard": 0, "completed": 2475, "total": 2634}
+{"shard": 0, "completed": 2476, "total": 2634}
+{"shard": 0, "completed": 2477, "total": 2634}
+{"shard": 0, "completed": 2478, "total": 2634}
+{"shard": 0, "completed": 2479, "total": 2634}
+{"shard": 0, "completed": 2480, "total": 2634}
+{"shard": 0, "completed": 2481, "total": 2634}
+{"shard": 0, "completed": 2482, "total": 2634}
+{"shard": 0, "completed": 2483, "total": 2634}
+{"shard": 0, "completed": 2484, "total": 2634}
+{"shard": 0, "completed": 2485, "total": 2634}
+{"shard": 0, "completed": 2486, "total": 2634}
+{"shard": 0, "completed": 2487, "total": 2634}
+{"shard": 0, "completed": 2488, "total": 2634}
+{"shard": 0, "completed": 2489, "total": 2634}
+{"shard": 0, "completed": 2490, "total": 2634}
+{"shard": 0, "completed": 2491, "total": 2634}
+{"shard": 0, "completed": 2492, "total": 2634}
+{"shard": 0, "completed": 2493, "total": 2634}
+{"shard": 0, "completed": 2494, "total": 2634}
+{"shard": 0, "completed": 2495, "total": 2634}
+{"shard": 0, "completed": 2496, "total": 2634}
+{"shard": 0, "completed": 2497, "total": 2634}
+{"shard": 0, "completed": 2498, "total": 2634}
+{"shard": 0, "completed": 2499, "total": 2634}
+{"shard": 0, "completed": 2500, "total": 2634}
+{"shard": 0, "completed": 2501, "total": 2634}
+{"shard": 0, "completed": 2502, "total": 2634}
+{"shard": 0, "completed": 2503, "total": 2634}
+{"shard": 0, "completed": 2504, "total": 2634}
+{"shard": 0, "completed": 2505, "total": 2634}
+{"shard": 0, "completed": 2506, "total": 2634}
+{"shard": 0, "completed": 2507, "total": 2634}
+{"shard": 0, "completed": 2508, "total": 2634}
+{"shard": 0, "completed": 2509, "total": 2634}
+{"shard": 0, "completed": 2510, "total": 2634}
+{"shard": 0, "completed": 2511, "total": 2634}
+{"shard": 0, "completed": 2512, "total": 2634}
+{"shard": 0, "completed": 2513, "total": 2634}
+{"shard": 0, "completed": 2514, "total": 2634}
+{"shard": 0, "completed": 2515, "total": 2634}
+{"shard": 0, "completed": 2516, "total": 2634}
+{"shard": 0, "completed": 2517, "total": 2634}
+{"shard": 0, "completed": 2518, "total": 2634}
+{"shard": 0, "completed": 2519, "total": 2634}
+{"shard": 0, "completed": 2520, "total": 2634}
+{"shard": 0, "completed": 2521, "total": 2634}
+{"shard": 0, "completed": 2522, "total": 2634}
+{"shard": 0, "completed": 2523, "total": 2634}
+{"shard": 0, "completed": 2524, "total": 2634}
+{"shard": 0, "completed": 2525, "total": 2634}
+{"shard": 0, "completed": 2526, "total": 2634}
+{"shard": 0, "completed": 2527, "total": 2634}
+{"shard": 0, "completed": 2528, "total": 2634}
+{"shard": 0, "completed": 2529, "total": 2634}
+{"shard": 0, "completed": 2530, "total": 2634}
+{"shard": 0, "completed": 2531, "total": 2634}
+{"shard": 0, "completed": 2532, "total": 2634}
+{"shard": 0, "completed": 2533, "total": 2634}
+{"shard": 0, "completed": 2534, "total": 2634}
+{"shard": 0, "completed": 2535, "total": 2634}
+{"shard": 0, "completed": 2536, "total": 2634}
+{"shard": 0, "completed": 2537, "total": 2634}
+{"shard": 0, "completed": 2538, "total": 2634}
+{"shard": 0, "completed": 2539, "total": 2634}
+{"shard": 0, "completed": 2540, "total": 2634}
+{"shard": 0, "completed": 2541, "total": 2634}
+{"shard": 0, "completed": 2542, "total": 2634}
+{"shard": 0, "completed": 2543, "total": 2634}
+{"shard": 0, "completed": 2544, "total": 2634}
+{"shard": 0, "completed": 2545, "total": 2634}
+{"shard": 0, "completed": 2546, "total": 2634}
+{"shard": 0, "completed": 2547, "total": 2634}
+{"shard": 0, "completed": 2548, "total": 2634}
+{"shard": 0, "completed": 2549, "total": 2634}
+{"shard": 0, "completed": 2550, "total": 2634}
+{"shard": 0, "completed": 2551, "total": 2634}
+{"shard": 0, "completed": 2552, "total": 2634}
+{"shard": 0, "completed": 2553, "total": 2634}
+{"shard": 0, "completed": 2554, "total": 2634}
+{"shard": 0, "completed": 2555, "total": 2634}
+{"shard": 0, "completed": 2556, "total": 2634}
+{"shard": 0, "completed": 2557, "total": 2634}
+{"shard": 0, "completed": 2558, "total": 2634}
+{"shard": 0, "completed": 2559, "total": 2634}
+{"shard": 0, "completed": 2560, "total": 2634}
+{"shard": 0, "completed": 2561, "total": 2634}
+{"shard": 0, "completed": 2562, "total": 2634}
+{"shard": 0, "completed": 2563, "total": 2634}
+{"shard": 0, "completed": 2564, "total": 2634}
+{"shard": 0, "completed": 2565, "total": 2634}
+{"shard": 0, "completed": 2566, "total": 2634}
+{"shard": 0, "completed": 2567, "total": 2634}
+{"shard": 0, "completed": 2568, "total": 2634}
+{"shard": 0, "completed": 2569, "total": 2634}
+{"shard": 0, "completed": 2570, "total": 2634}
+{"shard": 0, "completed": 2571, "total": 2634}
+{"shard": 0, "completed": 2572, "total": 2634}
+{"shard": 0, "completed": 2573, "total": 2634}
+{"shard": 0, "completed": 2574, "total": 2634}
+{"shard": 0, "completed": 2575, "total": 2634}
+{"shard": 0, "completed": 2576, "total": 2634}
+{"shard": 0, "completed": 2577, "total": 2634}
+{"shard": 0, "completed": 2578, "total": 2634}
+{"shard": 0, "completed": 2579, "total": 2634}
+{"shard": 0, "completed": 2580, "total": 2634}
+{"shard": 0, "completed": 2581, "total": 2634}
+{"shard": 0, "completed": 2582, "total": 2634}
+{"shard": 0, "completed": 2583, "total": 2634}
+{"shard": 0, "completed": 2584, "total": 2634}
+{"shard": 0, "completed": 2585, "total": 2634}
+{"shard": 0, "completed": 2586, "total": 2634}
+{"shard": 0, "completed": 2587, "total": 2634}
+{"shard": 0, "completed": 2588, "total": 2634}
+{"shard": 0, "completed": 2589, "total": 2634}
+{"shard": 0, "completed": 2590, "total": 2634}
+{"shard": 0, "completed": 2591, "total": 2634}
+{"shard": 0, "completed": 2592, "total": 2634}
+{"shard": 0, "completed": 2593, "total": 2634}
+{"shard": 0, "completed": 2594, "total": 2634}
+{"shard": 0, "completed": 2595, "total": 2634}
+{"shard": 0, "completed": 2596, "total": 2634}
+{"shard": 0, "completed": 2597, "total": 2634}
+{"shard": 0, "completed": 2598, "total": 2634}
+{"shard": 0, "completed": 2599, "total": 2634}
+{"shard": 0, "completed": 2600, "total": 2634}
+{"shard": 0, "completed": 2601, "total": 2634}
+{"shard": 0, "completed": 2602, "total": 2634}
+{"shard": 0, "completed": 2603, "total": 2634}
+{"shard": 0, "completed": 2604, "total": 2634}
+{"shard": 0, "completed": 2605, "total": 2634}
+{"shard": 0, "completed": 2606, "total": 2634}
+{"shard": 0, "completed": 2607, "total": 2634}
+{"shard": 0, "completed": 2608, "total": 2634}
+{"shard": 0, "completed": 2609, "total": 2634}
+{"shard": 0, "completed": 2610, "total": 2634}
+{"shard": 0, "completed": 2611, "total": 2634}
+{"shard": 0, "completed": 2612, "total": 2634}
+{"shard": 0, "completed": 2613, "total": 2634}
+{"shard": 0, "completed": 2614, "total": 2634}
+{"shard": 0, "completed": 2615, "total": 2634}
+{"shard": 0, "completed": 2616, "total": 2634}
+{"shard": 0, "completed": 2617, "total": 2634}
+{"shard": 0, "completed": 2618, "total": 2634}
+{"shard": 0, "completed": 2619, "total": 2634}
+{"shard": 0, "completed": 2620, "total": 2634}
+{"shard": 0, "completed": 2621, "total": 2634}
+{"shard": 0, "completed": 2622, "total": 2634}
+{"shard": 0, "completed": 2623, "total": 2634}
+{"shard": 0, "completed": 2624, "total": 2634}
+{"shard": 0, "completed": 2625, "total": 2634}
+{"shard": 0, "completed": 2626, "total": 2634}
+{"shard": 0, "completed": 2627, "total": 2634}
+{"shard": 0, "completed": 2628, "total": 2634}
+{"shard": 0, "completed": 2629, "total": 2634}
+{"shard": 0, "completed": 2630, "total": 2634}
+{"shard": 0, "completed": 2631, "total": 2634}
+{"shard": 0, "completed": 2632, "total": 2634}
+{"shard": 0, "completed": 2633, "total": 2634}
+{"shard": 0, "completed": 2634, "total": 2634}
+End Time: 2026-09-27T13:44:53+09:00
+Elapsed Seconds: 1105
+Exit Code: 0

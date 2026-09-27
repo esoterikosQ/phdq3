@@ -1,0 +1,50 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 305,
+      "source": "동생이 그렇게 조으니?",
+      "text": "동생이 그렇게 조으니?",
+      "raw_text": "동생이 그렇게 조으니?",
+      "token_ids": [
+        239,
+        147,
+        157,
+        240,
+        135,
+        161,
+        240,
+        161,
+        184,
+        36,
+        238,
+        187,
+        188,
+        239,
+        164,
+        139,
+        238,
+        182,
+        144,
+        36,
+        240,
+        165,
+        180,
+        240,
+        160,
+        192,
+        239,
+        143,
+        140,
+        67
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 29,
+      "cache_guard_refreshes": 1
+    }
+  ],
+  "seconds": 0.9065472348593175
+}

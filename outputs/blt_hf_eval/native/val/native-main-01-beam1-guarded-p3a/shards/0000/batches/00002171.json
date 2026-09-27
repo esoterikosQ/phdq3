@@ -1,0 +1,51 @@
+{
+  "fingerprint": "57af5a931ace8d31784774d12a128fe5b8506b96c67dcdc68242ce4587ca9e7e",
+  "records": [
+    {
+      "index": 2171,
+      "source": "거짓말을 안해야 되요.",
+      "text": "거짓말을 안 해야 되요.",
+      "raw_text": "거짓말을 안 해야 되요.",
+      "token_ids": [
+        238,
+        181,
+        180,
+        240,
+        171,
+        151,
+        239,
+        171,
+        148,
+        240,
+        161,
+        136,
+        36,
+        240,
+        153,
+        140,
+        36,
+        241,
+        153,
+        184,
+        240,
+        153,
+        192,
+        36,
+        239,
+        148,
+        156,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true,
+      "cache_preliminary_skips": 28,
+      "cache_guard_refreshes": 0
+    }
+  ],
+  "seconds": 0.9102692110463977
+}
