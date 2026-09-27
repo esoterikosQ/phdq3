@@ -163,8 +163,20 @@ def main():
                 hf_style_logits = greedy_logits(model(input_ids=tokens,
                                                       attention_mask=torch.ones_like(tokens),
                                                       use_cache=False))
+                # Transformers 5.16.1 generate() explicitly passes
+                # logits_to_keep=1 when the model supports it. The v1 manual
+                # cache path uses the forward default (0), which projects the
+                # full sequence and may select a different BF16 GEMM kernel.
+                hf_shape_logits = greedy_logits(model(input_ids=tokens,
+                                                      attention_mask=torch.ones_like(tokens),
+                                                      use_cache=False, logits_to_keep=1))
+                hf_shape_repeat_logits = greedy_logits(model(input_ids=tokens,
+                                                             attention_mask=torch.ones_like(tokens),
+                                                             use_cache=False, logits_to_keep=1))
                 full_id, repeated_id = int(full_logits.argmax()), int(repeated_logits.argmax())
                 hf_style_id = int(hf_style_logits.argmax())
+                hf_shape_id = int(hf_shape_logits.argmax())
+                hf_shape_repeat_id = int(hf_shape_repeat_logits.argmax())
                 finite = torch.isfinite(full_logits) & torch.isfinite(cached_logits)
                 max_abs_delta = float((full_logits[finite] - cached_logits[finite]).abs().max())
                 classification = classify_case(
@@ -178,6 +190,9 @@ def main():
                     'replayed_candidate_id': cached_id, 'full_forward_id': full_id,
                     'repeat_full_forward_id': repeated_id,
                     'hf_style_full_forward_id': hf_style_id,
+                    'hf_generate_shape_forward_id': hf_shape_id,
+                    'hf_generate_shape_repeat_id': hf_shape_repeat_id,
+                    'hf_generate_shape_recovers_reference': hf_shape_id == expected_reference == hf_shape_repeat_id,
                     'skipped_global': skipped, 'reused_closed_patches': closed_count,
                     'decoder_reused': decoder_reused,
                     'same_patch_starts': previous_starts == reuse.starts if previous_starts is not None else False,
@@ -186,6 +201,8 @@ def main():
                     'max_abs_finite_logit_delta': max_abs_delta,
                     'full_ref_minus_candidate_logit': float(full_logits[expected_reference] - full_logits[expected_candidate]),
                     'cached_ref_minus_candidate_logit': float(cached_logits[expected_reference] - cached_logits[expected_candidate]),
+                    'hf_generate_shape_ref_minus_candidate_logit': float(
+                        hf_shape_logits[expected_reference] - hf_shape_logits[expected_candidate]),
                     'classification': classification,
                 }
             cases.append(case)
@@ -194,6 +211,13 @@ def main():
 
     classes = {name: sum(case['classification'] == name for case in cases)
                for name in sorted({case['classification'] for case in cases})}
+    shape_summary = {
+        'hf_shape_recovers_reference': sum(case.get('hf_generate_shape_recovers_reference', False)
+                                           for case in cases),
+        'full0_differs_but_hf_shape_recovers_reference': sum(
+            case['classification'] == 'full_forward_differs_from_hf_reference'
+            and case.get('hf_generate_shape_recovers_reference', False) for case in cases),
+    }
     report = {'status': 'complete', 'scope': 'first differing token on all native validation cache mismatches',
               'comparison': str(comparison_path.relative_to(ROOT)),
               'comparison_sha256': sha256_file(comparison_path),
@@ -205,10 +229,11 @@ def main():
               'generation_code_sha256': sha256_file(ROOT / 'blt_hf/generation.py'),
               'reuse_code_sha256': sha256_file(ROOT / 'blt_hf/cache/global_reuse.py'),
               'device': torch.cuda.get_device_name(), 'torch_version': torch.__version__,
-              'mismatch_count': len(mismatches), 'classifications': classes, 'cases': cases}
+              'mismatch_count': len(mismatches), 'classifications': classes,
+              'logit_shape_summary': shape_summary, 'cases': cases}
     write_json(output_path, report)
     print(json.dumps({'status': report['status'], 'mismatch_count': len(mismatches),
-                      'classifications': classes}), flush=True)
+                      'classifications': classes, 'logit_shape_summary': shape_summary}), flush=True)
     return 0
 
 

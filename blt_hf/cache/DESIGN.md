@@ -215,6 +215,14 @@ token ID·문자열이 달랐다. EOS·UTF-8 상태는 동일했다. 생성 시�
 결과를 확인하기 전에는 캐시 적용 범위를 변경하거나 출력 동등성을 주장하지
 않는다.
 
+첫 분기 재생 916179는 32/32 재현, **17건은 global skip이 직접 토큰
+선택을 변경**했다. 나머지 15건은 global을 재계산해도 기존 HF 기준 ID와
+달랐고, 11건은 캐시/full logit 자체가 같았다. HF `generate()`의
+`logits_to_keep=1`과 v1 수동 forward의 기본값 0이라는 별도 구현 차이를
+확인했다. 08 진단은 같은 입력에서 두 logit projection 모양의 ID를
+기록해 나머지 15건을 분리한다. 새 backend나 재사용 조건 수정은 이 결과
+이후에 결정한다.
+
 ## 기준 생성 경로
 
 `blt_hf/generation.py`는 생성할 때마다 `[BOS] source SEP generated_prefix`를

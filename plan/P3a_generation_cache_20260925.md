@@ -136,6 +136,12 @@ A100 완성 생성 검사(915874)는 길이별 native 12문장 모두 token ID·
 복구되는지 판별하는 것이다. 직접 원인이 확인되면 재사용 조건을 수정한 뒤
 새 backend 버전·새 EVAL_DIR에서 전수 비교한다. 기존 생성 결과는 보존한다.
 
+첫 분기 07 재생(916179)은 17건에서 global skip이 기준 ID 이탈을 직접
+유발한 것을 확인했다. 나머지 15건은 full forward도 저장된 HF 기준과
+달랐다. `generate()`의 `logits_to_keep=1`과 v1 직접 forward의 기본값 0
+차이를 08 진단에서 확인한 뒤, global 재사용 조건과 함께 수정할 범위를
+정한다.
+
 ## 단계 2: 빔 4·배치·재개
 
 1. 빔 4에서 부모 빔 선택 시 entropy, patch, encoder/global/decoder 상태를

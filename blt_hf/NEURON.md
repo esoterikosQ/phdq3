@@ -446,6 +446,29 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=4 \
   scripts/diagnose_blt_cache_divergence.sh
 ```
 
+916179 진단은 exit 0, 32/32 첫 분기 재생 성공이었다. 17건은 global skip 후
+기준과 다른 토큰이 선택됐지만 같은 입력을 full 재계산하면 기준 ID가 돌아와
+재사용이 직접 원인임을 확인했다. 나머지 15건은 full 재계산도 저장된 HF
+기준과 달랐고, 그중 11건은 cached/full logit 차이가 정확히 0이었다.
+Transformers 5.16.1 `generate()`는 `logits_to_keep=1`을 명시하지만 v1
+수동 경로는 기본값 0이다. 이 15건을 분리하기 위해 진단 코드에 HF식
+`logits_to_keep=1`을 추가했다. 07은 보존하고 **새 08 결과**를 만든다.
+아래 명령은 공유 checkout의 다른 작업이 종료된 뒤 사용자만 Neuron에서 실행한다.
+
+```bash
+cd /scratch/r984a02/phdq3
+git pull --ff-only origin main
+conda activate phdq_blt_hf
+export CKPT_PATH=outputs/blt_hf/native/native-main-01/step-00001155-24b756e2
+export COMPARE_REPORT=blt_hf_checks/results/p3a_native_full_global_06.json
+export DIAG_OUTPUT=blt_hf_checks/results/p3a_native_divergence_logit_shape_08.json
+test ! -e "$DIAG_OUTPUT"
+sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=4 \
+  --time=01:00:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",COMPARE_REPORT="$COMPARE_REPORT",DIAG_OUTPUT="$DIAG_OUTPUT" \
+  scripts/diagnose_blt_cache_divergence.sh
+```
+
 ### 기존 분리형 10-epoch 절차
 
 새 사이클은 2026-09-18의 3-epoch run과 다른 RUN_ID를 쓴다. 기존

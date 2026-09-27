@@ -1,5 +1,14 @@
 # 일자별 작업 내역
 
+## 2026-09-27 — 첫 분기 07 결과·logit projection 08 진단
+
+- 사용자 커밋 `4e96a6c`의 916179 보고서: exit 0, 32/32 재생. 17건은
+  global skip이 직접 greedy ID를 바꿨고 15건은 full 재계산에서도 저장된
+  HF ID가 나오지 않았다. 15건 중 11건은 cache/full logit이 같았다.
+- HF `generate()`는 `logits_to_keep=1`, v1 수동 경로는 기본값 0인 것을
+  확인했다. 08 진단에 HF식 projection 결과를 추가하고 새 보고서 명령을
+  준비했다. 기존 backend와 07 결과는 변경하지 않았다.
+
 ## 2026-09-27 — native cache 전수 비교와 첫 분기 진단 준비
 
 - 사용자 동기화 커밋 `9a483d2`의 916171 보고서를 검증했다. 2,634건 모두
