@@ -1,5 +1,12 @@
 # P3a 캐시 개선 작업 분리·인계
 
+> **2026-09-27 변경:** 사용자는 캐시 개발을 `phdq3`의 하위 디렉터리·worktree가
+> 아닌 **독립 프로젝트**로 분리하기로 했다. 아래 worktree/인계 절차는 이전
+> 계획의 기록이며 새 캐시 개발에 실행하지 않는다. 독립 패키지와 최신 인계
+> 문서는 Mac의 형제 디렉터리 `../blt-cache/`의 `AGENTS.md`,
+> `docs/HANDOFF.md`, `docs/PLAN.md`, `docs/INTEGRATION.md`에 있다.
+> 현재 대기 중인 Neuron 학습은 `phdq3`의 기존 in-tree 캐시 코드로 진행한다.
+
 작성 기준: 2026-09-27 `main` 커밋 `6014db5`. 상세 기술 근거는
 `plan/P3a_generation_cache_20260925.md`와 `blt_hf/cache/DESIGN.md`,
 Neuron 명령은 `blt_hf/NEURON.md`를 따른다. 이 문서는 **두 Codex 작업창이
