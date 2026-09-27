@@ -501,6 +501,37 @@ sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=4 \
   scripts/bench_blt_cache_v2_mismatches.sh
 ```
 
+916208의 09 시험은 exit 0, 기존 v1 불일치 32건 중 12건이 v2에서 HF와
+일치했고 **20건은 남았다**. 대조군 12건은 모두 일치했다. 남은 20건 모두
+07 진단에서 첫 분기에 global skip이 일어난 행이다. 선택형
+`global-prefix-guarded-greedy-v1`은 v2의 `logits_to_keep=1`을 유지하고,
+global skip으로 얻은 상위 두 합법 바이트의 logit 차이가 **1.0 이하**일 때만
+같은 입력을 full forward로 재계산한다. 07에서 관찰된 첫 분기 최대 logit
+차이 0.421875의 두 배보다 큰 보수적 *실험용* 문턱이며, 미관측 입력에
+대한 동일성 보증은 아니다. 보고서의 `cache_preliminary_skips`와
+`cache_guard_refreshes`로 재계산 빈도를 확인한다. 10은 같은 44문장
+표본에서 출력·시간을 비교한다. 사용자만 Neuron에서 작업 중인 공유
+checkout을 비운 후 실행한다.
+
+```bash
+cd /scratch/r984a02/phdq3
+git status --short --branch
+git pull --ff-only origin main
+conda activate phdq_blt_hf
+export CKPT_PATH=outputs/blt_hf/native/native-main-01/step-00001155-24b756e2
+export COMPARE_REPORT=blt_hf_checks/results/p3a_native_full_global_06.json
+export CONTROL_REPORT=blt_hf_checks/results/p3a_native_complete_global_05.json
+export BENCH_OUTPUT=blt_hf_checks/results/p3a_native_cache_guarded_10.json
+test -f "$CKPT_PATH/model.safetensors"
+test -f "$COMPARE_REPORT"
+test -f "$CONTROL_REPORT"
+test ! -e "$BENCH_OUTPUT"
+sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=4 \
+  --time=01:00:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",COMPARE_REPORT="$COMPARE_REPORT",CONTROL_REPORT="$CONTROL_REPORT",BENCH_OUTPUT="$BENCH_OUTPUT" \
+  scripts/bench_blt_cache_guarded_mismatches.sh
+```
+
 ### 기존 분리형 10-epoch 절차
 
 새 사이클은 2026-09-18의 3-epoch run과 다른 RUN_ID를 쓴다. 기존

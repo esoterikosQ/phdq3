@@ -1,4 +1,4 @@
-"""Replay all v1 mismatch rows plus length-stratified controls with v2 logits."""
+"""Replay all v1 mismatch rows plus length-stratified controls with a new backend."""
 
 import argparse
 import json
@@ -12,6 +12,9 @@ def main():
     parser.add_argument('--control-report', required=True)
     parser.add_argument('--checkpoint', required=True)
     parser.add_argument('--output', required=True)
+    parser.add_argument('--backend', choices=('global-prefix-greedy-v2',
+                                              'global-prefix-guarded-greedy-v1'),
+                        default='global-prefix-greedy-v2')
     parser.add_argument('--model-path', default='artifacts/converted/blt-1b-hf-own')
     parser.add_argument('--conversion-report', default='blt_hf_checks/manifests/conversion_B_20260915.json')
     args = parser.parse_args()
@@ -22,7 +25,7 @@ def main():
     from blt_hf.checkpoint import resolve_checkpoint
     from blt_hf.data_adapter import dataset_split_path, read_tsv
     from blt_hf.evaluation import collect_records
-    from blt_hf.generation import GenerationConfig, generate_batch, GLOBAL_PREFIX_BACKEND_V2
+    from blt_hf.generation import GenerationConfig, generate_batch
     from blt_hf.manifest import sha256_file, split_identity, write_json
     from blt_hf.model import load_model
     from blt_hf.runtime import ROOT, local_path, require_neuron_job, tokenizer_identity
@@ -50,8 +53,8 @@ def main():
     if (reference_manifest['fingerprint'] != comparison['reference_fingerprint'] or
             candidate_manifest['fingerprint'] != comparison['candidate_fingerprint']):
         raise ValueError('Comparison fingerprints differ from stored runs')
-    # v2 changes only these generation paths; the checkpoint and model runtime
-    # must still be the same as the saved HF reference.
+    # Candidate backends change only these generation paths; the checkpoint
+    # and model runtime must still be the same as the saved HF reference.
     changed_generation_paths = {'blt_hf/generation.py', 'blt_hf/eval.py',
                                 'blt_hf/cache/global_reuse.py'}
     for path, expected in reference_manifest['code_files'].items():
@@ -91,7 +94,7 @@ def main():
     model.eval().requires_grad_(False)
     config = GenerationConfig(max_new_bytes=reference_manifest['max_new_bytes'],
                               max_sequence_bytes=reference_manifest['max_sequence_bytes'],
-                              backend=GLOBAL_PREFIX_BACKEND_V2)
+                              backend=args.backend)
 
     cases = []
     for index in sorted(mismatch_indices | control_indices):
@@ -108,28 +111,33 @@ def main():
         case = {'index': index, 'set': 'v1_mismatch' if index in mismatch_indices else 'control',
                 'same_token_ids': reference[index]['token_ids'] == result['token_ids'],
                 'different_fields': different, 'generation_seconds': seconds}
+        if 'cache_preliminary_skips' in result:
+            case['cache_preliminary_skips'] = result['cache_preliminary_skips']
+            case['cache_guard_refreshes'] = result['cache_guard_refreshes']
         cases.append(case)
         print(json.dumps(case), flush=True)
 
     remaining = [case['index'] for case in cases if case['different_fields']]
-    report = {'status': 'complete', 'scope': 'v2 full generation on 32 v1 mismatches and 12 controls',
+    report = {'status': 'complete', 'scope': 'complete generation on 32 v1 mismatches and 12 controls',
               'comparison': str(comparison_path.relative_to(ROOT)),
               'comparison_sha256': sha256_file(comparison_path),
               'control_report': str(controls_path.relative_to(ROOT)),
               'control_report_sha256': sha256_file(controls_path),
               'checkpoint_model_sha256': comparison['checkpoint_hash'],
               'validation_tsv_sha256': sha256_file(tsv),
-              'backend': GLOBAL_PREFIX_BACKEND_V2,
+              'backend': args.backend,
               'generation_code_sha256': sha256_file(ROOT / 'blt_hf/generation.py'),
               'reuse_code_sha256': sha256_file(ROOT / 'blt_hf/cache/global_reuse.py'),
               'diagnostic_code_sha256': sha256_file(Path(__file__)),
               'device': torch.cuda.get_device_name(), 'torch_version': torch.__version__,
               'v1_mismatch_count': len(mismatch_indices), 'control_count': len(control_indices),
-              'v2_remaining_mismatch_count': len(remaining), 'v2_remaining_mismatch_indices': remaining,
+              'remaining_mismatch_count': len(remaining), 'remaining_mismatch_indices': remaining,
               'generation_seconds': sum(case['generation_seconds'] for case in cases),
+              'cache_preliminary_skips': sum(case.get('cache_preliminary_skips', 0) for case in cases),
+              'cache_guard_refreshes': sum(case.get('cache_guard_refreshes', 0) for case in cases),
               'cases': cases}
     write_json(output_path, report)
-    print(json.dumps({'status': report['status'], 'v2_remaining_mismatch_count': len(remaining),
+    print(json.dumps({'status': report['status'], 'remaining_mismatch_count': len(remaining),
                       'control_count': len(control_indices)}), flush=True)
     return 0
 

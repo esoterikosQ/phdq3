@@ -1,6 +1,7 @@
 import unittest
 from blt_hf.generation import (GenerationConfig, decode_generated, group_prompts,
-                               GLOBAL_PREFIX_BACKEND, GLOBAL_PREFIX_BACKEND_V2)
+                               GLOBAL_PREFIX_BACKEND, GLOBAL_PREFIX_BACKEND_V2,
+                               GLOBAL_PREFIX_GUARDED_BACKEND)
 
 class GenerationContracts(unittest.TestCase):
     def test_exact_length_groups_preserve_original_indices(self):
@@ -28,6 +29,8 @@ class GenerationContracts(unittest.TestCase):
         with self.assertRaises(ValueError): GenerationConfig(backend=GLOBAL_PREFIX_BACKEND, batch_size=2)
         with self.assertRaises(ValueError): GenerationConfig(backend=GLOBAL_PREFIX_BACKEND_V2, num_beams=4)
         with self.assertRaises(ValueError): GenerationConfig(backend=GLOBAL_PREFIX_BACKEND_V2, batch_size=2)
+        with self.assertRaises(ValueError): GenerationConfig(backend=GLOBAL_PREFIX_GUARDED_BACKEND, num_beams=4)
+        with self.assertRaises(ValueError): GenerationConfig(backend=GLOBAL_PREFIX_GUARDED_BACKEND, batch_size=2)
         with self.assertRaises(ValueError): GenerationConfig(backend='unknown')
 
 import importlib.util
@@ -65,3 +68,7 @@ class ActualGenerationTests(unittest.TestCase):
         cached_v2=generate_batch(model,ByteTokenizer(),sources,
                                  GenerationConfig(max_new_bytes=8,backend=GLOBAL_PREFIX_BACKEND_V2))
         self.assertEqual(cached_v2,reference)
+        guarded=generate_batch(model,ByteTokenizer(),sources,
+                               GenerationConfig(max_new_bytes=8,backend=GLOBAL_PREFIX_GUARDED_BACKEND))
+        self.assertEqual([dict((key, value) for key, value in record.items() if not key.startswith('cache_'))
+                          for record in guarded], reference)

@@ -232,6 +232,16 @@ global skip은 그대로여서 v2의 전체 출력 동등성을 주장할 수 �
 기존 32개 불일치·12개 대조군의 완성 생성 09를 측정하고, 그 결과에 따라
 global 재사용 조건을 별도로 수정·검증한다.
 
+09(916208)는 v2에서 기존 32건 중 12건을 해결했고 20건은 남았다.
+대조군 12건은 모두 일치했다. 남은 20건은 모두 07에서 global skip이
+일어난 행이다. 선택형 guarded backend는 `logits_to_keep=1`을 유지하고
+skip 후보의 상위 두 합법 byte logit 간격이 1.0 이하일 때 full forward로
+다시 계산한다. 07의 관찰된 최대 per-logit drift 0.421875에서 두 후보의
+차이는 최대 0.84375만큼 움직일 수 있다는 **관찰 범위 내** 동기다.
+이것은 수학적 보증이나 미관측 입력의 오차 상한이 아니다. fallback은
+entropy/local encoder까지 한 번 더 실행하므로 너무 자주 일어나면
+속도 이득이 줄어든다. 10 표본에서 결과·refresh 빈도·시간을 먼저 측정한다.
+
 ## 기준 생성 경로
 
 `blt_hf/generation.py`는 생성할 때마다 `[BOS] source SEP generated_prefix`를

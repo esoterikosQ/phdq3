@@ -5,6 +5,7 @@ optionally local decoder can reuse state. The optional v1/v2 evaluation paths
 are experimental: BF16 hidden states change with input length, and full-split
 token parity is unproven.
 """
+import math
 import torch
 
 from .frontier import patch_starts, shared_closed_patch_count
@@ -39,17 +40,26 @@ class GlobalPrefixReuse:
         self.starts = None
         self.global_hidden = None
         self.decoder_kv = None
+        self.last_preliminary_skip = False
+        self.last_guard_refresh = False
+        self.last_guard_gap = None
 
-    def run(self, input_ids, *, logits_to_keep=0):
+    def run(self, input_ids, *, logits_to_keep=0, guard_margin=None):
         if self.model.training or torch.is_grad_enabled():
             raise ValueError('Global prefix reuse requires eval and inference_mode')
         if logits_to_keep not in (0, 1):
             raise ValueError('Only full or last-position logits are supported')
+        if guard_margin is not None and (logits_to_keep != 1 or self.reuse_decoder or
+                                         not math.isfinite(guard_margin) or guard_margin <= 0):
+            raise ValueError('Guard requires last-position logits, decoder off, and a positive finite margin')
         if input_ids.ndim != 2 or input_ids.shape[0] != 1 or input_ids.shape[1] < 2:
             raise ValueError('Only unpadded batch-1 prefixes of at least two bytes are supported')
         current_ids = tuple(int(value) for value in input_ids[0].tolist())
         if self.previous_ids is not None and current_ids[:-1] != self.previous_ids:
             self.reset()
+        self.last_preliminary_skip = False
+        self.last_guard_refresh = False
+        self.last_guard_gap = None
         captured = {}
 
         def save_patch(_module, _inputs, result):
@@ -120,6 +130,32 @@ class GlobalPrefixReuse:
             if self.reuse_decoder:
                 decoder_module.forward = original_decoder_forward
             handle.remove()
+        self.last_preliminary_skip = captured['skipped_global']
+        if guard_margin is not None and captured['skipped_global']:
+            scores = output.logits[0, -1].detach().float().clone()
+            scores[[0, 1, 3]] = -float('inf')
+            top_two = scores.topk(2).values
+            self.last_guard_gap = float(top_two[0] - top_two[1])
+            if self.last_guard_gap <= guard_margin:
+                # Recompute the complete reference-style forward only when the
+                # cached winner is close to another legal byte. The old global
+                # state remains untouched on high-margin steps.
+                def save_refreshed_global(_module, _inputs, result):
+                    captured['global_hidden'] = result.detach()
+
+                refreshed_hook = global_module.register_forward_hook(save_refreshed_global)
+                try:
+                    output = self.model(input_ids=input_ids,
+                                        attention_mask=torch.ones_like(input_ids),
+                                        use_cache=False, logits_to_keep=1)
+                except Exception:
+                    self.reset()
+                    raise
+                finally:
+                    refreshed_hook.remove()
+                captured['skipped_global'] = False
+                captured['reused_closed_patches'] = 0
+                self.last_guard_refresh = True
         self.previous_ids = current_ids
         self.starts = captured['starts']
         self.global_hidden = captured['global_hidden']

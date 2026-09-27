@@ -148,6 +148,12 @@ v2를 별도 backend로 만들었다. 09에서는 기존 불일치 32건+대조�
 완성 출력을 검증한다. global skip 때문에 남는 차이는 별도 정책·실험으로
 다루며 새 출력 identity를 사용한다.
 
+09(916208)는 기존 불일치 32건 중 v2가 12건을 해결했고 20건이 남았다.
+선택형 guarded backend는 상위 두 byte logit의 간격이 관찰된 BF16
+drift에 비해 작을 때만 full forward로 재계산한다. 10에서는 기존 32건과
+대조군 12건의 완성 출력·fallback 횟수·시간을 확인하고, 이후 전체 split
+출력·성능을 별도 identity에서 검증한다.
+
 ## 단계 2: 빔 4·배치·재개
 
 1. 빔 4에서 부모 빔 선택 시 entropy, patch, encoder/global/decoder 상태를

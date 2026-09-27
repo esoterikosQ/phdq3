@@ -5,7 +5,9 @@ from .data_adapter import encode_prompt
 HF_BACKEND = 'hf-generate-exact-length-unpadded-v1'
 GLOBAL_PREFIX_BACKEND = 'global-prefix-greedy-v1'
 GLOBAL_PREFIX_BACKEND_V2 = 'global-prefix-greedy-v2'
-GLOBAL_PREFIX_BACKENDS = (GLOBAL_PREFIX_BACKEND, GLOBAL_PREFIX_BACKEND_V2)
+GLOBAL_PREFIX_GUARDED_BACKEND = 'global-prefix-guarded-greedy-v1'
+GLOBAL_PREFIX_BACKENDS = (GLOBAL_PREFIX_BACKEND, GLOBAL_PREFIX_BACKEND_V2,
+                          GLOBAL_PREFIX_GUARDED_BACKEND)
 
 @dataclass(frozen=True)
 class GenerationConfig:
@@ -73,10 +75,14 @@ def generate_batch(model, tokenizer, sources, cfg):
                 ids = list(prompt)
                 generated = []
                 reuse = GlobalPrefixReuse(model, reuse_decoder=False)
+                guard_refreshes = preliminary_skips = 0
                 for _ in range(cfg.max_new_bytes):
                     tokens = torch.tensor([ids], dtype=torch.long, device=device)
                     output, _, _, _ = reuse.run(
-                        tokens, logits_to_keep=1 if cfg.backend == GLOBAL_PREFIX_BACKEND_V2 else 0)
+                        tokens, logits_to_keep=0 if cfg.backend == GLOBAL_PREFIX_BACKEND else 1,
+                        guard_margin=1.0 if cfg.backend == GLOBAL_PREFIX_GUARDED_BACKEND else None)
+                    preliminary_skips += int(reuse.last_preliminary_skip)
+                    guard_refreshes += int(reuse.last_guard_refresh)
                     logits = output.logits[0, -1].float().clone()
                     logits[[0, 1, 3]] = -float('inf')
                     next_id = int(logits.argmax())
@@ -85,6 +91,9 @@ def generate_batch(model, tokenizer, sources, cfg):
                         break
                     ids.append(next_id)
                 results[index] = decode_generated(generated)
+                if cfg.backend == GLOBAL_PREFIX_GUARDED_BACKEND:
+                    results[index]['cache_preliminary_skips'] = preliminary_skips
+                    results[index]['cache_guard_refreshes'] = guard_refreshes
         return results
     for indices in group_prompts(prompts, cfg.batch_size):
         ids = torch.tensor([prompts[i] for i in indices], device=device)

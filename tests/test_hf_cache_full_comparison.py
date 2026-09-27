@@ -2,7 +2,8 @@ import copy
 import unittest
 
 from blt_hf_checks.compare_cache_eval import compare_records, validate_manifests
-from blt_hf.generation import HF_BACKEND, GLOBAL_PREFIX_BACKEND, GLOBAL_PREFIX_BACKEND_V2, GLOBAL_PREFIX_BACKENDS
+from blt_hf.generation import (HF_BACKEND, GLOBAL_PREFIX_BACKEND, GLOBAL_PREFIX_BACKEND_V2,
+                               GLOBAL_PREFIX_GUARDED_BACKEND, GLOBAL_PREFIX_BACKENDS)
 
 
 class CacheFullComparisonContracts(unittest.TestCase):
@@ -29,6 +30,7 @@ class CacheFullComparisonContracts(unittest.TestCase):
         candidate = self.manifest(GLOBAL_PREFIX_BACKEND)
         validate_manifests(reference, candidate)
         validate_manifests(reference, self.manifest(GLOBAL_PREFIX_BACKEND_V2))
+        validate_manifests(reference, self.manifest(GLOBAL_PREFIX_GUARDED_BACKEND))
         wrong = dict(candidate, checkpoint_hash='other')
         with self.assertRaisesRegex(ValueError, 'checkpoint_hash'):
             validate_manifests(reference, wrong)
