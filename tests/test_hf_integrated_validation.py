@@ -7,9 +7,28 @@ from blt_hf.integrated_validation import (
     gleu_improved, order_predictions, score_validation_epoch, validation_groups,
 )
 from blt_hf.data_adapter import GecEncoding
+from blt_hf.generation import GLOBAL_PREFIX_GUARDED_BACKEND, HF_BACKEND
+from blt_hf.train import parser as train_parser, validation_generation_config
 
 
 class IntegratedValidationContracts(unittest.TestCase):
+    def test_guarded_backend_is_explicit_and_requires_gleu_beam1_batch1(self):
+        args = train_parser().parse_args(['--run-dir', 'outputs/blt_hf/native/new-run'])
+        self.assertEqual(validation_generation_config(args).backend, HF_BACKEND)
+        guarded = ['--run-dir', 'outputs/blt_hf/native/new-run',
+                   '--selection-metric', 'val_gleu',
+                   '--validation-generation-backend', GLOBAL_PREFIX_GUARDED_BACKEND]
+        self.assertEqual(validation_generation_config(train_parser().parse_args(guarded)).backend,
+                         GLOBAL_PREFIX_GUARDED_BACKEND)
+        with self.assertRaises(ValueError):
+            validation_generation_config(train_parser().parse_args(guarded + ['--validation-beams', '4']))
+        with self.assertRaises(ValueError):
+            validation_generation_config(train_parser().parse_args(guarded + ['--validation-batch-size', '4']))
+        with self.assertRaises(ValueError):
+            validation_generation_config(train_parser().parse_args(
+                ['--run-dir', 'outputs/blt_hf/native/new-run',
+                 '--validation-generation-backend', GLOBAL_PREFIX_GUARDED_BACKEND]))
+
     def test_equal_length_validation_batches_cover_each_rank_once(self):
         lengths = [4, 5, 4, 6, 4, 5, 4, 6, 4, 5, 4, 6]
         examples = [GecEncoding([1] * length + [2], [-100] * length + [2], length)
@@ -43,6 +62,7 @@ class IntegratedValidationContracts(unittest.TestCase):
                                             num_beams=1, max_new_bytes=768,
                                             validation_file_hash='fixture')
             self.assertEqual(result['gleu'], 100.)
+            self.assertEqual(result['generation_backend'], HF_BACKEND)
             self.assertEqual(json.loads((root/'validation/epoch-0001/metrics.json').read_text())['gleu'], 100.)
             self.assertEqual((root/'validation/epoch-0001/hypothesis.txt').read_text().splitlines(), references)
             self.assertEqual(score_validation_epoch(root, epoch=1, global_step=2,
@@ -50,6 +70,24 @@ class IntegratedValidationContracts(unittest.TestCase):
                                                    predictions=references, num_beams=1,
                                                    max_new_bytes=768,
                                                    validation_file_hash='fixture'), result)
+
+    def test_epoch_report_records_guarded_backend_and_refreshes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            result = score_validation_epoch(
+                directory, epoch=1, global_step=2, sources=['I has apples .'],
+                references=['I have apples .'], predictions=['I have apples .'],
+                num_beams=1, max_new_bytes=768, validation_file_hash='fixture',
+                generation_backend=GLOBAL_PREFIX_GUARDED_BACKEND,
+                cache_preliminary_skips=12, cache_guard_refreshes=2)
+            self.assertEqual(result['generation_backend'], GLOBAL_PREFIX_GUARDED_BACKEND)
+            self.assertEqual(result['cache_preliminary_skips'], 12)
+            self.assertEqual(result['cache_guard_refreshes'], 2)
+            with self.assertRaisesRegex(ValueError, 'Invalid cache refresh counts'):
+                score_validation_epoch(directory, epoch=2, global_step=3,
+                                       sources=['I has apples .'], references=['I have apples .'],
+                                       predictions=['I have apples .'], num_beams=1,
+                                       max_new_bytes=768, validation_file_hash='fixture',
+                                       cache_preliminary_skips=1, cache_guard_refreshes=2)
 
     def test_missing_duplicate_and_changed_predictions_are_rejected(self):
         with self.assertRaises(ValueError): order_predictions([[{'index': 0, 'text': 'a'}]], 2)

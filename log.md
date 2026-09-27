@@ -1,5 +1,17 @@
 # 일자별 작업 내역
 
+## 2026-09-27 — guarded 전체 native 출력 일치·통합 학습 준비
+
+- 916222의 예정된 exit 75 이후 916259가 같은 평가 identity에서
+  2,634문장 생성을 완료했다. 로컬 CPU 전수 비교 11은 HF 기준과 guarded
+  출력의 token ID/EOS/문자열 불일치 0건, 생성 9,074.30→6,906.76초
+  (1.314배)를 확인했다.
+- 새 `--validation-generation-backend`를 통합 학습에 추가했다. 기본 HF는
+  유지하고 guarded는 beam 1·batch 1·val GLEU 선택에만 허용한다. run
+  manifest, epoch별 GLEU 및 best 포인터에 backend·갱신 횟수를 기록한다.
+- 새 native 2-epoch A100 4GPU run과 같은 설정의 재개 명령을 `NEURON.md`에
+  기록했다. Neuron 제출은 사용자가 맡는다.
+
 ## 2026-09-27 — guarded 10 결과와 전체 native 비교 11 준비
 
 - 916210 A100 결과는 44/44 HF 출력 일치, 2,505회 global skip 후보 중

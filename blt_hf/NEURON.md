@@ -595,6 +595,55 @@ sbatch -p cpu --cpus-per-task=4 --time=01:00:00 \
 학습→guarded 생성→전체 validation GLEU→best 선택에 backend를 연결한다.
 기존 학습 run이나 HF 기본 경로는 바꾸지 않는다.
 
+### 11 전수 비교 결과와 guarded 통합 GLEU 학습
+
+사용자가 업로드한 916222·916259의 guarded 생성은 같은 코드·출력
+디렉터리에서 2,634건 완료됐다. 로컬 CPU 비교 보고서
+`blt_hf_checks/results/p3a_native_full_guarded_11.json`은 batch 해시와
+실행 지문을 확인한 뒤 **2,634/2,634 token ID·EOS·문자열 일치**를 기록했다.
+동일 native checkpoint의 순수 생성 합계는 HF 9,074.30초, guarded
+6,906.76초(1.314배, 약 36.1분 절약)다. p50은 2.77→1.98초,
+p95는 6.47→5.48초다. guarded의 global 재사용 후보 150,352회 중
+1,792회 full refresh였다. 5090/다른 데이터셋/beam 4의 결과로 일반화하지
+않는다. 두 Neuron job의 준비·데이터 검사 시간은 순수 생성 합계에 없다.
+
+다음은 **새** native 2-epoch 통합 학습이다. 학습 역전파는 기존 byte
+target loss 그대로이며, 매 epoch 전체 validation의 beam-1 생성만
+`global-prefix-guarded-greedy-v1`으로 수행하고 corpus GLEU 최고 checkpoint를
+선택한다. 모델·scorer·기존 HF 기본값은 바꾸지 않았다. 캐시 개발 창이
+별도 worktree에서 작업 중이어도, 이 run이 시작되면 Neuron의 공유 checkout
+코드와 이 run의 GPU 수·설정을 완료 때까지 고정한다.
+
+```bash
+cd /scratch/r984a02/phdq3
+git status --short --branch
+git pull --ff-only origin main
+conda activate phdq_blt_hf
+test ! -e outputs/blt_hf/native/native-gleu2-guarded-b1-s0/run.json
+sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
+  --time=06:00:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=native-gleu2-guarded-b1-s0,DATASET_TYPE=native,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=2,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,VALIDATION_BATCH_SIZE=1,VALIDATION_GENERATION_BACKEND=global-prefix-guarded-greedy-v1 \
+  scripts/train_blt_hf.sh
+```
+
+시간 제한으로 exit 75라면 같은 코드·설정·4 GPU로 아래 명령을 제출한다.
+`completed.json`의 `status=complete`와 `epoch=2`,
+`validation/epoch-0001/metrics.json` 및 `epoch-0002/metrics.json`의
+`generation_backend`, `gleu`, `cache_guard_refreshes`, 그리고
+`best_gleu.json`이 최종 확인 대상이다. 2-epoch 결과와 소요시간을 본 뒤
+새 `RUN_ID`의 10-epoch 본 학습을 따로 시작한다. 2-epoch checkpoint의
+`EPOCHS`만 10으로 바꿔 재개하지 않는다.
+
+```bash
+cd /scratch/r984a02/phdq3
+conda activate phdq_blt_hf
+test -f outputs/blt_hf/native/native-gleu2-guarded-b1-s0/latest.json
+sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
+  --time=06:00:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=native-gleu2-guarded-b1-s0,DATASET_TYPE=native,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=2,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,VALIDATION_BATCH_SIZE=1,VALIDATION_GENERATION_BACKEND=global-prefix-guarded-greedy-v1,RESUME=outputs/blt_hf/native/native-gleu2-guarded-b1-s0/latest.json \
+  scripts/train_blt_hf.sh
+```
+
 ### 기존 분리형 10-epoch 절차
 
 새 사이클은 2026-09-18의 3-epoch run과 다른 RUN_ID를 쓴다. 기존

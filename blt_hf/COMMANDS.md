@@ -46,6 +46,9 @@ projection만 바꾼 선택형 v2의 44문장 완성 생성 09 명령도 `NEURON
 44문장 10 시험 명령과 한계도 `NEURON.md`에 있다.
 10은 44/44에서 HF 출력을 재현했다. 전체 native validation 생성·시간
 비교 11의 제출·재개·CPU 비교 명령은 `NEURON.md`를 따른다.
+11은 2,634/2,634 출력 일치와 순수 생성 1.314배 개선을 확인했다.
+새 guarded 통합 GLEU 2-epoch run·재개 명령은 `NEURON.md`의
+"11 전수 비교 결과와 guarded 통합 GLEU 학습" 절을 따른다.
 
 ## 2026-09-26 — P3a 패치 경계 인과성 검사
 

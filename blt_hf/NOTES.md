@@ -171,6 +171,22 @@ job 전체 시간은 159초 대비 322초였다. 환경 보고서 생성 시각�
 속도 이득이 확인되면 현재 통합 학습의 epoch별 GLEU 생성 경로에 선택형
 backend를 연결하고 새 run에서만 학습한다.
 
+## 2026-09-27 — 11 전수 guarded 결과와 통합 학습 연결
+
+916222는 2,318/2,634에서 예정된 시간 제한으로 exit 75, 916259는 같은
+identity에서 재개해 2,634/2,634 완료·exit 0이었다. 로컬
+`compare_cache_eval.py`의 `p3a_native_full_guarded_11.json`은 양쪽
+불변 batch 해시·지문을 확인한 뒤 HF 대비 token ID/EOS/문자열 불일치
+0건을 기록했다. 순수 생성 시간은 HF 9,074.30초→guarded 6,906.76초,
+1.314배(23.9% 시간 절감)이다. global skip 후보 150,352회 중
+1,792회 full refresh였다. 10의 준비 시간 이상치는 별도 관측 사항으로 둔다.
+
+새 통합 학습 옵션 `--validation-generation-backend`는 HF를 기본으로,
+guarded를 beam 1·batch 1·GLEU 선택에만 허용한다. run manifest/code hash,
+epoch별 GLEU·cache refresh 보고서와 best 포인터에 backend를 기록한다.
+캐시 구현·가중치·학습 loss·GLEU scorer는 변경하지 않았다. 새 RUN_ID의
+2-epoch A100 4GPU 통합 시험 명령은 `NEURON.md`에 있다.
+
 ## 2026-09-17 — FP32 학습 정책 폐기, BF16 레거시 조건 복구
 
 변환 artifact B는 원본과 동일한 BF16이지만 초기 학습 코드가 근거 없이 main을 FP32로

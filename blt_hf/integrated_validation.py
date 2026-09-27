@@ -2,7 +2,7 @@
 from pathlib import Path
 
 from .evaluation import publish_lines
-from .generation import group_prompts
+from .generation import HF_BACKEND, group_prompts
 from .manifest import sha256_file
 from .metrics import compute_gleu
 from .runtime import ensure_json
@@ -45,9 +45,14 @@ def order_predictions(rank_parts, total):
 
 def score_validation_epoch(run_dir, *, epoch, global_step, sources, references,
                            predictions, num_beams, max_new_bytes, validation_file_hash,
-                           batch_size=1):
+                           batch_size=1, generation_backend=HF_BACKEND,
+                           cache_preliminary_skips=0, cache_guard_refreshes=0):
     if not sources or len({len(sources), len(references), len(predictions)}) != 1:
         raise ValueError('Validation GLEU requires the complete aligned split')
+    if (not isinstance(cache_preliminary_skips, int) or
+            not isinstance(cache_guard_refreshes, int) or
+            not 0 <= cache_guard_refreshes <= cache_preliminary_skips):
+        raise ValueError('Invalid cache refresh counts')
     root = Path(run_dir) / 'validation' / f'epoch-{epoch:04d}'
     source = root / 'source.txt'
     reference = root / 'reference.txt'
@@ -58,6 +63,9 @@ def score_validation_epoch(run_dir, *, epoch, global_step, sources, references,
     result = {'epoch': epoch, 'global_step': global_step, 'split': 'val',
               'sample_count': len(sources), 'num_beams': num_beams,
               'batch_size': batch_size,
+              'generation_backend': generation_backend,
+              'cache_preliminary_skips': cache_preliminary_skips,
+              'cache_guard_refreshes': cache_guard_refreshes,
               'max_new_bytes': max_new_bytes, 'validation_file_hash': validation_file_hash,
               'source_hash': sha256_file(source), 'reference_hash': sha256_file(reference),
               'hypothesis_hash': sha256_file(hypothesis),

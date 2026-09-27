@@ -13,6 +13,7 @@ from .runtime import (ROOT, MODEL, CONVERSION, TRAIN_RUNTIME_FILES, local_path,
                       tokenizer_identity, model_config_identity, conversion_verification,
                       ensure_json, exclusive_lock, StopRequest, atomic_json)
 from .manifest import sha256_file, sha256_json, write_json
+from .generation import GenerationConfig, HF_BACKEND, GLOBAL_PREFIX_GUARDED_BACKEND
 
 
 def parser():
@@ -30,6 +31,8 @@ def parser():
     p.add_argument('--validation-beams', type=int, choices=[1, 4], default=1)
     p.add_argument('--validation-batch-size', type=int, default=1)
     p.add_argument('--validation-max-new-bytes', type=int, default=768)
+    p.add_argument('--validation-generation-backend',
+                   choices=[HF_BACKEND, GLOBAL_PREFIX_GUARDED_BACKEND], default=HF_BACKEND)
     p.add_argument('--weight-decay', type=float, default=.1)
     p.add_argument('--clip-grad-norm', type=float, default=1.)
     p.add_argument('--seed', type=int, default=0)
@@ -39,6 +42,15 @@ def parser():
     p.add_argument('--mode', choices=['train', 'smoke', 'overfit'], default='train')
     p.add_argument('--overfit-steps', type=int, default=200)
     return p
+
+
+def validation_generation_config(args):
+    if args.validation_generation_backend == GLOBAL_PREFIX_GUARDED_BACKEND and args.selection_metric != 'val_gleu':
+        raise ValueError('Guarded validation requires GLEU checkpoint selection')
+    return GenerationConfig(num_beams=args.validation_beams,
+                            max_new_bytes=args.validation_max_new_bytes,
+                            batch_size=args.validation_batch_size,
+                            backend=args.validation_generation_backend)
 
 
 def run(args):
@@ -53,7 +65,7 @@ def run(args):
     from .checkpoint import resolve_checkpoint, save_checkpoint
     if args.selection_metric == 'val_gleu':
         from .data_adapter import read_tsv
-        from .generation import GenerationConfig, generate_batch
+        from .generation import generate_batch
         from .integrated_validation import (
             gleu_improved, order_predictions, score_validation_epoch, validation_groups,
         )
@@ -70,6 +82,7 @@ def run(args):
         raise ValueError('Invalid positive training setting')
     if min(args.max_steps, args.max_seconds, args.weight_decay) < 0 or not 0 <= args.warmup_ratio < 1:
         raise ValueError('Negative training setting')
+    validation_cfg = validation_generation_config(args)
     if args.mode == 'overfit' and (world != 1 or args.overfit_steps < 1):
         raise ValueError('Overfit diagnostic requires one GPU and positive steps')
     torch.cuda.set_device(local_rank)
@@ -124,6 +137,8 @@ def run(args):
                 raise RuntimeError(f'BF16 Adam/DDP minimum {minimum} exceeds available {free}; plan sharding')
             gleu_files = ('blt_hf/generation.py', 'blt_hf/integrated_validation.py',
                           'blt_hf/metrics.py', 'blt_hf/evaluation.py', 'blt_hf/vendor/gleu.py')
+            if args.validation_generation_backend == GLOBAL_PREFIX_GUARDED_BACKEND:
+                gleu_files += ('blt_hf/cache/global_reuse.py', 'blt_hf/cache/frontier.py')
             identity = code_identity(TRAIN_RUNTIME_FILES + (gleu_files if args.selection_metric == 'val_gleu' else ()))
             manifest = {'schema_version': 2, 'run_id': str(run_dir.relative_to(ROOT)), 'dataset': args.dataset, 'mode': args.mode,
                         'train_file_hash': sha256_file(paths[f'{args.dataset}/train']),
@@ -144,6 +159,7 @@ def run(args):
                         'validation_num_beams': args.validation_beams if args.selection_metric == 'val_gleu' else None,
                         'validation_batch_size': args.validation_batch_size if args.selection_metric == 'val_gleu' else None,
                         'validation_max_new_bytes': args.validation_max_new_bytes if args.selection_metric == 'val_gleu' else None,
+                        'validation_generation_backend': args.validation_generation_backend if args.selection_metric == 'val_gleu' else None,
                         'lr': args.lr, 'weight_decay': args.weight_decay, 'clip_grad_norm': args.clip_grad_norm,
                         'optimizer': 'AdamW-fused-bfloat16-state', 'betas': [.9, .95], 'eps': 1e-8,
                         'conversion_checks': conversion_verification(conversion), **identity}
@@ -230,7 +246,8 @@ def run(args):
                         atomic_json(run_dir/'best_gleu.json',
                                     {'checkpoint': checkpoint_name, 'global_step': state['global_step'],
                                      'epoch': state['epoch'], 'val_gleu': state['best_val_gleu'],
-                                     'num_beams': args.validation_beams})
+                                     'num_beams': args.validation_beams,
+                                     'generation_backend': args.validation_generation_backend})
                     stage('checkpoint_published',checkpoint=checkpoint_name,best=best)
                 if world > 1: dist.barrier()
             def validate():
@@ -251,9 +268,7 @@ def run(args):
                 return (stats[0]/stats[1]).item()
             def validate_gleu(epoch_number):
                 model.eval()
-                config = GenerationConfig(num_beams=args.validation_beams,
-                                          max_new_bytes=args.validation_max_new_bytes,
-                                          batch_size=args.validation_batch_size)
+                config = validation_cfg
                 started = time.monotonic()
                 local = []
                 for indices in validation_groups(val_items, rank=rank, world_size=world,
@@ -262,7 +277,9 @@ def run(args):
                     predictions = generate_batch(model, tok, [val_rows[index].source for index in indices], config)
                     local.extend({'index': index, 'text': prediction['text'],
                                   'invalid_utf8': not prediction['valid_utf8'],
-                                  'budget_exhausted': prediction['budget_exhausted']}
+                                  'budget_exhausted': prediction['budget_exhausted'],
+                                  'cache_preliminary_skips': prediction.get('cache_preliminary_skips', 0),
+                                  'cache_guard_refreshes': prediction.get('cache_guard_refreshes', 0)}
                                  for index, prediction in zip(indices, predictions))
                 part = {'stopped': bool(stopper), 'predictions': local,
                         'peak_allocated_bytes': torch.cuda.max_memory_allocated(device)}
@@ -285,10 +302,16 @@ def run(args):
                                 num_beams=args.validation_beams,
                                 batch_size=args.validation_batch_size,
                                 max_new_bytes=args.validation_max_new_bytes,
+                                generation_backend=args.validation_generation_backend,
+                                cache_preliminary_skips=sum(record['cache_preliminary_skips'] for item in gathered for record in item['predictions']),
+                                cache_guard_refreshes=sum(record['cache_guard_refreshes'] for item in gathered for record in item['predictions']),
                                 validation_file_hash=manifest['val_file_hash'])
                             outcome[0] = {'gleu': report['gleu'],
                                           'invalid_utf8': sum(record['invalid_utf8'] for item in gathered for record in item['predictions']),
                                           'budget_exhausted': sum(record['budget_exhausted'] for item in gathered for record in item['predictions']),
+                                          'generation_backend': args.validation_generation_backend,
+                                          'cache_preliminary_skips': report['cache_preliminary_skips'],
+                                          'cache_guard_refreshes': report['cache_guard_refreshes'],
                                           'max_rank_peak_allocated_bytes': max(item['peak_allocated_bytes'] for item in gathered)}
                             stage('validation_gleu_complete', epoch=epoch_number,
                                   elapsed_seconds=round(time.monotonic()-started, 2), **outcome[0])
@@ -418,6 +441,7 @@ def run(args):
                                  'selection_metric': args.selection_metric,
                                  'validation_num_beams': args.validation_beams,
                                  'validation_max_new_bytes': args.validation_max_new_bytes,
+                                 'validation_generation_backend': args.validation_generation_backend,
                                  'epoch_checkpoints': json.loads((run_dir/'epoch_checkpoints.json').read_text()),
                                  'best': {**best_pointer,
                                           'model_sha256': best_meta['files']['model.safetensors']}})
