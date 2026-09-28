@@ -768,6 +768,62 @@ suffix나 M2 annotation이 다르면 실패한다.
 
 ## 3. 생성
 
+### native guarded 통합 학습의 선택 checkpoint test 평가 (2026-09-28)
+
+`native-gleu10-guarded-b1-s0`은 9 epoch 뒤 GLEU patience 3으로 정상 완료됐다.
+최고 전체 validation GLEU 66.0768은 epoch 6의 불변 checkpoint
+`step-00002310-db6b4886`이다. 이번 **test** 생성은 기존 native beam-1 결과와
+같은 HF no-cache backend를 사용한다. guarded backend의 전체 출력 일치 검사는
+native validation에서만 수행됐으므로 test의 동등성을 가정하지 않는다.
+다음 `EVAL_DIR`은 이전 평가와 겹치지 않는 새 경로다.
+
+```bash
+cd /scratch/r984a02/phdq3
+conda activate phdq_blt_hf
+export CKPT_PATH=outputs/blt_hf/native/native-gleu10-guarded-b1-s0/step-00002310-db6b4886
+export EVAL_DIR=outputs/blt_hf_eval/native/test/native-gleu10-guarded-b1-s0-epoch06-beam1-hf
+test -f "$CKPT_PATH/model.safetensors"
+test ! -e "$EVAL_DIR/run.json"
+sbatch -p amd_a100nv_8 --gres=gpu:1 --cpus-per-task=4 \
+  --time=01:55:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,CKPT_PATH="$CKPT_PATH",EVAL_DIR="$EVAL_DIR",DATASET_TYPE=native,SPLIT=test,BLT_NUM_BEAMS=1,BATCH_SIZE=1,SHARD_COUNT=1,SHARD_ID=0,GENERATION_BACKEND=hf-generate-exact-length-unpadded-v1 \
+  scripts/eval_blt_hf.sh
+```
+
+생성이 시간 제한으로 exit 75이면 `test ! -e "$EVAL_DIR/run.json"` 확인은
+반복하지 않고 **같은** `CKPT_PATH`, `EVAL_DIR`, beam, batch, backend로 위
+`sbatch` 명령만 다시 제출한다. `shards/0000/complete.json`이 생긴 뒤에만
+아래 CPU 채점을 제출한다.
+
+```bash
+cd /scratch/r984a02/phdq3
+conda activate phdq_blt_hf
+export EVAL_DIR=outputs/blt_hf_eval/native/test/native-gleu10-guarded-b1-s0-epoch06-beam1-hf
+test -f "$EVAL_DIR/shards/0000/complete.json"
+sbatch -p cpu --cpus-per-task=8 \
+  --time=01:55:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,EVAL_DIR="$EVAL_DIR",DATASET_TYPE=native,SPLIT=test,M2_WORKERS=8 \
+  scripts/score_blt_hf.sh
+```
+
+채점이 부분 완료·exit 75라면 같은 `EVAL_DIR`에서 아래 로컬 저널형 명령으로
+재개한다. 최종 결과는 `$EVAL_DIR/scored/metrics.json`의 `status=complete`,
+GLEU, M2 F0.5, 전체 행 수를 확인한다.
+
+```bash
+cd /scratch/r984a02/phdq3
+conda activate phdq_blt_hf
+export EVAL_DIR=outputs/blt_hf_eval/native/test/native-gleu10-guarded-b1-s0-epoch06-beam1-hf
+test -f "$EVAL_DIR/scored/gleu.json"
+test -f "$EVAL_DIR/scored/m2/run_config.json"
+sbatch -p cpu --cpus-per-task=8 \
+  --time=01:55:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,EVAL_DIR="$EVAL_DIR",DATASET_TYPE=native,SPLIT=test,M2_WORKERS=8 \
+  scripts/score_blt_hf_local.sh
+```
+
+### 범용 생성 명령
+
 학습 완료 후 validation GLEU 선택을 수행했다면 `best_gleu.json`, 그렇지 않으면
 `best.json`이 가리키는 **불변 step 디렉터리**를 확인해 `CKPT_PATH`로
 지정한다. 포인터가 학습 중 움직이면 다른 checkpoint의 shard를 합칠 수 없도록 실패한다.
