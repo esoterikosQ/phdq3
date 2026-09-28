@@ -660,14 +660,16 @@ native의 개선된 학습·선택 절차를 `korean_learner`에 새 RUN_ID로 �
 guarded/HF 출력 일치 검사는 뒤로 미룬 상태이므로 이 validation GLEU는
 guarded backend의 결과로 기록한다. native test 채점 중에도 다른 Neuron job으로
 제출할 수 있다. 같은 checkout의 실행 코드는 학습 완료까지 고정한다.
+2026-09-28 결정으로 A100 4GPU 작업시간을 12시간으로 늘린다.
+`--time`과 내부 종료 한도 `MAX_SECONDS`를 함께 지정한다.
 
 ```bash
 cd /scratch/r984a02/phdq3
 conda activate phdq_blt_hf
 test ! -e outputs/blt_hf/korean_learner/learner-gleu10-guarded-b1-s0/run.json && \
 sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
-  --time=06:00:00 --comment="field=nlp;appl=pytorch" \
-  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=learner-gleu10-guarded-b1-s0,DATASET_TYPE=korean_learner,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,EARLY_STOPPING_PATIENCE=3,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,VALIDATION_BATCH_SIZE=1,VALIDATION_GENERATION_BACKEND=global-prefix-guarded-greedy-v1 \
+  --time=12:00:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=learner-gleu10-guarded-b1-s0,DATASET_TYPE=korean_learner,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,EARLY_STOPPING_PATIENCE=3,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,VALIDATION_BATCH_SIZE=1,VALIDATION_GENERATION_BACKEND=global-prefix-guarded-greedy-v1,MAX_SECONDS=42000 \
   scripts/train_blt_hf.sh
 ```
 
@@ -682,14 +684,50 @@ conda activate phdq_blt_hf
 test -f outputs/blt_hf/korean_learner/learner-gleu10-guarded-b1-s0/latest.json && \
 test ! -e outputs/blt_hf/korean_learner/learner-gleu10-guarded-b1-s0/completed.json && \
 sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
-  --time=06:00:00 --comment="field=nlp;appl=pytorch" \
-  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=learner-gleu10-guarded-b1-s0,DATASET_TYPE=korean_learner,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,EARLY_STOPPING_PATIENCE=3,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,VALIDATION_BATCH_SIZE=1,VALIDATION_GENERATION_BACKEND=global-prefix-guarded-greedy-v1,RESUME=outputs/blt_hf/korean_learner/learner-gleu10-guarded-b1-s0/latest.json \
+  --time=12:00:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=learner-gleu10-guarded-b1-s0,DATASET_TYPE=korean_learner,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,EARLY_STOPPING_PATIENCE=3,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,VALIDATION_BATCH_SIZE=1,VALIDATION_GENERATION_BACKEND=global-prefix-guarded-greedy-v1,MAX_SECONDS=42000,RESUME=outputs/blt_hf/korean_learner/learner-gleu10-guarded-b1-s0/latest.json \
   scripts/train_blt_hf.sh
 ```
 
-lang8·union은 validation 표본이 각각 16,434·23,332개다. 현재 6시간
-job에서 한 epoch와 전체 validation이 끝날 수 있는지 실측한 뒤 본 학습을
-제출한다. 반복 중단을 막기 위해 필요하면 validation 재개를 구현한다.
+### 후속 lang8: H200 1GPU 장시간 작업
+
+learner와 별도 GPU partition에서 동시에 제출한다. `lang8`은 학습 76,692행,
+validation 16,434행이며, 검증 2,634행의 native가 A100 4GPU에서 약 29분
+걸린 기록만으로는 H200 1GPU 속도를 정확히 예측할 수 없다. GPU 수와
+표본 수를 단순 환산하면 validation만 약 12시간이고 H200 성능·문장 길이에
+따라 크게 달라진다. 학습까지 합쳐 한 epoch는 대략 10–20시간으로 보고
+첫 job에 24시간을 배정한다. 이는 실측값이 아니며 queue 대기는 포함하지
+않는다. 10 epoch 모두 필요하면 대략 100–200 GPU시간이고 조기 종료는
+이를 줄일 수 있다. 첫 epoch가 완료되면 그 로그로 다음 job 길이를 조정한다.
+기본 스크립트의 6시간과 `MAX_SECONDS=21000`을 각각 24시간과 85,200초로
+덮어쓴다. 한 epoch의 validation이 23시간 40분 안에도 끝나지 않으면
+현재 코드는 그 validation을 재개하지 못하므로 같은 설정으로 반복 제출하지 않는다.
+partition이 24시간 요청을 거절한다면 허용 `MaxTime`을 확인하고 다시 계획한다.
+
+```bash
+cd /scratch/r984a02/phdq3
+conda activate phdq_blt_hf
+test ! -e outputs/blt_hf/lang8/lang8-gleu10-guarded-h200-1gpu-b1-s0/run.json && \
+sbatch -p amd_h200nv_8 --gres=gpu:1 --cpus-per-task=8 \
+  --time=24:00:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=lang8-gleu10-guarded-h200-1gpu-b1-s0,DATASET_TYPE=lang8,NUM_GPUS=1,TRAIN_MODE=train,EPOCHS=10,EARLY_STOPPING_PATIENCE=3,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,VALIDATION_BATCH_SIZE=1,VALIDATION_GENERATION_BACKEND=global-prefix-guarded-greedy-v1,MAX_SECONDS=85200 \
+  scripts/train_blt_hf.sh
+```
+
+`exit 75`이고 `completed.json`이 없다면 같은 GPU 수와 설정으로 재개한다.
+
+```bash
+cd /scratch/r984a02/phdq3
+conda activate phdq_blt_hf
+test -f outputs/blt_hf/lang8/lang8-gleu10-guarded-h200-1gpu-b1-s0/latest.json && \
+test ! -e outputs/blt_hf/lang8/lang8-gleu10-guarded-h200-1gpu-b1-s0/completed.json && \
+sbatch -p amd_h200nv_8 --gres=gpu:1 --cpus-per-task=8 \
+  --time=24:00:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=lang8-gleu10-guarded-h200-1gpu-b1-s0,DATASET_TYPE=lang8,NUM_GPUS=1,TRAIN_MODE=train,EPOCHS=10,EARLY_STOPPING_PATIENCE=3,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,VALIDATION_BATCH_SIZE=1,VALIDATION_GENERATION_BACKEND=global-prefix-guarded-greedy-v1,MAX_SECONDS=85200,RESUME=outputs/blt_hf/lang8/lang8-gleu10-guarded-h200-1gpu-b1-s0/latest.json \
+  scripts/train_blt_hf.sh
+```
+
+union은 두 작업의 결과와 사용 가능한 GPU를 보고 별도 RUN_ID로 제출한다.
 
 ### 기존 분리형 10-epoch 절차
 
