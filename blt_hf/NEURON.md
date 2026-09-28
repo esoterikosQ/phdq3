@@ -638,8 +638,10 @@ sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
 `cache_guard_refreshes`, 그리고 최고 GLEU checkpoint를 가리키는
 `best_gleu.json`이다. 기존 2-epoch checkpoint는 이 run에 재개하지 않는다.
 후속 learner·union·lang8 비교에도 최대 10 epoch, 같은 GLEU 개선·patience
-규칙과 seed를 적용하고 실제 완료 epoch를 함께 보고한다. guarded 생성 backend는
-해당 데이터셋에서 출력 일치·속도 검사를 마친 뒤에만 선택한다.
+규칙과 seed를 적용하고 실제 완료 epoch를 함께 보고한다. 2026-09-28 결정에 따라
+데이터셋별 guarded/HF 출력 일치 검사는 후순위로 미룬다. 후속 학습은 guarded
+validation으로 먼저 진행하되, 다른 데이터셋에서의 출력 동등성은 아직 주장하지
+않는다. 최종 test 점수는 HF 생성과 같은 scorer로 따로 산출한다.
 
 ```bash
 cd /scratch/r984a02/phdq3
@@ -650,6 +652,44 @@ sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
   --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=native-gleu10-guarded-b1-s0,DATASET_TYPE=native,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,EARLY_STOPPING_PATIENCE=3,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,VALIDATION_BATCH_SIZE=1,VALIDATION_GENERATION_BACKEND=global-prefix-guarded-greedy-v1,RESUME=outputs/blt_hf/native/native-gleu10-guarded-b1-s0/latest.json \
   scripts/train_blt_hf.sh
 ```
+
+### 후속 learner: native test 채점과 독립적으로 시작
+
+native의 개선된 학습·선택 절차를 `korean_learner`에 새 RUN_ID로 적용한다.
+기존 3-epoch `learner-main-01` checkpoint에서 이어가지 않는다. 데이터셋별
+guarded/HF 출력 일치 검사는 뒤로 미룬 상태이므로 이 validation GLEU는
+guarded backend의 결과로 기록한다. native test 채점 중에도 다른 Neuron job으로
+제출할 수 있다. 같은 checkout의 실행 코드는 학습 완료까지 고정한다.
+
+```bash
+cd /scratch/r984a02/phdq3
+conda activate phdq_blt_hf
+test ! -e outputs/blt_hf/korean_learner/learner-gleu10-guarded-b1-s0/run.json && \
+sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
+  --time=06:00:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=learner-gleu10-guarded-b1-s0,DATASET_TYPE=korean_learner,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,EARLY_STOPPING_PATIENCE=3,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,VALIDATION_BATCH_SIZE=1,VALIDATION_GENERATION_BACKEND=global-prefix-guarded-greedy-v1 \
+  scripts/train_blt_hf.sh
+```
+
+시간 제한에 따라 `exit 75`로 중단되면 아래 명령으로 재개한다. `latest.json`이
+있고 `completed.json`이 없는 상태인지 먼저 확인한다. 전체 validation은 epoch
+안에서 재개되지 않으므로, 반복해서 같은 validation에서 시간 제한에 걸리면
+작업시간 또는 validation 저장 절차를 개선하기 전에는 재제출하지 않는다.
+
+```bash
+cd /scratch/r984a02/phdq3
+conda activate phdq_blt_hf
+test -f outputs/blt_hf/korean_learner/learner-gleu10-guarded-b1-s0/latest.json && \
+test ! -e outputs/blt_hf/korean_learner/learner-gleu10-guarded-b1-s0/completed.json && \
+sbatch -p amd_a100nv_8 --gres=gpu:4 --cpus-per-task=32 \
+  --time=06:00:00 --comment="field=nlp;appl=pytorch" \
+  --export=ALL,CONDA_ENV=phdq_blt_hf,RUN_ID=learner-gleu10-guarded-b1-s0,DATASET_TYPE=korean_learner,NUM_GPUS=4,TRAIN_MODE=train,EPOCHS=10,EARLY_STOPPING_PATIENCE=3,WARMUP_RATIO=0.05,EFFECTIVE_BATCH=32,SEED=0,SELECTION_METRIC=val_gleu,VALIDATION_BEAMS=1,VALIDATION_BATCH_SIZE=1,VALIDATION_GENERATION_BACKEND=global-prefix-guarded-greedy-v1,RESUME=outputs/blt_hf/korean_learner/learner-gleu10-guarded-b1-s0/latest.json \
+  scripts/train_blt_hf.sh
+```
+
+lang8·union은 validation 표본이 각각 16,434·23,332개다. 현재 6시간
+job에서 한 epoch와 전체 validation이 끝날 수 있는지 실측한 뒤 본 학습을
+제출한다. 반복 중단을 막기 위해 필요하면 validation 재개를 구현한다.
 
 ### 기존 분리형 10-epoch 절차
 
