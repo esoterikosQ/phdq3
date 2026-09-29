@@ -1,0 +1,46 @@
+{
+  "fingerprint": "c2117b94e5acd18e8a8950d388f191f9c3720e72f944ba77ece29ec4cbe9322a",
+  "records": [
+    {
+      "index": 1659,
+      "source": "너는 지금 집에가라.",
+      "text": "너는 지금 집에 가라.",
+      "raw_text": "너는 지금 집에 가라.",
+      "token_ids": [
+        239,
+        136,
+        140,
+        239,
+        142,
+        152,
+        36,
+        240,
+        171,
+        132,
+        238,
+        188,
+        140,
+        36,
+        240,
+        171,
+        149,
+        240,
+        155,
+        148,
+        36,
+        238,
+        180,
+        132,
+        239,
+        161,
+        192,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.2477997369132936
+}

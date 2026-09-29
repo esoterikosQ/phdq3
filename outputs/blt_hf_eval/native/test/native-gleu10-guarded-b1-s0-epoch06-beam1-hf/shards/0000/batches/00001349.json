@@ -1,0 +1,39 @@
+{
+  "fingerprint": "c2117b94e5acd18e8a8950d388f191f9c3720e72f944ba77ece29ec4cbe9322a",
+  "records": [
+    {
+      "index": 1349,
+      "source": "너 혼좀 나볼래?",
+      "text": "너 혼자 나볼래?",
+      "raw_text": "너 혼자 나볼래?",
+      "token_ids": [
+        239,
+        136,
+        140,
+        36,
+        241,
+        156,
+        192,
+        240,
+        162,
+        148,
+        36,
+        239,
+        134,
+        156,
+        239,
+        183,
+        192,
+        239,
+        162,
+        156,
+        67
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 0.9315423527732491
+}

@@ -1,0 +1,43 @@
+{
+  "fingerprint": "c2117b94e5acd18e8a8950d388f191f9c3720e72f944ba77ece29ec4cbe9322a",
+  "records": [
+    {
+      "index": 1853,
+      "source": "비가 올 껏 가타요.",
+      "text": "비가 올 것 같아요.",
+      "raw_text": "비가 올 것 같아요.",
+      "token_ids": [
+        239,
+        189,
+        136,
+        238,
+        180,
+        132,
+        36,
+        240,
+        156,
+        176,
+        36,
+        238,
+        182,
+        135,
+        36,
+        238,
+        180,
+        157,
+        240,
+        153,
+        136,
+        240,
+        158,
+        152,
+        50
+      ],
+      "eos_reached": true,
+      "budget_exhausted": false,
+      "valid_utf8": true,
+      "valid_token_ids": true
+    }
+  ],
+  "seconds": 1.1208857791498303
+}
