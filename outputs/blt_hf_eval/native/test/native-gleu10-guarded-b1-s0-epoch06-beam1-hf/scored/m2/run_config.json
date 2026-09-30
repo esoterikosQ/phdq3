@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "settings": {
+    "beta": 0.5,
+    "max_unchanged_words": 2,
+    "ignore_whitespace_casing": false
+  },
+  "scorer_sha256": "1134a7a423f008d1579b5da56ceefccadf7d790be1869285352fc5d3d320bd9c",
+  "wrapper_sha256": "bd831d88f139260d76c35860d619dfe27ff1a7cf14b2d7a745358c72778d88e2",
+  "hypothesis_path": "/scratch/r984a02/phdq3/outputs/blt_hf_eval/native/test/native-gleu10-guarded-b1-s0-epoch06-beam1-hf/scored/hypothesis.txt",
+  "hypothesis_sha256": "592576f8495ca21943578b18a8ffb8180f1ee1c4b229a3efcaaf0aa60e8829c2",
+  "source_gold_path": "/scratch/r984a02/phdq3/data/Preprocessed/native/native_test.m2",
+  "source_gold_sha256": "a4579825f6fc5e9ee7fbb1ae722cf260518b9305a07f5191ba423bc0f8b0a04c",
+  "examples": 2634
+}

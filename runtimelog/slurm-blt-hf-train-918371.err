@@ -1,0 +1,61 @@
+Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights:   0%|          | 0/510 [00:00<?, ?it/s]Loading weights:   0%|          | 1/510 [00:00<00:58,  8.65it/s]Loading weights:   0%|          | 1/510 [00:00<00:58,  8.64it/s]Loading weights:   0%|          | 1/510 [00:00<00:58,  8.64it/s]Loading weights:   0%|          | 1/510 [00:00<00:59,  8.58it/s]Loading weights: 100%|██████████| 510/510 [00:00<00:00, 2825.11it/s]
+Loading weights: 100%|██████████| 510/510 [00:00<00:00, 2821.57it/s]Loading weights: 100%|██████████| 510/510 [00:00<00:00, 2799.51it/s]
+Loading weights: 100%|██████████| 510/510 [00:00<00:00, 2684.31it/s]
+
+W0930 08:55:18.416000 1573913 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:1012] Sending process 1573940 closing signal SIGTERM
+W0930 08:55:18.480000 1573913 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:1012] Sending process 1573942 closing signal SIGTERM
+W0930 08:55:18.480000 1573913 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:1012] Sending process 1573943 closing signal SIGTERM
+E0930 08:55:19.296000 1573913 /scratch/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py:986] failed (exitcode: 75) local_rank: 1 (pid: 1573941) of binary: /home01/r984a02/.conda/envs/phdq_blt_hf/bin/python3.11
+Traceback (most recent call last):
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/bin/torchrun", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 362, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/run.py", line 990, in main
+    run(args)
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/run.py", line 981, in run
+    elastic_launch(
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 170, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home01/r984a02/.conda/envs/phdq_blt_hf/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 317, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+blt_hf.train FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2026-09-30_08:55:19
+  host      : gpu39.eth
+  rank      : 0 (local_rank: 0)
+  exitcode  : 75 (pid: 1573940)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[2]:
+  time      : 2026-09-30_08:55:19
+  host      : gpu39.eth
+  rank      : 2 (local_rank: 2)
+  exitcode  : 75 (pid: 1573942)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[3]:
+  time      : 2026-09-30_08:55:19
+  host      : gpu39.eth
+  rank      : 3 (local_rank: 3)
+  exitcode  : 75 (pid: 1573943)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-09-30_08:55:18
+  host      : gpu39.eth
+  rank      : 1 (local_rank: 1)
+  exitcode  : 75 (pid: 1573941)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
+srun: error: gpu39: task 0: Exited with exit code 1

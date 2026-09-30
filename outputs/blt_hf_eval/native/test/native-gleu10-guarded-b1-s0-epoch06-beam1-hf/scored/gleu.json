@@ -1,0 +1,10 @@
+{
+  "fingerprint": "c2117b94e5acd18e8a8950d388f191f9c3720e72f944ba77ece29ec4cbe9322a",
+  "samples": 2634,
+  "gleu": 65.6366,
+  "eos_rate": 1.0,
+  "copy_rate": 0.10895975702353834,
+  "invalid_utf8": 0,
+  "invalid_token_ids": 0,
+  "budget_exhausted": 0
+}
